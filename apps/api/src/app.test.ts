@@ -38,9 +38,23 @@ describe("app", () => {
 		expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
 	});
 
+	it("rejects a form submitted from an unknown origin (CSRF)", async () => {
+		const response = await app.request("/v1/me", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+				Origin: "https://evil.example.com",
+			},
+			body: "name=evil",
+		});
+
+		expect(response.status).toBe(403);
+	});
+
 	it("rejects a body larger than 1 MB", async () => {
 		const response = await app.request("/v1/health", {
 			method: "POST",
+			headers: { Origin: "http://localhost:3000" },
 			body: "x".repeat(1024 * 1024 + 1),
 		});
 

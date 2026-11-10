@@ -11,7 +11,7 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 - Hono 4.x on Node 24, served by `@hono/node-server`
 - Database: PostgreSQL 17, accessed through Drizzle ORM with the `postgres` (postgres.js) driver; snake_case column names (`casing: "snake_case"`); versioned SQL migrations with `drizzle-kit`
 - Validation: Zod, through Hono's validator middleware (`@hono/zod-validator`)
-- Authentication: Better Auth (to be set up), sessions in an HTTP-only cookie; passwordless email (magic link, one-time code) and Google
+- Authentication: Better Auth, sessions in an HTTP-only cookie; passwordless email (magic link, one-time code) and Google (see "Authentication")
 - Real time: WebSockets (to be set up), one channel per list
 - Dev: `tsx watch`; build: tsdown bundle to `dist/index.mjs`, which also compiles the internal `@repo/*` packages consumed as TypeScript source
 - TypeScript: extends `@repo/config-ts/node.json` (Node code without DOM)
@@ -44,10 +44,19 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
   - `<domain>.test.ts`: tests
 - `src/middlewares/`: cross-cutting middlewares (authentication, authorization, logging, rate limiting)
 - `src/db/`: Drizzle client (`client.ts`), schema (`schema/<table>.ts`, re-exported by `schema/index.ts`) and migration script (`migrate.ts`)
-- `src/lib/`: utilities specific to the app (`errors.ts`: `AppError` and the error body; `error-handler.ts`: global error and not-found handlers)
-- `test/`: Vitest global setup (checks the test database and applies the migrations)
+- `src/lib/`: utilities specific to the app (`auth.ts`: Better Auth instance; `errors.ts`: `AppError` and the error body; `error-handler.ts`: global error and not-found handlers; `mailer.ts`: email sending; `locale.ts`: locale resolution from `Accept-Language`)
+- `src/emails/`: email contents, in every supported locale
+- `test/`: Vitest global setup (checks the test database and applies the migrations), database reset before each test, and helpers (`helpers/auth.ts`: `signIn()`, `captureEmails()`), imported through the `@test/` alias
 - `drizzle/`: generated SQL migrations, committed, never edited after they have been applied
 - `docker-compose.yml`, `docker/`: local PostgreSQL
+
+## Authentication
+
+- Better Auth is mounted on `/v1/auth/*` and configured in `src/lib/auth.ts`. Password sign-in stays disabled; Google is enabled only when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set.
+- Its tables (`users`, `sessions`, `accounts`, `verifications`) are written by hand in `src/db/schema/` (plural names, `usePlural: true`, uuid ids). `auth.schema.test.ts` checks them against what Better Auth expects: after a Better Auth upgrade or a new plugin, run the tests and add the missing fields with a migration.
+- Protect a route with the `requireAuth` middleware, then read `c.get("user")`; never trust a user identifier sent by the client.
+- Keep `advanced.disableOriginCheck: false`: Better Auth otherwise skips its callback URL and origin checks when `NODE_ENV` is `test`.
+- Emails go through `mailer`: printed to the console in development and tests, unavailable in production until an email provider is chosen. Their locale comes from the request's `Accept-Language` header.
 
 ## Routes and handlers
 
