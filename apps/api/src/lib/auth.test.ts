@@ -33,13 +33,13 @@ function getProfile(cookie: string) {
 }
 
 describe("sign-in with an email code", () => {
-	it("sends a code in French by default and signs the user in", async () => {
+	it("sends a code in English by default and signs the user in", async () => {
 		const emails = captureEmails();
 
 		expect((await requestCode("alice@example.com")).status).toBe(200);
 		expect(emails).toHaveLength(1);
 		expect(emails[0]?.to).toBe("alice@example.com");
-		expect(emails[0]?.subject).toMatch(/^Votre code de connexion à Checkit/);
+		expect(emails[0]?.subject).toMatch(/^Your Checkit sign-in code/);
 
 		const response = await signInWithCode(
 			"alice@example.com",
@@ -52,13 +52,21 @@ describe("sign-in with an email code", () => {
 		expect(await profile.json()).toMatchObject({ email: "alice@example.com" });
 	});
 
-	it("sends the email in English when the browser prefers it", async () => {
-		const emails = captureEmails();
+	it.each([
+		["French", "fr-FR,fr;q=0.9", /^Votre code de connexion à Checkit/],
+		["Spanish", "es-ES,es;q=0.9", /^Tu código de inicio de sesión en Checkit/],
+	])(
+		"sends the email in %s when the browser prefers it",
+		async (_language, acceptLanguage, subject) => {
+			const emails = captureEmails();
 
-		await requestCode("bob@example.com", { "Accept-Language": "en-US,en" });
+			await requestCode("bob@example.com", {
+				"Accept-Language": acceptLanguage,
+			});
 
-		expect(emails[0]?.subject).toMatch(/^Your Checkit sign-in code/);
-	});
+			expect(emails[0]?.subject).toMatch(subject);
+		},
+	);
 
 	it("rejects a wrong code", async () => {
 		const emails = captureEmails();
@@ -85,7 +93,7 @@ describe("sign-in with a magic link", () => {
 			}),
 		});
 		expect(response.status).toBe(200);
-		expect(emails[0]?.subject).toBe("Votre lien de connexion à Checkit");
+		expect(emails[0]?.subject).toBe("Your Checkit sign-in link");
 
 		const link = emails[0]?.text.match(/https?:\/\/\S+/)?.[0];
 		expect(link).toMatch(

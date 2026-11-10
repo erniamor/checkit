@@ -13,7 +13,7 @@ Product decisions:
 - Sign-in: passwordless email (magic link, with a one-time code as fallback) and Google; no passwords. Apple and passkeys may come later.
 - Voice input: the browser's Web Speech API first, with server-side transcription as a fallback behind a common interface.
 
-The site is multilingual by default: French (default locale) and English from the start. Every user-facing text, route and piece of content exists in every locale; never hard-code a single-language string in the UI.
+The site is multilingual by default: English (default locale), French and Spanish from the start. Every user-facing text, route and piece of content exists in every locale; never hard-code a single-language string in the UI.
 
 ## Stack
 
