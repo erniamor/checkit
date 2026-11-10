@@ -105,9 +105,36 @@ Joining never downgrades a member: an editor who opens a viewer link stays edito
 | `GET /v1/lists/:listId/share-links` | `owner` | Active share links |
 | `DELETE /v1/lists/:listId/share-links/:linkId` | `owner` | Revokes a share link |
 | `GET /v1/share-links/:token` | no | Preview: list name, role, owner's name (null if they have none) |
+| `POST /v1/share-links/:token/join` | yes | Joins the list; returns the list |
 
 The previews are public, so they never show the inviter's or the owner's email.
-| `POST /v1/share-links/:token/join` | yes | Joins the list; returns the list |
+
+### Real time
+
+`GET /v1/lists/:listId/events` (minimum role `viewer`) opens a [Server-Sent Events](https://developer.mozilla.org/docs/Web/API/Server-sent_events) stream of the list's changes. In the browser:
+
+```ts
+const events = new EventSource(`${API_URL}/v1/lists/${listId}/events`, { withCredentials: true });
+events.addEventListener("ready", () => reloadList());
+events.addEventListener("items.created", (message) => {
+	const event = listEventSchema.parse(JSON.parse(message.data));
+	// ...
+});
+```
+
+- The stream starts with a `ready` event. Missed events aren't replayed: after a disconnection, the browser reconnects by itself, receives `ready` again, and the front end reloads the list.
+- Each change is an event named after its `type`, whose data is the whole event as JSON (`listEventSchema` of `@repo/schemas`). Every event carries `listId` and `actorId`, the user who made the change, so a front end can skip its own changes.
+- A comment line is sent every 25 seconds so proxies keep the connection open.
+
+| Event | Data | Sent when |
+| --- | --- | --- |
+| `items.created` | `items` | Items are added, one or several at once |
+| `item.updated` | `item` | An item is renamed, checked, unchecked or moved |
+| `item.deleted` | `itemId` | An item is deleted |
+| `list.updated` | `name`, `updatedAt` | The list is renamed |
+| `list.deleted` | | The list is deleted; the server then ends every stream |
+| `member.added` / `member.updated` | `member` | Someone joins (invitation, share link), or a role changes |
+| `member.removed` | `userId` | A member is removed or leaves; the server ends that member's stream |
 
 ### Errors
 
@@ -138,10 +165,11 @@ Every error has the same shape:
 pnpm --filter api test
 ```
 
-The tests call the app in memory through `app.request()` and use the `checkit_test` database, emptied before each test. Helpers in `test/helpers/` sign a user in (`signIn()`), capture the emails sent (`captureEmails()`), call the API (`api()`), create a list and add a member (`createList()`, `joinList()`).
+The tests call the app in memory through `app.request()` and use the `checkit_test` database, emptied before each test. Helpers in `test/helpers/` sign a user in (`signIn()`), capture the emails sent (`captureEmails()`), call the API (`api()`), create a list and add a member (`createList()`, `joinList()`), and read a list's event stream (`openEventStream()`).
 
 ## Production notes
 
 - Sign-in by email is unavailable until an email provider is chosen: in production, the API refuses to print links and codes to the logs.
 - Better Auth's rate limiting is active in production only, kept in memory: enough for a single instance.
-- Hosting options: [docs/hosting.md](../../docs/hosting.md). Real time will need a long-running process (WebSockets), not serverless functions.
+- Hosting options: [docs/hosting.md](../../docs/hosting.md). Real time needs a long-running process holding the SSE connections, not serverless functions.
+- Real-time events only reach the connections of the instance that published them: with several API instances, replace the in-memory bus (`src/realtime/list-events.ts`) with PostgreSQL `LISTEN/NOTIFY`.

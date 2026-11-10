@@ -12,7 +12,7 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 - Database: PostgreSQL 17, accessed through Drizzle ORM with the `postgres` (postgres.js) driver; snake_case column names (`casing: "snake_case"`); versioned SQL migrations with `drizzle-kit`
 - Validation: Zod, through Hono's validator middleware (`@hono/zod-validator`)
 - Authentication: Better Auth, sessions in an HTTP-only cookie; passwordless email (magic link, one-time code) and Google (see "Authentication")
-- Real time: WebSockets (to be set up), one channel per list
+- Real time: Server-Sent Events with Hono's `streamSSE`, one stream per list (see "Real time")
 - Dev: `tsx watch`; build: tsdown bundle to `dist/index.mjs`, which also compiles the internal `@repo/*` packages consumed as TypeScript source
 - TypeScript: extends `@repo/config-ts/node.json` (Node code without DOM)
 - Tests: Vitest, with Hono's `app.request()` for routes, against the Docker test database
@@ -37,16 +37,17 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 - `src/index.ts`: entry point; starts the Node server with the app built in `app.ts`
 - `src/app.ts`: builds the Hono app (global middlewares, mounting of route modules, error handler), with no side effect, so tests can import it
 - `src/env.ts`: environment variables validated with Zod at startup; the only place that reads `process.env`
-- `src/routes/<domain>/`: one folder per domain (`health`, `me`, `lists`, `items`, `members`, `invitations`, `share-links`)
+- `src/routes/<domain>/`: one folder per domain (`health`, `me`, `lists`, `items`, `members`, `invitations`, `share-links`, `events`)
   - `<domain>.routes.ts`: the domain's Hono sub-app (routes, validators, call to the service)
   - `<domain>.service.ts`: business logic, independent of Hono
   - `<domain>.schemas.ts`: Zod schemas used only by this API (shared ones are in `@repo/schemas`)
   - `<domain>.test.ts`: tests
 - `src/middlewares/`: cross-cutting middlewares (`require-auth.ts`, `require-list-role.ts`)
+- `src/realtime/`: the list event bus (`list-events.ts`)
 - `src/db/`: Drizzle client (`client.ts`), schema (`schema/<table>.ts`, re-exported by `schema/index.ts`) and migration script (`migrate.ts`)
 - `src/lib/`: utilities specific to the app (`auth.ts`: Better Auth instance; `errors.ts`: `AppError` and the error body; `error-handler.ts`: global error and not-found handlers; `mailer.ts`: email sending; `locale.ts`: locale resolution from `Accept-Language`; `validator.ts`: `validate()`, the `zValidator` answering 422 in the API's error format; `pagination.ts`: pagination query schema; `tokens.ts`: random tokens and their hash)
 - `src/emails/`: email contents, in every supported locale
-- `test/`: Vitest global setup (checks the test database and applies the migrations), database reset before each test, and helpers (`helpers/auth.ts`: `signIn()`, `captureEmails()`; `helpers/api.ts`: `api()`, `json()`, `createList()`, `joinList()`), imported through the `@test/` alias
+- `test/`: Vitest global setup (checks the test database and applies the migrations), database reset before each test, and helpers (`helpers/auth.ts`: `signIn()`, `captureEmails()`; `helpers/api.ts`: `api()`, `json()`, `createList()`, `joinList()`, `setName()`; `helpers/events.ts`: `openEventStream()`), imported through the `@test/` alias
 - `drizzle/`: generated SQL migrations, committed, never edited after they have been applied
 - `docker-compose.yml`, `docker/`: local PostgreSQL
 
@@ -72,6 +73,14 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 - Partial unique indexes enforce one pending invitation per list and email, and one active share link per list and role.
 - The previews (`GET /invitations/:token`, `GET /share-links/:token`) are public: they show other users through `publicName()` (name or null), never their email. `displayName()` (name, or email as fallback) is only for people the user chose to contact, such as the invitation email.
 - Expired invitations stay in the table; they are deleted when the same email is invited again. Plan a cleanup job if the table grows.
+
+## Real time
+
+- `GET /lists/:listId/events` streams the list's changes as Server-Sent Events. The events are the `ListEvent` union of `@repo/schemas`: adding a kind of event starts there.
+- Every service that changes a list, its items or its members publishes the matching event with `listEvents.publish()`, after the write succeeded (after the transaction, never inside it), with the acting user as `actorId`. A change that writes nothing publishes nothing.
+- A stream ends when the list is deleted or when its user loses access (`endsAccess()`); a role change keeps it open.
+- `listEvents` is in memory: it only reaches the connections of this process. To run several instances, replace it with PostgreSQL `LISTEN/NOTIFY` behind the same `ListEventBus` interface (mind its 8 KB payload limit: send ids and let instances load the data if needed).
+- Missed events aren't replayed: on reconnection the stream sends `ready` again and the front end reloads the list.
 
 ## Routes and handlers
 

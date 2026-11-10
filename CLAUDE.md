@@ -8,7 +8,7 @@ Checkit: a small web app to manage short to-do lists shared between several user
 
 Product decisions:
 
-- Real time is required: changes made by a member appear for the others without reloading.
+- Real time is required: changes made by a member appear for the others without reloading. Delivered with Server-Sent Events (one stream per open list); changes themselves go through the REST API.
 - Sharing: by email invitation and by a revocable share link, each granting a role on the list.
 - Sign-in: passwordless email (magic link, with a one-time code as fallback) and Google; no passwords. Apple and passkeys may come later.
 - Voice input: the browser's Web Speech API first, with server-side transcription as a fallback behind a common interface.

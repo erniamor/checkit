@@ -10,7 +10,7 @@ A small web app to manage short to-do lists shared between several users: lists 
 | API: passwordless sign-in (magic link, email code) | Done; Google ready once OAuth credentials are set |
 | API: lists, items, members, role-based access | Done |
 | API: sharing (invitations, share links, member management) | Done |
-| API: real time (WebSockets) | Next |
+| API: real time (Server-Sent Events) | Done |
 | Front end (`apps/www`) | Not started |
 | Voice input | Planned (browser Web Speech API, server transcription as fallback) |
 | Email provider, hosting | Not chosen (see [docs/hosting.md](docs/hosting.md)) |

@@ -9,6 +9,7 @@ import { type Database, db, type Transaction } from "@/db/client";
 import { listMembers, users } from "@/db/schema";
 import { AppError } from "@/lib/errors";
 import { offsetOf, type PaginationQuery } from "@/lib/pagination";
+import { listEvents } from "@/realtime/list-events";
 
 const roleRank: Record<MemberRole, number> = {
 	viewer: 0,
@@ -106,25 +107,51 @@ async function getMember(listId: string, userId: string): Promise<Member> {
 	return toMember(row);
 }
 
+export type MembershipChange = "added" | "upgraded" | null;
+
 /**
  * Makes the user a member of the list with `role`. An existing member is
- * upgraded from viewer to editor, never downgraded.
+ * upgraded from viewer to editor, never downgraded. Returns what changed.
  */
 export async function grantRole(
 	executor: Database | Transaction,
 	listId: string,
 	userId: string,
 	role: ShareableRole,
-): Promise<void> {
-	const insert = executor.insert(listMembers).values({ listId, userId, role });
+): Promise<MembershipChange> {
+	const inserted = await executor
+		.insert(listMembers)
+		.values({ listId, userId, role })
+		.onConflictDoNothing()
+		.returning({ userId: listMembers.userId });
+	if (inserted.length > 0) {
+		return "added";
+	}
 	if (role === "viewer") {
-		await insert.onConflictDoNothing();
+		return null;
+	}
+	const upgraded = await executor
+		.update(listMembers)
+		.set({ role })
+		.where(and(isMember(listId, userId), eq(listMembers.role, "viewer")))
+		.returning({ userId: listMembers.userId });
+	return upgraded.length > 0 ? "upgraded" : null;
+}
+
+/** Tells the list's members about a change made by `grantRole`, once committed. */
+export async function announceMembershipChange(
+	listId: string,
+	userId: string,
+	change: MembershipChange,
+): Promise<void> {
+	if (!change) {
 		return;
 	}
-	await insert.onConflictDoUpdate({
-		target: [listMembers.listId, listMembers.userId],
-		set: { role },
-		setWhere: eq(listMembers.role, "viewer"),
+	listEvents.publish({
+		type: change === "added" ? "member.added" : "member.updated",
+		listId,
+		actorId: userId,
+		member: await getMember(listId, userId),
 	});
 }
 
@@ -147,18 +174,23 @@ export async function updateMemberRole(
 	listId: string,
 	userId: string,
 	role: ShareableRole,
+	actorId: string,
 ): Promise<Member> {
 	await assertChangeableMember(listId, userId);
 	await db.update(listMembers).set({ role }).where(isMember(listId, userId));
-	return getMember(listId, userId);
+	const member = await getMember(listId, userId);
+	listEvents.publish({ type: "member.updated", listId, actorId, member });
+	return member;
 }
 
 export async function removeMember(
 	listId: string,
 	userId: string,
+	actorId: string,
 ): Promise<void> {
 	await assertChangeableMember(listId, userId);
 	await db.delete(listMembers).where(isMember(listId, userId));
+	listEvents.publish({ type: "member.removed", listId, actorId, userId });
 }
 
 /** Removes the user from the list; the owner can't leave, only delete the list. */
@@ -175,4 +207,10 @@ export async function leaveList(
 		);
 	}
 	await db.delete(listMembers).where(isMember(listId, userId));
+	listEvents.publish({
+		type: "member.removed",
+		listId,
+		actorId: userId,
+		userId,
+	});
 }

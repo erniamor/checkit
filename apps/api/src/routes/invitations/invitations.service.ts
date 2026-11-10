@@ -18,6 +18,7 @@ import { offsetOf, type PaginationQuery } from "@/lib/pagination";
 import { generateToken, hashToken } from "@/lib/tokens";
 import { getListOfUser } from "@/routes/lists/lists.service";
 import {
+	announceMembershipChange,
 	displayName,
 	grantRole,
 	publicName,
@@ -266,8 +267,8 @@ export async function acceptInvitation(
 		throw invitationExpired();
 	}
 
-	await db.transaction(async (tx) => {
-		await grantRole(
+	const change = await db.transaction(async (tx) => {
+		const granted = await grantRole(
 			tx,
 			invitation.listId,
 			user.id,
@@ -277,6 +278,8 @@ export async function acceptInvitation(
 			.update(invitations)
 			.set({ acceptedAt: new Date() })
 			.where(eq(invitations.id, invitation.id));
+		return granted;
 	});
+	await announceMembershipChange(invitation.listId, user.id, change);
 	return getListOfUser(invitation.listId, user.id);
 }

@@ -25,6 +25,7 @@ Add it to a project with `"@repo/schemas": "workspace:*"`. It is consumed as Typ
 | Members | `memberRoleSchema` / `MemberRole`, `memberRoles`, `shareableRoleSchema` / `ShareableRole`, `memberSchema` / `Member`, `updateMemberSchema` / `UpdateMember` | |
 | Invitations | `createInvitationSchema` / `CreateInvitation`, `invitationEmailSchema`, `invitationSchema` / `Invitation`, `invitationPreviewSchema` / `InvitationPreview` | |
 | Share links | `createShareLinkSchema` / `CreateShareLink`, `shareLinkSchema` / `ShareLink`, `shareLinkPreviewSchema` / `ShareLinkPreview` | |
+| Real-time events | `listEventSchema` / `ListEvent` (union discriminated by `type`), `ListEventType` | `LIST_EVENTS_READY` (`"ready"`, the first SSE event of a stream) |
 
 In responses, dates are ISO 8601 strings.
 

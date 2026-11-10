@@ -4,6 +4,7 @@ import { db } from "@/db/client";
 import { items, lists } from "@/db/schema";
 import { AppError } from "@/lib/errors";
 import { offsetOf, type PaginationQuery } from "@/lib/pagination";
+import { listEvents } from "@/realtime/list-events";
 
 type ItemRow = typeof items.$inferSelect;
 
@@ -58,7 +59,7 @@ export async function addItems(
 	userId: string,
 	labels: string[],
 ): Promise<Item[]> {
-	return db.transaction(async (tx) => {
+	const created = await db.transaction(async (tx) => {
 		// Locks the list row: concurrent additions to the same list wait for
 		// each other, so they don't get the same positions
 		await tx
@@ -85,6 +86,13 @@ export async function addItems(
 			.returning();
 		return rows.map(toItem).sort((a, b) => a.position - b.position);
 	});
+	listEvents.publish({
+		type: "items.created",
+		listId,
+		actorId: userId,
+		items: created,
+	});
+	return created;
 }
 
 export async function updateItem(
@@ -123,12 +131,15 @@ export async function updateItem(
 	if (!row) {
 		throw itemNotFound();
 	}
-	return toItem(row);
+	const item = toItem(row);
+	listEvents.publish({ type: "item.updated", listId, actorId: userId, item });
+	return item;
 }
 
 export async function deleteItem(
 	listId: string,
 	itemId: string,
+	userId: string,
 ): Promise<void> {
 	const deleted = await db
 		.delete(items)
@@ -137,4 +148,5 @@ export async function deleteItem(
 	if (deleted.length === 0) {
 		throw itemNotFound();
 	}
+	listEvents.publish({ type: "item.deleted", listId, actorId: userId, itemId });
 }

@@ -13,7 +13,11 @@ import { AppError } from "@/lib/errors";
 import { offsetOf, type PaginationQuery } from "@/lib/pagination";
 import { generateToken } from "@/lib/tokens";
 import { getListOfUser } from "@/routes/lists/lists.service";
-import { grantRole, publicName } from "@/routes/members/members.service";
+import {
+	announceMembershipChange,
+	grantRole,
+	publicName,
+} from "@/routes/members/members.service";
 
 type ShareLinkRow = typeof shareLinks.$inferSelect;
 
@@ -143,11 +147,12 @@ export async function joinWithShareLink(
 	userId: string,
 ): Promise<List> {
 	const link = await findActiveByToken(token);
-	await grantRole(
+	const change = await grantRole(
 		db,
 		link.listId,
 		userId,
 		shareableRoleSchema.parse(link.role),
 	);
+	await announceMembershipChange(link.listId, userId, change);
 	return getListOfUser(link.listId, userId);
 }

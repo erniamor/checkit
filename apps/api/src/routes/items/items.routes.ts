@@ -77,7 +77,11 @@ export const itemsRoutes = new Hono<{ Variables: ListAccessVariables }>()
 		requireListRole("editor"),
 		validate("param", itemParamSchema),
 		async (c) => {
-			await deleteItem(c.get("listId"), c.req.valid("param").itemId);
+			await deleteItem(
+				c.get("listId"),
+				c.req.valid("param").itemId,
+				c.get("user").id,
+			);
 			return c.body(null, 204);
 		},
 	);

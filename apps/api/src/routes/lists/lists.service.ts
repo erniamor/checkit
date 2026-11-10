@@ -4,6 +4,7 @@ import { db } from "@/db/client";
 import { items, listMembers, lists } from "@/db/schema";
 import { offsetOf, type PaginationQuery } from "@/lib/pagination";
 import { listNotFound } from "@/middlewares/require-list-role";
+import { listEvents } from "@/realtime/list-events";
 
 const listColumns = {
 	id: lists.id,
@@ -103,10 +104,22 @@ export async function renameList(
 	name: string,
 ): Promise<List> {
 	await db.update(lists).set({ name }).where(eq(lists.id, listId));
-	return getListOfUser(listId, userId);
+	const list = await getListOfUser(listId, userId);
+	listEvents.publish({
+		type: "list.updated",
+		listId,
+		actorId: userId,
+		name: list.name,
+		updatedAt: list.updatedAt,
+	});
+	return list;
 }
 
 /** Deletes the list with its members and items (cascade). */
-export async function deleteList(listId: string): Promise<void> {
+export async function deleteList(
+	listId: string,
+	userId: string,
+): Promise<void> {
 	await db.delete(lists).where(eq(lists.id, listId));
+	listEvents.publish({ type: "list.deleted", listId, actorId: userId });
 }

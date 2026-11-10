@@ -7,6 +7,7 @@ import {
 	type ListAccessVariables,
 	requireListRole,
 } from "@/middlewares/require-list-role";
+import { listEventsRoutes } from "@/routes/events/events.routes";
 import { listInvitationsRoutes } from "@/routes/invitations/invitations.routes";
 import { itemsRoutes } from "@/routes/items/items.routes";
 import {
@@ -49,10 +50,11 @@ export const listsRoutes = new Hono<{ Variables: ListAccessVariables }>()
 			),
 	)
 	.delete("/:listId", requireListRole("owner"), async (c) => {
-		await deleteList(c.get("listId"));
+		await deleteList(c.get("listId"), c.get("user").id);
 		return c.body(null, 204);
 	})
 	.route("/:listId/items", itemsRoutes)
 	.route("/:listId/members", membersRoutes)
 	.route("/:listId/invitations", listInvitationsRoutes)
-	.route("/:listId/share-links", listShareLinksRoutes);
+	.route("/:listId/share-links", listShareLinksRoutes)
+	.route("/:listId/events", listEventsRoutes);

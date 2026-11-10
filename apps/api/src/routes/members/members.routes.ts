@@ -46,6 +46,7 @@ export const membersRoutes = new Hono<{ Variables: ListAccessVariables }>()
 					c.get("listId"),
 					c.req.valid("param").userId,
 					c.req.valid("json").role,
+					c.get("user").id,
 				),
 			),
 	)
@@ -54,7 +55,11 @@ export const membersRoutes = new Hono<{ Variables: ListAccessVariables }>()
 		requireListRole("owner"),
 		validate("param", memberParamSchema),
 		async (c) => {
-			await removeMember(c.get("listId"), c.req.valid("param").userId);
+			await removeMember(
+				c.get("listId"),
+				c.req.valid("param").userId,
+				c.get("user").id,
+			);
 			return c.body(null, 204);
 		},
 	);

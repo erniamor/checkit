@@ -7,15 +7,15 @@ Status: recommendation, no decision yet.
 | Piece | Needs |
 | --- | --- |
 | `apps/www` (TanStack Start) | SSR runtime (Node or edge), CDN for static assets |
-| `apps/api` (Hono) | Long-running Node process (WebSockets for real time), PostgreSQL database, daily backups |
+| `apps/api` (Hono) | Long-running Node process (Server-Sent Events for real time), PostgreSQL database, daily backups |
 | Email sending | Transactional email provider for magic links, sign-in codes and invitations |
 | Personal data | Accounts (email, name), lists and their items, list memberships; voice recordings only in transit if server-side transcription is used: data location and backups matter |
 
 Three constraints shape the choice:
 
 - **Data residency:** users are mainly in Europe and GDPR applies: personal data (database, backups, email provider, transcription service) should be stored and processed in the EU. A region close to the users keeps compliance simple.
-- **Real time needs a long-running API:** list changes are pushed to members over WebSockets, which need a process that stays up and holds open connections. Serverless functions (Vercel, Netlify) can host `www`, not `api`, unless real time is delegated to a managed service (Ably, Pusher...), which adds a provider and a cost.
-- **One API instance at first:** with several instances, a message published on one must reach the clients connected to the others (PostgreSQL `LISTEN/NOTIFY` or Redis pub/sub). Not needed to launch, but the real-time layer should keep this door open.
+- **Real time needs a long-running API:** list changes are pushed to members over Server-Sent Events, long-lived HTTP responses held by a process that stays up. Serverless functions (Vercel, Netlify) can host `www`, not `api`, unless real time is delegated to a managed service (Ably, Pusher...), which adds a provider and a cost. The proxy in front of the API must not buffer `text/event-stream` responses, and should serve HTTP/2 (browsers limit HTTP/1.1 to 6 connections per domain, and each open list holds one).
+- **One API instance at first:** events go through an in-memory bus, so they only reach the clients connected to the instance that published them. With several instances, replace it with PostgreSQL `LISTEN/NOTIFY` (no new service) or Redis pub/sub; the bus is already behind an interface for that.
 
 ## Options
 
@@ -23,7 +23,7 @@ Three constraints shape the choice:
 
 Pros:
 - Best-in-class front-end hosting: global CDN, preview deployment per branch, zero ops.
-- The PaaS gives a managed PostgreSQL, deploys from Git, handles TLS and supports WebSockets.
+- The PaaS gives a managed PostgreSQL, deploys from Git, handles TLS and keeps long-lived connections (SSE) open.
 - Scalingo and Clever Cloud are EU providers with EU-only regions.
 - Each piece scales and fails independently.
 
@@ -37,7 +37,7 @@ Cons:
 
 Pros:
 - Everything in one place, in a region of our choice: simplest answer to data residency.
-- Lowest, predictable monthly cost; WebSockets need no special setup.
+- Lowest, predictable monthly cost; long-lived SSE connections need no special setup beyond disabling response buffering in the proxy.
 - Full control over versions, database and backups.
 
 Cons:
