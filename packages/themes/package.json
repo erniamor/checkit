@@ -1,0 +1,21 @@
+{
+	"name": "@repo/themes",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./base.css": "./src/base.css",
+		"./brand.css": "./src/themes/brand.css",
+		"./neutral.css": "./src/themes/neutral.css"
+	},
+	"scripts": {
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run"
+	},
+	"devDependencies": {
+		"@repo/config-ts": "workspace:*",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	}
+}

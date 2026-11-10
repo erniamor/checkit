@@ -1,0 +1,16 @@
+/*
+ * Minimal global styles of the design system. No tokens or themes here (see @repo/themes).
+ * Import in the app after "tailwindcss", "@repo/themes/base.css" and the themes.
+ */
+
+@import "tw-animate-css";
+
+@layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+
+	body {
+		@apply bg-background font-sans text-foreground;
+	}
+}

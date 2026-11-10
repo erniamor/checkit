@@ -1,0 +1,71 @@
+/*
+ * "brand" theme: the product's default theme. Placeholder values to replace
+ * with the project's identity (colors, fonts, radius), keeping WCAG AA contrasts.
+ * Zinc grays, blue accent. Fonts are loaded by the app.
+ */
+
+:root:not([data-theme]),
+[data-theme="brand"] {
+	--background: #ffffff;
+	--foreground: #09090b;
+	--card: #ffffff;
+	--card-foreground: #09090b;
+	--popover: #ffffff;
+	--popover-foreground: #09090b;
+	--primary: #1d4ed8;
+	--primary-foreground: #ffffff;
+	--secondary: #f4f4f5;
+	--secondary-foreground: #18181b;
+	--muted: #f4f4f5;
+	--muted-foreground: #52525b;
+	--accent: #e4e4e7;
+	--accent-foreground: #18181b;
+	--destructive: #b91c1c;
+	--destructive-foreground: #ffffff;
+	--border: #e4e4e7;
+	--input: #d4d4d8;
+	--ring: #1d4ed8;
+
+	--inverse: #18181b;
+	--inverse-foreground: #fafafa;
+	--inverse-muted-foreground: #a1a1aa;
+	--inverse-border: #27272a;
+
+	--typeface-body: system-ui, sans-serif;
+	--typeface-heading: system-ui, sans-serif;
+
+	--radius: 0.5rem;
+}
+
+:root.dark:not([data-theme]),
+[data-theme="brand"].dark {
+	--background: #09090b;
+	--foreground: #fafafa;
+	--card: #18181b;
+	--card-foreground: #fafafa;
+	--popover: #18181b;
+	--popover-foreground: #fafafa;
+	--primary: #60a5fa;
+	--primary-foreground: #09090b;
+	--secondary: #27272a;
+	--secondary-foreground: #fafafa;
+	--muted: #27272a;
+	--muted-foreground: #a1a1aa;
+	--accent: #27272a;
+	--accent-foreground: #fafafa;
+	--destructive: #f87171;
+	--destructive-foreground: #09090b;
+	--border: #27272a;
+	--input: #3f3f46;
+	--ring: #60a5fa;
+
+	--inverse: #000000;
+	--inverse-foreground: #fafafa;
+	--inverse-muted-foreground: #a1a1aa;
+	--inverse-border: #27272a;
+
+	--typeface-body: system-ui, sans-serif;
+	--typeface-heading: system-ui, sans-serif;
+
+	--radius: 0.5rem;
+}
