@@ -1,0 +1,280 @@
+import type { Item, List, Paginated } from "@repo/schemas";
+import { api, createList, joinList, json } from "@test/helpers/api";
+import { signIn } from "@test/helpers/auth";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { ErrorBody } from "@/lib/errors";
+
+let alice: string;
+let list: List;
+
+beforeEach(async () => {
+	alice = await signIn("alice@example.com");
+	list = await createList(alice);
+});
+
+afterEach(() => {
+	vi.restoreAllMocks();
+});
+
+function itemsPath(path = "") {
+	return `/v1/lists/${list.id}/items${path}`;
+}
+
+async function addItem(label: string, cookie = alice): Promise<Item> {
+	const response = await api(itemsPath(), {
+		method: "POST",
+		cookie,
+		body: { label },
+	});
+	return json<Item>(response);
+}
+
+async function listed(cookie = alice): Promise<Item[]> {
+	return (await json<Paginated<Item>>(await api(itemsPath(), { cookie }))).data;
+}
+
+async function labels(cookie = alice): Promise<string[]> {
+	return (await listed(cookie)).map((item) => item.label);
+}
+
+async function patchItem(itemId: string, body: unknown, cookie = alice) {
+	return api(itemsPath(`/${itemId}`), { method: "PATCH", cookie, body });
+}
+
+describe("POST /v1/lists/:listId/items", () => {
+	it("appends items at the end of the list", async () => {
+		const response = await api(itemsPath(), {
+			method: "POST",
+			cookie: alice,
+			body: { label: " Milk " },
+		});
+
+		expect(response.status).toBe(201);
+		const milk = await json<Item>(response);
+		expect(milk).toEqual({
+			id: expect.any(String),
+			listId: list.id,
+			label: "Milk",
+			done: false,
+			doneAt: null,
+			doneById: null,
+			position: 1,
+			createdById: expect.any(String),
+			createdAt: expect.any(String),
+			updatedAt: expect.any(String),
+		});
+
+		const eggs = await addItem("Eggs");
+		expect(eggs.position).toBeGreaterThan(milk.position);
+		expect(await labels()).toEqual(["Milk", "Eggs"]);
+	});
+
+	it("rejects an empty label", async () => {
+		const response = await api(itemsPath(), {
+			method: "POST",
+			cookie: alice,
+			body: { label: "" },
+		});
+
+		expect(response.status).toBe(422);
+		expect((await json<ErrorBody>(response)).error.details).toEqual([
+			{ field: "label", message: "item_label_required" },
+		]);
+	});
+});
+
+describe("POST /v1/lists/:listId/items/batch", () => {
+	it("adds several items in order, after the existing ones", async () => {
+		await addItem("Coffee");
+
+		const response = await api(itemsPath("/batch"), {
+			method: "POST",
+			cookie: alice,
+			body: { labels: ["Milk", "Eggs", "Bread"] },
+		});
+
+		expect(response.status).toBe(201);
+		const body = await json<{ data: Item[] }>(response);
+		expect(body.data.map((item) => item.label)).toEqual([
+			"Milk",
+			"Eggs",
+			"Bread",
+		]);
+		expect(await labels()).toEqual(["Coffee", "Milk", "Eggs", "Bread"]);
+	});
+
+	it("keeps every item when additions run concurrently", async () => {
+		await Promise.all(
+			["A", "B", "C", "D"].map((label) =>
+				api(itemsPath("/batch"), {
+					method: "POST",
+					cookie: alice,
+					body: { labels: [`${label}1`, `${label}2`] },
+				}),
+			),
+		);
+
+		const positions = (await listed()).map((item) => item.position);
+		expect(positions).toHaveLength(8);
+		expect(new Set(positions).size).toBe(8);
+	});
+});
+
+describe("PATCH /v1/lists/:listId/items/:itemId", () => {
+	it("checks an item, recording who checked it and when", async () => {
+		const milk = await addItem("Milk");
+		const bob = await joinList(list.id, "bob@example.com", "editor");
+
+		const response = await patchItem(milk.id, { done: true }, bob);
+
+		expect(response.status).toBe(200);
+		const checked = await json<Item>(response);
+		expect(checked.done).toBe(true);
+		expect(checked.doneAt).toEqual(expect.any(String));
+		expect(checked.doneById).not.toBe(checked.createdById);
+	});
+
+	it("keeps the original check when an item is checked again", async () => {
+		const milk = await addItem("Milk");
+		const first = await json<Item>(await patchItem(milk.id, { done: true }));
+
+		const second = await json<Item>(await patchItem(milk.id, { done: true }));
+
+		expect(second.doneAt).toBe(first.doneAt);
+	});
+
+	it("clears the check when an item is unchecked", async () => {
+		const milk = await addItem("Milk");
+		await api(itemsPath(`/${milk.id}`), {
+			method: "PATCH",
+			cookie: alice,
+			body: { done: true },
+		});
+
+		const response = await api(itemsPath(`/${milk.id}`), {
+			method: "PATCH",
+			cookie: alice,
+			body: { done: false },
+		});
+
+		expect(await response.json()).toMatchObject({
+			done: false,
+			doneAt: null,
+			doneById: null,
+		});
+	});
+
+	it("renames an item", async () => {
+		const milk = await addItem("Milk");
+
+		const response = await patchItem(milk.id, { label: "Oat milk" });
+
+		expect((await json<Item>(response)).label).toBe("Oat milk");
+	});
+
+	it("moves an item between two others", async () => {
+		const milk = await addItem("Milk");
+		const eggs = await addItem("Eggs");
+		const bread = await addItem("Bread");
+
+		await patchItem(bread.id, {
+			position: (milk.position + eggs.position) / 2,
+		});
+
+		expect(await labels()).toEqual(["Milk", "Bread", "Eggs"]);
+	});
+
+	it("rejects an empty change", async () => {
+		const milk = await addItem("Milk");
+
+		const response = await api(itemsPath(`/${milk.id}`), {
+			method: "PATCH",
+			cookie: alice,
+			body: {},
+		});
+
+		expect(response.status).toBe(422);
+		expect((await json<ErrorBody>(response)).error.details).toEqual([
+			{ field: "", message: "nothing_to_update" },
+		]);
+	});
+
+	it("rejects an invalid item id", async () => {
+		const response = await api(itemsPath("/not-a-uuid"), {
+			method: "PATCH",
+			cookie: alice,
+			body: { done: true },
+		});
+
+		expect(response.status).toBe(422);
+	});
+
+	it("answers 404 for an item of another list", async () => {
+		const other = await createList(alice, "Other");
+		const foreign = await json<Item>(
+			await api(`/v1/lists/${other.id}/items`, {
+				method: "POST",
+				cookie: alice,
+				body: { label: "Elsewhere" },
+			}),
+		);
+
+		const response = await api(itemsPath(`/${foreign.id}`), {
+			method: "PATCH",
+			cookie: alice,
+			body: { done: true },
+		});
+
+		expect(response.status).toBe(404);
+		expect((await json<ErrorBody>(response)).error.code).toBe("item_not_found");
+	});
+});
+
+describe("DELETE /v1/lists/:listId/items/:itemId", () => {
+	it("deletes an item", async () => {
+		const milk = await addItem("Milk");
+
+		const response = await api(itemsPath(`/${milk.id}`), {
+			method: "DELETE",
+			cookie: alice,
+		});
+
+		expect(response.status).toBe(204);
+		expect(await labels()).toEqual([]);
+		expect(
+			(
+				await api(itemsPath(`/${milk.id}`), {
+					method: "DELETE",
+					cookie: alice,
+				})
+			).status,
+		).toBe(404);
+	});
+});
+
+describe("access by role", () => {
+	it("lets a viewer read the items but not change them", async () => {
+		const milk = await addItem("Milk");
+		const bob = await joinList(list.id, "bob@example.com", "viewer");
+
+		expect(await labels(bob)).toEqual(["Milk"]);
+		for (const [method, path, body] of [
+			["POST", itemsPath(), { label: "Eggs" }],
+			["POST", itemsPath("/batch"), { labels: ["Eggs"] }],
+			["PATCH", itemsPath(`/${milk.id}`), { done: true }],
+			["DELETE", itemsPath(`/${milk.id}`), undefined],
+		] as const) {
+			const response = await api(path, { method, cookie: bob, body });
+			expect(response.status, `${method} ${path}`).toBe(403);
+		}
+	});
+
+	it("hides the items from a non-member", async () => {
+		await addItem("Milk");
+		const bob = await signIn("bob@example.com");
+
+		const response = await api(itemsPath(), { cookie: bob });
+
+		expect(response.status).toBe(404);
+	});
+});

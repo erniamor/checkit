@@ -10,7 +10,7 @@
 
 - React + TanStack Start (file-based routing, loaders, server functions)
 - Data: the Hono API (`apps/api`) through `@repo/resources`
-- Validation: Zod schemas exported by `@repo/resources`
+- Validation: Zod schemas from `@repo/schemas`, shared with the API
 - UI: components from `@repo/ui` (shadcn) and themes from `@repo/themes`
 - <Add here: server state management (TanStack Query), forms (TanStack Form | React Hook Form), i18n, analytics...>
 
@@ -50,8 +50,8 @@
 
 ## Forms
 
-- Each form has a Zod schema from `@repo/resources`, used on the client for UX and on the server for security.
-- Show validation errors next to the relevant field, with a readable message.
+- Each form has a Zod schema from `@repo/schemas`, used on the client for UX and by the API for security.
+- Show validation errors next to the relevant field, with a readable message: schema messages are error codes (`list_name_required`), translated through the i18n system.
 - Disable the submit button during submission and show the result (success or error).
 - Every field has an associated `label`.
 
@@ -80,5 +80,5 @@
 - Modify `routeTree.gen.ts` or any generated file.
 - Import code from another app, or from `src/server/` into a client component.
 - Expose a private environment variable to the client; only explicitly public variables may be exposed.
-- Duplicate a Zod schema or a type already present in `packages/resources`.
+- Duplicate a Zod schema or a type already present in `packages/schemas` or `packages/resources`.
 - Bypass authentication or authorization on the client side assuming they aren't checked on the server: they must be enforced in the backend (the middlewares of `apps/api`).

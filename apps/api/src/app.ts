@@ -9,6 +9,7 @@ import { auth } from "@/lib/auth";
 import { handleError, handleNotFound } from "@/lib/error-handler";
 import { errorBody } from "@/lib/errors";
 import { healthRoutes } from "@/routes/health/health.routes";
+import { listsRoutes } from "@/routes/lists/lists.routes";
 import { meRoutes } from "@/routes/me/me.routes";
 
 const MAX_BODY_SIZE = 1024 * 1024;
@@ -17,7 +18,8 @@ const v1 = new Hono()
 	// Better Auth endpoints: sign-in, sign-out, session...
 	.on(["GET", "POST"], "/auth/*", (c) => auth.handler(c.req.raw))
 	.route("/health", healthRoutes)
-	.route("/me", meRoutes);
+	.route("/me", meRoutes)
+	.route("/lists", listsRoutes);
 
 export const app = new Hono();
 

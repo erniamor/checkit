@@ -41,7 +41,8 @@ apps/
 packages/
   ui/           shadcn components (use semantic tokens only)
   themes/       Tailwind/shadcn themes: tokens, light/dark variants, no components
-  resources/    typed API resources + shared Zod schemas, data access point for the front ends
+  resources/    typed API resources, data access point for the front ends
+  schemas/      Zod schemas shared by the API and the front ends (inputs, responses)
   config-ts/    base tsconfig
   utils/        pure utilities, no framework dependency
 ```
@@ -106,8 +107,8 @@ Shared shadcn components live in `packages/ui`, not in each app.
 
 - All data coming from outside (forms, URL parameters, request bodies, third-party API responses, environment variables) is validated with Zod before use.
 - Define a schema once and derive the type from it: `type Xxx = z.infer<typeof xxxSchema>`. Don't duplicate the type by hand.
-- Shared schemas currently live in `packages/resources/src/schemas/`. As soon as another consumer (e.g. `apps/api`) needs them, extract them into a `packages/schemas` package; don't redefine the same schema in several apps.
-- The Drizzle schema in `apps/api` is the source of truth for the database and Zod describes the API's inputs and outputs; schemas shared with the front ends live in `packages/schemas`.
+- Schemas shared by the API and the front ends live in `packages/schemas`; don't redefine the same schema in several apps. A schema used by a single app stays in that app.
+- The Drizzle schema in `apps/api` is the source of truth for the database and Zod describes the API's inputs and outputs.
 - Prefer `safeParse` when the error must be handled; `parse` only when failure should interrupt the flow.
 - Validation error messages must be readable by the user for forms.
 

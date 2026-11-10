@@ -37,16 +37,16 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 - `src/index.ts`: entry point; starts the Node server with the app built in `app.ts`
 - `src/app.ts`: builds the Hono app (global middlewares, mounting of route modules, error handler), with no side effect, so tests can import it
 - `src/env.ts`: environment variables validated with Zod at startup; the only place that reads `process.env`
-- `src/routes/<domain>/`: one folder per domain
+- `src/routes/<domain>/`: one folder per domain (`health`, `me`, `lists`, `items`, `members`)
   - `<domain>.routes.ts`: the domain's Hono sub-app (routes, validators, call to the service)
   - `<domain>.service.ts`: business logic, independent of Hono
-  - `<domain>.schemas.ts`: input and output Zod schemas specific to this API
+  - `<domain>.schemas.ts`: Zod schemas used only by this API (shared ones are in `@repo/schemas`)
   - `<domain>.test.ts`: tests
-- `src/middlewares/`: cross-cutting middlewares (authentication, authorization, logging, rate limiting)
+- `src/middlewares/`: cross-cutting middlewares (`require-auth.ts`, `require-list-role.ts`)
 - `src/db/`: Drizzle client (`client.ts`), schema (`schema/<table>.ts`, re-exported by `schema/index.ts`) and migration script (`migrate.ts`)
-- `src/lib/`: utilities specific to the app (`auth.ts`: Better Auth instance; `errors.ts`: `AppError` and the error body; `error-handler.ts`: global error and not-found handlers; `mailer.ts`: email sending; `locale.ts`: locale resolution from `Accept-Language`)
+- `src/lib/`: utilities specific to the app (`auth.ts`: Better Auth instance; `errors.ts`: `AppError` and the error body; `error-handler.ts`: global error and not-found handlers; `mailer.ts`: email sending; `locale.ts`: locale resolution from `Accept-Language`; `validator.ts`: `validate()`, the `zValidator` answering 422 in the API's error format; `pagination.ts`: pagination query schema)
 - `src/emails/`: email contents, in every supported locale
-- `test/`: Vitest global setup (checks the test database and applies the migrations), database reset before each test, and helpers (`helpers/auth.ts`: `signIn()`, `captureEmails()`), imported through the `@test/` alias
+- `test/`: Vitest global setup (checks the test database and applies the migrations), database reset before each test, and helpers (`helpers/auth.ts`: `signIn()`, `captureEmails()`; `helpers/api.ts`: `api()`, `json()`, `createList()`, `joinList()`), imported through the `@test/` alias
 - `drizzle/`: generated SQL migrations, committed, never edited after they have been applied
 - `docker-compose.yml`, `docker/`: local PostgreSQL
 
@@ -58,11 +58,17 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 - Keep `advanced.disableOriginCheck: false`: Better Auth otherwise skips its callback URL and origin checks when `NODE_ENV` is `test`.
 - Emails go through `mailer`: printed to the console in development and tests, unavailable in production until an email provider is chosen. Their locale comes from the request's `Accept-Language` header.
 
+## Lists and access
+
+- Access to a list depends on the user's role in `list_members`: `viewer` reads, `editor` also changes the items and renames the list, `owner` also deletes the list (and, later, manages its members). The owner is the member with the `owner` role; `lists` has no owner column.
+- Every route under `/lists/:listId` goes through `requireListRole(minimum)`, which sets `c.get("listId")` and `c.get("role")`. A user who isn't a member gets a 404 (`list_not_found`), never a 403, so the list's existence isn't revealed.
+- Items are ordered by `position`, a floating-point number: new items go after the last one, and moving an item means giving it a position between its new neighbors.
+
 ## Routes and handlers
 
 - Each domain is a Hono sub-app mounted in `app.ts` with `app.route("/<domain>", ...)`. Prefix the API with a version (`/v1`).
 - Handlers stay thin: read the validated input, call a service, return the response. Business logic lives in services, which know nothing about Hono (no `Context` passed to services).
-- Validate every input (`param`, `query`, `json`, `form`, `header`) with `zValidator` and a Zod schema before use; read it with `c.req.valid(...)`, never with `c.req.json()` directly.
+- Validate every input (`param`, `query`, `json`, `form`, `header`) with `validate()` (from `src/lib/validator.ts`, a `zValidator` that answers 422 in the API's error format) and a Zod schema before use; read it with `c.req.valid(...)`, never with `c.req.json()` directly.
 - Follow REST conventions: plural resource names, appropriate HTTP methods and status codes (`201` on creation, `204` with no content, `404`, `409`, `422`).
 - Consistent response shapes: a resource or a `{ data, pagination }` list; errors in a single format `{ error: { code, message, details? } }`, produced by the global error handler (`app.onError`) from `HTTPException` or typed errors.
 - Paginate every list, with a maximum page size enforced by the server.
@@ -82,7 +88,7 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 - The API's routes and responses form a contract with the apps that consume them through `@repo/resources`: renaming, removing or making a field required can break the front ends.
 - Before modifying an existing route or response, search for its usages in `apps/` and `packages/` and update `resources` and the consuming apps in the same change.
 - Prefer adding an optional field or a new route over modifying an existing one; a breaking change goes through a new API version.
-- Schemas shared with the front ends (form inputs, for example) are not redefined here: as soon as this app needs a schema from `packages/resources/src/schemas/`, extract it into a `packages/schemas` package (see the root `CLAUDE.md`). This app imports nothing from `packages/resources`: it is the API's client, not the other way around.
+- Schemas shared with the front ends (form inputs, responses) come from `@repo/schemas` and are never redefined here; responses are built to match their response schema. This app imports nothing from `packages/resources`: it is the API's client, not the other way around.
 
 ## Security
 
