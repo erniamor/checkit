@@ -4,29 +4,33 @@
 
 ## Role
 
-The product's backend. Exposes a JSON REST API consumed by the front ends through `@repo/resources`. <Specify what the API manages (accounts, orders, bookings...), who consumes it (www) and the third-party services it calls.>
+The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@repo/resources`. Manages accounts and sign-in, to-do lists, their items and members, sharing (email invitations and share links), and pushes list changes to members in real time. Calls an email provider (sign-in links and codes, invitations) and, later, a speech-to-text service.
 
 ## App-specific stack
 
-- Hono <4.x> on Node 24, served by `@hono/node-server`
-- Database: PostgreSQL, accessed through Drizzle ORM (schema in TypeScript, versioned SQL migrations with `drizzle-kit`)
+- Hono 4.x on Node 24, served by `@hono/node-server`
+- Database: PostgreSQL 17, accessed through Drizzle ORM with the `postgres` (postgres.js) driver; snake_case column names (`casing: "snake_case"`); versioned SQL migrations with `drizzle-kit`
 - Validation: Zod, through Hono's validator middleware (`@hono/zod-validator`)
-- Authentication: <sessions in an HTTP-only cookie | JWT | third-party provider, to be decided>
-- Dev: <`tsx watch`>; build: <tsdown | esbuild> bundle, which also compiles the internal packages consumed as TypeScript source
-- TypeScript: extends `@repo/config-ts/node.json` (Node code without DOM), to be created in `packages/config-ts` when the app is scaffolded
-- Tests: Vitest, with Hono's `app.request()` for routes
+- Authentication: Better Auth (to be set up), sessions in an HTTP-only cookie; passwordless email (magic link, one-time code) and Google
+- Real time: WebSockets (to be set up), one channel per list
+- Dev: `tsx watch`; build: tsdown bundle to `dist/index.mjs`, which also compiles the internal `@repo/*` packages consumed as TypeScript source
+- TypeScript: extends `@repo/config-ts/node.json` (Node code without DOM)
+- Tests: Vitest, with Hono's `app.request()` for routes, against the Docker test database
+
+## Local database
+
+`docker-compose.yml` starts PostgreSQL on host port **5433** (5432 is often taken by other projects), with two databases: `checkit` (development) and `checkit_test` (tests, created by `docker/postgres/init.sql` when the volume is first created). Docker must be running for the dev server and the tests.
 
 ## Commands
 
-- Dev: `pnpm --filter api dev`
+- Start / stop the local database: `pnpm --filter api db:up`, `pnpm --filter api db:down`
+- Dev: `pnpm --filter api dev` (reads `.env`; copy `.env.example` first)
 - Build: `pnpm --filter api build`
 - Production start: `pnpm --filter api start`
 - Generate a migration: `pnpm --filter api db:generate`
 - Apply migrations: `pnpm --filter api db:migrate`
-- Tests: `pnpm --filter api test`
+- Tests: `pnpm --filter api test` (applies the migrations to `checkit_test` first)
 - Typecheck: `pnpm --filter api typecheck`
-
-<Adjust to the real scripts in `package.json`.>
 
 ## Structure
 
@@ -39,11 +43,11 @@ The product's backend. Exposes a JSON REST API consumed by the front ends throug
   - `<domain>.schemas.ts`: input and output Zod schemas specific to this API
   - `<domain>.test.ts`: tests
 - `src/middlewares/`: cross-cutting middlewares (authentication, authorization, logging, rate limiting)
-- `src/db/`: Drizzle client and schema (`schema/<table>.ts`)
-- `src/lib/`: utilities specific to the app
+- `src/db/`: Drizzle client (`client.ts`), schema (`schema/<table>.ts`, re-exported by `schema/index.ts`) and migration script (`migrate.ts`)
+- `src/lib/`: utilities specific to the app (`errors.ts`: `AppError` and the error body; `error-handler.ts`: global error and not-found handlers)
+- `test/`: Vitest global setup (checks the test database and applies the migrations)
 - `drizzle/`: generated SQL migrations, committed, never edited after they have been applied
-
-<Adapt to the real structure.>
+- `docker-compose.yml`, `docker/`: local PostgreSQL
 
 ## Routes and handlers
 

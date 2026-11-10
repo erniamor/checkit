@@ -5,10 +5,12 @@
 	"description": "Shared TypeScript configurations for the monorepo",
 	"exports": {
 		"./base.json": "./base.json",
+		"./node.json": "./node.json",
 		"./react.json": "./react.json"
 	},
 	"files": [
 		"base.json",
+		"node.json",
 		"react.json"
 	]
 }

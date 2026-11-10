@@ -12,9 +12,10 @@ This package contains only JSON configuration files, no code.
 
 - `base.json`: options common to the whole monorepo (`strict`, module resolution, target, extra checks). No DOM, no file emission. Extended directly by packages consumed as source without UI or DOM (`utils`).
 - `react.json`: extends `base.json` for browser code (JSX, DOM libraries). Used by `apps/www`, `packages/ui`, `packages/resources` and `packages/themes` (TypeScript part).
+- `node.json`: extends `base.json` for Node code without DOM (ES2024, Node types). Used by `apps/api`, which must declare `@types/node` in its own `devDependencies`.
 - `package.json`: with `exports` and `files` listing these files
 
-Don't create one file more than necessary. A `node.json` (Node code without DOM, for scripts and tooling) will only be added once a project needs it.
+Don't create one file more than necessary.
 
 ## Package rules
 
