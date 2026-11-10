@@ -8,6 +8,15 @@ export const memberRoleSchema = z.enum(memberRoles);
 
 export type MemberRole = z.infer<typeof memberRoleSchema>;
 
+/** Roles that can be granted by sharing: a list has a single owner. */
+export const shareableRoleSchema = memberRoleSchema.exclude(["owner"]);
+
+export type ShareableRole = z.infer<typeof shareableRoleSchema>;
+
+export const updateMemberSchema = z.strictObject({ role: shareableRoleSchema });
+
+export type UpdateMember = z.infer<typeof updateMemberSchema>;
+
 export const memberSchema = z.object({
 	userId: z.uuid(),
 	name: z.string(),

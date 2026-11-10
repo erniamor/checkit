@@ -24,6 +24,7 @@ Validated at startup by [`src/env.ts`](src/env.ts): the API refuses to start wit
 | `NODE_ENV` | no | `development` (default), `test` or `production` |
 | `PORT` | no | Listening port, `3001` by default |
 | `API_URL` | yes | Public URL of the API, used in sign-in links and OAuth callbacks |
+| `APP_URL` | yes | Public URL of the front end, used in invitation links (`<APP_URL>/invitations/<token>`) |
 | `DATABASE_URL` | yes | PostgreSQL connection URL |
 | `CORS_ORIGINS` | yes | Comma-separated front-end origins allowed to call the API (with cookies) |
 | `BETTER_AUTH_SECRET` | yes | At least 32 characters; signs sessions and tokens |
@@ -63,7 +64,7 @@ Codes and links are valid for 10 minutes. Emails are in English, French or Spani
 
 ### Lists
 
-All these routes require a session. Roles on a list: `viewer` reads, `editor` also changes the items and renames the list, `owner` also deletes it.
+All these routes require a session. Roles on a list: `viewer` reads, `editor` also changes the items and renames the list, `owner` also deletes it and manages its sharing.
 
 | Route | Minimum role | Effect |
 | --- | --- | --- |
@@ -78,8 +79,33 @@ All these routes require a session. Roles on a list: `viewer` reads, `editor` al
 | `PATCH /v1/lists/:listId/items/:itemId` `{ label?, done?, position? }` | `editor` | Renames, checks / unchecks or moves an item |
 | `DELETE /v1/lists/:listId/items/:itemId` | `editor` | Deletes an item |
 | `GET /v1/lists/:listId/members` | `viewer` | Members with their role |
+| `PATCH /v1/lists/:listId/members/:userId` `{ role }` | `owner` | Changes a member's role (`editor` or `viewer`) |
+| `DELETE /v1/lists/:listId/members/:userId` | `owner` | Removes a member |
+| `DELETE /v1/lists/:listId/members/me` | `viewer` | Leaves the list (not possible for the owner, who deletes it instead) |
 
 Items are ordered by `position`, a floating-point number: to move an item, give it a position between its new neighbors'. Request and response shapes are the schemas of [`@repo/schemas`](../../packages/schemas).
+
+### Sharing
+
+The owner shares a list in two ways, each granting `editor` or `viewer` (never `owner`):
+
+- **Invitation**: sent to an email address, valid for 7 days, and only accepted by a user signed in with that address. Inviting the same address again replaces the pending invitation. A list has at most 50 pending invitations. The email links to the front end, `<APP_URL>/invitations/<token>`, in the inviter's language.
+- **Share link**: anyone with the link can join after signing in. One active link per role at most; it lasts until revoked, and creating a new one for the same role revokes the previous one. The front end builds the URL to share from the link's `token`.
+
+Joining never downgrades a member: an editor who opens a viewer link stays editor, a viewer who opens an editor link becomes editor.
+
+| Route | Session | Effect |
+| --- | --- | --- |
+| `POST /v1/lists/:listId/invitations` `{ email, role }` | `owner` | Invites someone by email |
+| `GET /v1/lists/:listId/invitations` | `owner` | Pending invitations |
+| `DELETE /v1/lists/:listId/invitations/:invitationId` | `owner` | Cancels an invitation |
+| `GET /v1/invitations/:token` | no | Preview: list name, role, invited email, who invited |
+| `POST /v1/invitations/:token/accept` | yes | Accepts the invitation; returns the list |
+| `POST /v1/lists/:listId/share-links` `{ role }` | `owner` | Creates the share link for a role |
+| `GET /v1/lists/:listId/share-links` | `owner` | Active share links |
+| `DELETE /v1/lists/:listId/share-links/:linkId` | `owner` | Revokes a share link |
+| `GET /v1/share-links/:token` | no | Preview: list name, role, owner |
+| `POST /v1/share-links/:token/join` | yes | Joins the list; returns the list |
 
 ### Errors
 
@@ -93,9 +119,14 @@ Every error has the same shape:
 | --- | --- | --- |
 | 401 | `unauthorized` | No valid session |
 | 403 | `forbidden` | The user's role on the list is too low, or a cross-site form was rejected (CSRF) |
-| 404 | `not_found`, `list_not_found`, `item_not_found` | Unknown route or resource; a list the user isn't a member of is reported as not found |
+| 403 | `invitation_email_mismatch` | The invitation was sent to another email than the signed-in user's |
+| 404 | `not_found`, `list_not_found`, `item_not_found`, `member_not_found`, `invitation_not_found`, `share_link_not_found` | Unknown route or resource; a list the user isn't a member of is reported as not found |
+| 409 | `already_member` | Inviting someone who is already a member |
+| 409 | `owner_role_locked`, `owner_cannot_leave` | Changing or removing the owner's membership, or the owner leaving |
+| 410 | `invitation_expired`, `share_link_revoked` | The invitation expired or was already used; the share link was revoked |
 | 413 | `payload_too_large` | Body over 1 MB |
 | 422 | `validation_error` | Invalid input; `details` lists each field with an error code from `@repo/schemas` |
+| 429 | `too_many_invitations` | The list already has 50 pending invitations |
 | 500 | `internal_error` | Unexpected error, logged on the server, never detailed in the response |
 | 503 | `email_unavailable` | Production without an email provider (none chosen yet) |
 

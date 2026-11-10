@@ -8,6 +8,8 @@ const envSchema = z
 		PORT: z.coerce.number().int().min(1).max(65535).default(3001),
 		// Public URL of this API, used to build sign-in links and OAuth callbacks
 		API_URL: z.url(),
+		// Public URL of the front end, used to build the links sent by email (invitations)
+		APP_URL: z.url(),
 		DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
 		BETTER_AUTH_SECRET: z
 			.string()

@@ -9,8 +9,10 @@ import { auth } from "@/lib/auth";
 import { handleError, handleNotFound } from "@/lib/error-handler";
 import { errorBody } from "@/lib/errors";
 import { healthRoutes } from "@/routes/health/health.routes";
+import { invitationsRoutes } from "@/routes/invitations/invitations.routes";
 import { listsRoutes } from "@/routes/lists/lists.routes";
 import { meRoutes } from "@/routes/me/me.routes";
+import { shareLinksRoutes } from "@/routes/share-links/share-links.routes";
 
 const MAX_BODY_SIZE = 1024 * 1024;
 
@@ -19,7 +21,9 @@ const v1 = new Hono()
 	.on(["GET", "POST"], "/auth/*", (c) => auth.handler(c.req.raw))
 	.route("/health", healthRoutes)
 	.route("/me", meRoutes)
-	.route("/lists", listsRoutes);
+	.route("/lists", listsRoutes)
+	.route("/invitations", invitationsRoutes)
+	.route("/share-links", shareLinksRoutes);
 
 export const app = new Hono();
 

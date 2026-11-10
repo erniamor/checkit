@@ -7,6 +7,7 @@ import {
 	type ListAccessVariables,
 	requireListRole,
 } from "@/middlewares/require-list-role";
+import { listInvitationsRoutes } from "@/routes/invitations/invitations.routes";
 import { itemsRoutes } from "@/routes/items/items.routes";
 import {
 	createList,
@@ -16,6 +17,7 @@ import {
 	renameList,
 } from "@/routes/lists/lists.service";
 import { membersRoutes } from "@/routes/members/members.routes";
+import { listShareLinksRoutes } from "@/routes/share-links/share-links.routes";
 
 const listsPagination = paginationQuerySchema({
 	defaultPageSize: 50,
@@ -51,4 +53,6 @@ export const listsRoutes = new Hono<{ Variables: ListAccessVariables }>()
 		return c.body(null, 204);
 	})
 	.route("/:listId/items", itemsRoutes)
-	.route("/:listId/members", membersRoutes);
+	.route("/:listId/members", membersRoutes)
+	.route("/:listId/invitations", listInvitationsRoutes)
+	.route("/:listId/share-links", listShareLinksRoutes);

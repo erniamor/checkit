@@ -22,7 +22,9 @@ Add it to a project with `"@repo/schemas": "workspace:*"`. It is consumed as Typ
 | Common | `dateTimeSchema`, `paginationSchema` / `Pagination`, `paginatedSchema(item)` / `Paginated<T>` | |
 | Lists | `createListSchema` / `CreateList`, `updateListSchema` / `UpdateList`, `listSchema` / `List` | `LIST_NAME_MAX_LENGTH` (100) |
 | Items | `createItemSchema` / `CreateItem`, `createItemsBatchSchema` / `CreateItemsBatch`, `updateItemSchema` / `UpdateItem`, `itemSchema` / `Item` | `ITEM_LABEL_MAX_LENGTH` (200), `ITEMS_BATCH_MAX_SIZE` (50) |
-| Members | `memberRoleSchema` / `MemberRole`, `memberRoles`, `memberSchema` / `Member` | |
+| Members | `memberRoleSchema` / `MemberRole`, `memberRoles`, `shareableRoleSchema` / `ShareableRole`, `memberSchema` / `Member`, `updateMemberSchema` / `UpdateMember` | |
+| Invitations | `createInvitationSchema` / `CreateInvitation`, `invitationEmailSchema`, `invitationSchema` / `Invitation`, `invitationPreviewSchema` / `InvitationPreview` | |
+| Share links | `createShareLinkSchema` / `CreateShareLink`, `shareLinkSchema` / `ShareLink`, `shareLinkPreviewSchema` / `ShareLinkPreview` | |
 
 In responses, dates are ISO 8601 strings.
 
@@ -39,6 +41,7 @@ Validation messages are codes, not sentences: the front ends translate them in e
 | `items_required` | A batch contains no item |
 | `too_many_items` | A batch contains more than `ITEMS_BATCH_MAX_SIZE` items |
 | `nothing_to_update` | An item update changes no field |
+| `email_invalid` | The invited email isn't a valid address |
 
 Other failures (wrong type, unknown field) keep Zod's default English message: they come from a bug, not from user input.
 

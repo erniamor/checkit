@@ -13,6 +13,7 @@ export default defineConfig({
 			NODE_ENV: "test",
 			PORT: "3001",
 			API_URL: "http://localhost:3001",
+			APP_URL: "http://localhost:3000",
 			// Test database created by docker/postgres/init.sql
 			DATABASE_URL: "postgres://checkit:checkit@localhost:5433/checkit_test",
 			BETTER_AUTH_SECRET: "test-secret-not-used-outside-of-the-tests",

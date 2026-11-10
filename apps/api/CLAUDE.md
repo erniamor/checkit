@@ -37,14 +37,14 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 - `src/index.ts`: entry point; starts the Node server with the app built in `app.ts`
 - `src/app.ts`: builds the Hono app (global middlewares, mounting of route modules, error handler), with no side effect, so tests can import it
 - `src/env.ts`: environment variables validated with Zod at startup; the only place that reads `process.env`
-- `src/routes/<domain>/`: one folder per domain (`health`, `me`, `lists`, `items`, `members`)
+- `src/routes/<domain>/`: one folder per domain (`health`, `me`, `lists`, `items`, `members`, `invitations`, `share-links`)
   - `<domain>.routes.ts`: the domain's Hono sub-app (routes, validators, call to the service)
   - `<domain>.service.ts`: business logic, independent of Hono
   - `<domain>.schemas.ts`: Zod schemas used only by this API (shared ones are in `@repo/schemas`)
   - `<domain>.test.ts`: tests
 - `src/middlewares/`: cross-cutting middlewares (`require-auth.ts`, `require-list-role.ts`)
 - `src/db/`: Drizzle client (`client.ts`), schema (`schema/<table>.ts`, re-exported by `schema/index.ts`) and migration script (`migrate.ts`)
-- `src/lib/`: utilities specific to the app (`auth.ts`: Better Auth instance; `errors.ts`: `AppError` and the error body; `error-handler.ts`: global error and not-found handlers; `mailer.ts`: email sending; `locale.ts`: locale resolution from `Accept-Language`; `validator.ts`: `validate()`, the `zValidator` answering 422 in the API's error format; `pagination.ts`: pagination query schema)
+- `src/lib/`: utilities specific to the app (`auth.ts`: Better Auth instance; `errors.ts`: `AppError` and the error body; `error-handler.ts`: global error and not-found handlers; `mailer.ts`: email sending; `locale.ts`: locale resolution from `Accept-Language`; `validator.ts`: `validate()`, the `zValidator` answering 422 in the API's error format; `pagination.ts`: pagination query schema; `tokens.ts`: random tokens and their hash)
 - `src/emails/`: email contents, in every supported locale
 - `test/`: Vitest global setup (checks the test database and applies the migrations), database reset before each test, and helpers (`helpers/auth.ts`: `signIn()`, `captureEmails()`; `helpers/api.ts`: `api()`, `json()`, `createList()`, `joinList()`), imported through the `@test/` alias
 - `drizzle/`: generated SQL migrations, committed, never edited after they have been applied
@@ -60,9 +60,17 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 
 ## Lists and access
 
-- Access to a list depends on the user's role in `list_members`: `viewer` reads, `editor` also changes the items and renames the list, `owner` also deletes the list (and, later, manages its members). The owner is the member with the `owner` role; `lists` has no owner column.
+- Access to a list depends on the user's role in `list_members`: `viewer` reads, `editor` also changes the items and renames the list, `owner` also deletes the list and manages its sharing and members. The owner is the member with the `owner` role; `lists` has no owner column, and the owner's membership can't be changed, removed or left.
 - Every route under `/lists/:listId` goes through `requireListRole(minimum)`, which sets `c.get("listId")` and `c.get("role")`. A user who isn't a member gets a 404 (`list_not_found`), never a 403, so the list's existence isn't revealed.
 - Items are ordered by `position`, a floating-point number: new items go after the last one, and moving an item means giving it a position between its new neighbors.
+
+## Sharing
+
+- Sharing only grants `editor` or `viewer` (`ShareableRole`), never `owner`. Every path that adds a member goes through `grantRole()`, which never downgrades an existing member.
+- Invitation tokens are stored hashed (`tokenHash`): the token only exists in the email. Share link tokens are stored as is, so the owner can copy the link again; both are 256-bit random tokens from `src/lib/tokens.ts`.
+- An invitation is only accepted by a user signed in with the invited email. The invitation email is sent inside the transaction that creates it: if sending fails, no invitation is left without its link.
+- Partial unique indexes enforce one pending invitation per list and email, and one active share link per list and role.
+- Expired invitations stay in the table; they are deleted when the same email is invited again. Plan a cleanup job if the table grows.
 
 ## Routes and handlers
 

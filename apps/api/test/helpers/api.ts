@@ -9,14 +9,18 @@ interface ApiRequest {
 	method?: string;
 	cookie?: string;
 	body?: unknown;
+	headers?: Record<string, string>;
 }
 
 /** Calls the API as the browser front end would, with an optional session cookie. */
 export function api(
 	path: string,
-	{ method = "GET", cookie, body }: ApiRequest = {},
+	{ method = "GET", cookie, body, headers: extraHeaders }: ApiRequest = {},
 ) {
-	const headers: Record<string, string> = { Origin: WEB_ORIGIN };
+	const headers: Record<string, string> = {
+		Origin: WEB_ORIGIN,
+		...extraHeaders,
+	};
 	if (cookie) {
 		headers.Cookie = cookie;
 	}

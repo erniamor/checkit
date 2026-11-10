@@ -5,6 +5,7 @@ const validSource = {
 	NODE_ENV: "production",
 	PORT: "8080",
 	API_URL: "https://api.checkit.example.com",
+	APP_URL: "https://checkit.example.com",
 	DATABASE_URL: "postgres://user:password@db.example.com:5432/checkit",
 	BETTER_AUTH_SECRET: "a-production-secret-of-at-least-32-chars",
 	CORS_ORIGINS: "https://checkit.example.com, https://www.checkit.example.com",
@@ -16,6 +17,7 @@ describe("parseEnv", () => {
 			NODE_ENV: "production",
 			PORT: 8080,
 			API_URL: "https://api.checkit.example.com",
+			APP_URL: "https://checkit.example.com",
 			DATABASE_URL: "postgres://user:password@db.example.com:5432/checkit",
 			BETTER_AUTH_SECRET: "a-production-secret-of-at-least-32-chars",
 			CORS_ORIGINS: [

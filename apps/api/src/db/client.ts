@@ -11,5 +11,7 @@ export function createDatabase(url: string) {
 
 export type Database = ReturnType<typeof createDatabase>["db"];
 
+export type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
+
 // postgres.js connects lazily: importing this module opens no connection
 export const { client, db } = createDatabase(env.DATABASE_URL);
