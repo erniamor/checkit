@@ -99,12 +99,14 @@ Joining never downgrades a member: an editor who opens a viewer link stays edito
 | `POST /v1/lists/:listId/invitations` `{ email, role }` | `owner` | Invites someone by email |
 | `GET /v1/lists/:listId/invitations` | `owner` | Pending invitations |
 | `DELETE /v1/lists/:listId/invitations/:invitationId` | `owner` | Cancels an invitation |
-| `GET /v1/invitations/:token` | no | Preview: list name, role, invited email, who invited |
+| `GET /v1/invitations/:token` | no | Preview: list name, role, invited email, inviter's name (null if they have none) |
 | `POST /v1/invitations/:token/accept` | yes | Accepts the invitation; returns the list |
 | `POST /v1/lists/:listId/share-links` `{ role }` | `owner` | Creates the share link for a role |
 | `GET /v1/lists/:listId/share-links` | `owner` | Active share links |
 | `DELETE /v1/lists/:listId/share-links/:linkId` | `owner` | Revokes a share link |
-| `GET /v1/share-links/:token` | no | Preview: list name, role, owner |
+| `GET /v1/share-links/:token` | no | Preview: list name, role, owner's name (null if they have none) |
+
+The previews are public, so they never show the inviter's or the owner's email.
 | `POST /v1/share-links/:token/join` | yes | Joins the list; returns the list |
 
 ### Errors

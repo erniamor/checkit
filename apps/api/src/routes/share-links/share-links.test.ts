@@ -4,7 +4,7 @@ import type {
 	ShareLink,
 	ShareLinkPreview,
 } from "@repo/schemas";
-import { api, createList, joinList, json } from "@test/helpers/api";
+import { api, createList, joinList, json, setName } from "@test/helpers/api";
 import { signIn } from "@test/helpers/auth";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ErrorBody } from "@/lib/errors";
@@ -83,7 +83,8 @@ describe("POST /v1/lists/:listId/share-links", () => {
 });
 
 describe("GET /v1/share-links/:token", () => {
-	it("shows the link without a session", async () => {
+	it("shows the link without a session, with the owner's name", async () => {
+		await setName("alice@example.com", "Alice");
 		const token = await linkToken("editor");
 
 		const response = await api(`/v1/share-links/${token}`);
@@ -93,8 +94,19 @@ describe("GET /v1/share-links/:token", () => {
 			listId: list.id,
 			listName: "Groceries",
 			role: "editor",
-			owner: "alice@example.com",
+			owner: "Alice",
 		});
+	});
+
+	it("never exposes the owner's email, even when they have no name", async () => {
+		const token = await linkToken("viewer");
+
+		const preview = await json<ShareLinkPreview>(
+			await api(`/v1/share-links/${token}`),
+		);
+
+		expect(preview.owner).toBeNull();
+		expect(JSON.stringify(preview)).not.toContain("alice@example.com");
 	});
 
 	it("answers 404 to an unknown token", async () => {

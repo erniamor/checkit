@@ -5,7 +5,7 @@ import type {
 	Member,
 	Paginated,
 } from "@repo/schemas";
-import { api, createList, joinList, json } from "@test/helpers/api";
+import { api, createList, joinList, json, setName } from "@test/helpers/api";
 import { captureEmails, signIn } from "@test/helpers/auth";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -162,6 +162,7 @@ describe("DELETE /v1/lists/:listId/invitations/:invitationId", () => {
 
 describe("GET /v1/invitations/:token", () => {
 	it("shows the invitation without a session", async () => {
+		await setName("alice@example.com", "Alice");
 		const token = await inviteAndGetToken("bob@example.com", "viewer");
 
 		const response = await api(`/v1/invitations/${token}`);
@@ -172,9 +173,20 @@ describe("GET /v1/invitations/:token", () => {
 			listName: "Groceries",
 			role: "viewer",
 			email: "bob@example.com",
-			invitedBy: "alice@example.com",
+			invitedBy: "Alice",
 			expiresAt: expect.any(String),
 		});
+	});
+
+	it("never exposes the inviter's email, even when they have no name", async () => {
+		const token = await inviteAndGetToken("bob@example.com");
+
+		const preview = await json<InvitationPreview>(
+			await api(`/v1/invitations/${token}`),
+		);
+
+		expect(preview.invitedBy).toBeNull();
+		expect(JSON.stringify(preview)).not.toContain("alice@example.com");
 	});
 
 	it("answers 404 to an unknown token", async () => {

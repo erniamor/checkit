@@ -20,9 +20,20 @@ export function hasRoleAtLeast(role: MemberRole, minimum: MemberRole): boolean {
 	return roleRank[role] >= roleRank[minimum];
 }
 
-/** Name shown to other users: the user's name, or their email if they have none. */
+/**
+ * Name shown to people the user chose to contact (members, invited people):
+ * the user's name, or their email if they have none.
+ */
 export function displayName(user: { name: string; email: string }): string {
 	return user.name || user.email;
+}
+
+/**
+ * Name shown on public pages (invitation and share link previews): the user's
+ * name only, null if they have none, so their email is never exposed.
+ */
+export function publicName(name: string | null | undefined): string | null {
+	return name?.trim() || null;
 }
 
 function memberNotFound() {

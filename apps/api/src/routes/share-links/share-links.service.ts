@@ -13,7 +13,7 @@ import { AppError } from "@/lib/errors";
 import { offsetOf, type PaginationQuery } from "@/lib/pagination";
 import { generateToken } from "@/lib/tokens";
 import { getListOfUser } from "@/routes/lists/lists.service";
-import { displayName, grantRole } from "@/routes/members/members.service";
+import { grantRole, publicName } from "@/routes/members/members.service";
 
 type ShareLinkRow = typeof shareLinks.$inferSelect;
 
@@ -118,11 +118,7 @@ export async function previewShareLink(
 ): Promise<ShareLinkPreview> {
 	const link = await findActiveByToken(token);
 	const [list] = await db
-		.select({
-			name: lists.name,
-			ownerName: users.name,
-			ownerEmail: users.email,
-		})
+		.select({ name: lists.name, ownerName: users.name })
 		.from(lists)
 		.innerJoin(
 			listMembers,
@@ -137,7 +133,7 @@ export async function previewShareLink(
 		listId: link.listId,
 		listName: list.name,
 		role: shareableRoleSchema.parse(link.role),
-		owner: displayName({ name: list.ownerName, email: list.ownerEmail }),
+		owner: publicName(list.ownerName),
 	};
 }
 

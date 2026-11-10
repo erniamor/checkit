@@ -36,7 +36,10 @@ export const invitationPreviewSchema = z.object({
 	listName: z.string(),
 	role: shareableRoleSchema,
 	email: z.email(),
-	/** Name of the person who sent the invitation, or their email if they have no name. */
+	/**
+	 * Name of the person who sent the invitation, null if they have none or
+	 * deleted their account. Never their email: the preview is public.
+	 */
 	invitedBy: z.string().nullable(),
 	expiresAt: dateTimeSchema,
 });

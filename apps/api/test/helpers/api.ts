@@ -71,3 +71,8 @@ export async function joinList(
 	await db.insert(listMembers).values({ listId, userId: user.id, role });
 	return cookie;
 }
+
+/** Gives a name to a user (sign-up doesn't ask for one). */
+export async function setName(email: string, name: string): Promise<void> {
+	await db.update(users).set({ name }).where(eq(users.email, email));
+}

@@ -17,7 +17,11 @@ import { mailer } from "@/lib/mailer";
 import { offsetOf, type PaginationQuery } from "@/lib/pagination";
 import { generateToken, hashToken } from "@/lib/tokens";
 import { getListOfUser } from "@/routes/lists/lists.service";
-import { displayName, grantRole } from "@/routes/members/members.service";
+import {
+	displayName,
+	grantRole,
+	publicName,
+} from "@/routes/members/members.service";
 
 const INVITATION_EXPIRES_IN_DAYS = 7;
 /** Limits invitation spam: pending invitations a list can have at once. */
@@ -198,7 +202,6 @@ async function findByToken(token: string) {
 			invitation: invitations,
 			listName: lists.name,
 			inviterName: users.name,
-			inviterEmail: users.email,
 		})
 		.from(invitations)
 		.innerJoin(lists, eq(lists.id, invitations.listId))
@@ -219,7 +222,7 @@ export async function previewInvitation(
 	if (!found) {
 		throw invitationNotFound();
 	}
-	const { invitation, listName, inviterName, inviterEmail } = found;
+	const { invitation, listName, inviterName } = found;
 	if (invitation.acceptedAt || isExpired(invitation)) {
 		throw invitationExpired();
 	}
@@ -228,10 +231,7 @@ export async function previewInvitation(
 		listName,
 		role: shareableRoleSchema.parse(invitation.role),
 		email: invitation.email,
-		invitedBy:
-			inviterEmail === null
-				? null
-				: displayName({ name: inviterName ?? "", email: inviterEmail }),
+		invitedBy: publicName(inviterName),
 		expiresAt: invitation.expiresAt.toISOString(),
 	};
 }

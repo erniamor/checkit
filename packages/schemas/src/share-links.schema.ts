@@ -25,8 +25,11 @@ export const shareLinkPreviewSchema = z.object({
 	listId: z.uuid(),
 	listName: z.string(),
 	role: shareableRoleSchema,
-	/** Name of the list's owner, or their email if they have no name. */
-	owner: z.string(),
+	/**
+	 * Name of the list's owner, null if they have none. Never their email: the
+	 * preview is public, and a share link can end up anywhere.
+	 */
+	owner: z.string().nullable(),
 });
 
 export type ShareLinkPreview = z.infer<typeof shareLinkPreviewSchema>;
