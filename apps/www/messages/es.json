@@ -16,7 +16,6 @@
 	"error_retry": "Reintentar",
 	"sign_in_link": "Iniciar sesión",
 	"sign_out_button": "Cerrar sesión",
-	"signed_in_as": "Sesión iniciada como {name}",
 	"sign_in_title": "Inicia sesión en Checkit",
 	"sign_in_intro": "Escribe tu correo: te enviamos un enlace para iniciar sesión, sin contraseña. ¿Es tu primera vez? Tu cuenta se crea por el camino.",
 	"email_label": "Correo electrónico",
@@ -131,5 +130,11 @@
 	"share_link_revoked_text": "El propietario de la lista lo ha revocado. Pídele uno nuevo.",
 	"go_to_lists": "Ir a mis listas",
 	"language_menu_label": "Idioma: {language}",
-	"appearance_menu_label": "Apariencia: {appearance}"
+	"appearance_menu_label": "Apariencia: {appearance}",
+	"account_menu_label": "Cuenta: {name}",
+	"profile_link": "Perfil",
+	"profile_title": "Perfil",
+	"profile_intro": "Tu nombre se muestra a las personas con quienes compartes listas.",
+	"profile_email_label": "Correo electrónico",
+	"toast_profile_saved": "Tu nombre se ha guardado."
 }

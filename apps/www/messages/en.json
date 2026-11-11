@@ -16,7 +16,6 @@
 	"error_retry": "Try again",
 	"sign_in_link": "Sign in",
 	"sign_out_button": "Sign out",
-	"signed_in_as": "Signed in as {name}",
 	"sign_in_title": "Sign in to Checkit",
 	"sign_in_intro": "Enter your email: we'll send you a link to sign in, no password needed. New here? Your account is created on the way.",
 	"email_label": "Email",
@@ -131,5 +130,11 @@
 	"share_link_revoked_text": "The list's owner revoked it. Ask them for a new one.",
 	"go_to_lists": "Go to my lists",
 	"language_menu_label": "Language: {language}",
-	"appearance_menu_label": "Appearance: {appearance}"
+	"appearance_menu_label": "Appearance: {appearance}",
+	"account_menu_label": "Account: {name}",
+	"profile_link": "Profile",
+	"profile_title": "Profile",
+	"profile_intro": "Your name is shown to the people you share lists with.",
+	"profile_email_label": "Email",
+	"toast_profile_saved": "Your name was saved."
 }

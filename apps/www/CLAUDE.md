@@ -26,7 +26,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 ## Structure
 
 - `src/routes/`: TanStack routes; one file per route, thin (loader + page component). `__root.tsx` renders the HTML document, the header and the appearance, and loads the signed-in user. `_authenticated.tsx` is the layout of the pages reserved to signed-in users (`_authenticated/*`).
-- `src/features/<feature>/`: components, hooks and logic specific to a feature (`appearance`, `auth`, `profile`, `lists`, `sharing`, `i18n`, `home`)
+- `src/features/<feature>/`: components, hooks and logic specific to a feature (`appearance`, `auth` (with `UserMenu`, the header's account menu), `profile` (`NameForm`, shared by `/welcome` and `/profile`), `lists`, `sharing`, `i18n`, `home`)
 - `src/components/`: generic components specific to this app (`Header`, `Logo`, `header-styles.ts` (`headerButtonClass`, for buttons on the header's band), `SelectField` (`tone`: `inverse` or `default`), `TextField`, `InlineEditForm`, `ConfirmButton` (an action confirmed in a dialog), `FormAlert`, `Loading`, `NotFound`, `ErrorView`; shared components go in `packages/ui`)
 - `src/server/`: server-only code (`env.ts`: the server's API URL)
 - `src/lib/`: utilities specific to the app (`api.ts`: the API client; `error-messages.ts`: error codes to messages; `redirect.ts`: the safe `redirect` search parameter; `cookies.ts`)

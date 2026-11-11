@@ -30,13 +30,22 @@ describe("Header", () => {
 		).toHaveAttribute("href", "/sign-in");
 	});
 
-	it("shows the signed-in user, who can sign out", async () => {
+	it("shows the signed-in user's menu, with the profile and sign-out", async () => {
 		const requests = mockApi(() => ({ status: 200, body: { success: true } }));
 		const user = userEvent.setup();
 		const header = await renderHeader(aliceProfile);
 
-		expect(within(header).getByText("Signed in as Alice")).toBeInTheDocument();
-		await user.click(within(header).getByRole("button", { name: "Sign out" }));
+		await user.click(
+			within(header).getByRole("button", { name: "Account: Alice" }),
+		);
+		const menu = screen.getByRole("menu");
+		expect(within(menu).getByText("Alice")).toBeVisible();
+		expect(within(menu).getByText("alice@example.com")).toBeVisible();
+		expect(
+			within(menu).getByRole("menuitem", { name: "Profile" }),
+		).toHaveAttribute("href", "/profile");
+
+		await user.click(within(menu).getByRole("menuitem", { name: "Sign out" }));
 
 		await vi.waitFor(() =>
 			expect(requests).toEqual([

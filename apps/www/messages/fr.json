@@ -16,7 +16,6 @@
 	"error_retry": "Réessayer",
 	"sign_in_link": "Se connecter",
 	"sign_out_button": "Se déconnecter",
-	"signed_in_as": "Connecté en tant que {name}",
 	"sign_in_title": "Se connecter à Checkit",
 	"sign_in_intro": "Saisissez votre e-mail : nous vous envoyons un lien pour vous connecter, sans mot de passe. Première visite ? Votre compte est créé au passage.",
 	"email_label": "E-mail",
@@ -131,5 +130,11 @@
 	"share_link_revoked_text": "Le propriétaire de la liste l'a révoqué. Demandez-lui un nouveau lien.",
 	"go_to_lists": "Aller à mes listes",
 	"language_menu_label": "Langue : {language}",
-	"appearance_menu_label": "Apparence : {appearance}"
+	"appearance_menu_label": "Apparence : {appearance}",
+	"account_menu_label": "Compte : {name}",
+	"profile_link": "Profil",
+	"profile_title": "Profil",
+	"profile_intro": "Votre nom est affiché aux personnes avec qui vous partagez des listes.",
+	"profile_email_label": "E-mail",
+	"toast_profile_saved": "Votre nom a été enregistré."
 }

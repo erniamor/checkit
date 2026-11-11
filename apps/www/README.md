@@ -2,7 +2,7 @@
 
 Checkit's web app: the screens where users sign in, manage their lists, share them and add items by voice. Built with React and TanStack Start, TanStack Query, Paraglide JS for translations, Tailwind CSS and the components of [`@repo/ui`](../../packages/ui).
 
-**In progress.** For now: a header (logo, language and appearance selectors, the signed-in user and sign-out), sign-in by magic link or code, the name asked at the first sign-in, the lists and their items, updated in real time with the other members' changes, sharing (members, invitations, share links), a home page for visitors, and the 404 and error pages. Voice input comes next.
+**In progress.** For now: a header (logo, then menus for the language, the appearance and the account: profile and sign-out), sign-in by magic link or code, the name asked at the first sign-in, the lists and their items, updated in real time with the other members' changes, sharing (members, invitations, share links), a home page for visitors, and the 404 and error pages. Voice input comes next.
 
 ## Screens
 
@@ -10,6 +10,7 @@ Checkit's web app: the screens where users sign in, manage their lists, share th
 | --- | --- |
 | `/` | Presentation for visitors; signed-in users go to `/lists` |
 | `/sign-in`, `/welcome` | Sign-in, then the name at the first sign-in |
+| `/profile` | The user's email, and their name to change |
 | `/lists` | My lists: each with its progress and whether it's shared with me; creates a list |
 | `/lists/:listId/members` | Members and sharing: the members and their role; for the owner, changing roles, removing members, inviting by email and the share links; for the others, leaving the list |
 | `/invitations/:token` | The link of an invitation email: what the invitation offers, then join (with the invited email), sign in, or sign out to switch accounts |
