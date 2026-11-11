@@ -30,6 +30,7 @@ Apps import only from `@repo/ui` and `@repo/ui/styles.css`, never from internal 
 | --- | --- |
 | `AlertDialog` and its parts (`AlertDialogTrigger`, `AlertDialogContent`, `AlertDialogHeader`, `AlertDialogTitle`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogCancel`, `AlertDialogAction`) | Confirmation dialog for an action that can't be undone |
 | `Button`, `buttonVariants` | shadcn button and its variants |
+| `DropdownMenu` and its parts (`DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuLabel`, `DropdownMenuGroup`, `DropdownMenuItem`, `DropdownMenuRadioGroup`, `DropdownMenuRadioItem`, `DropdownMenuSeparator`) | Menu opened from a button (Radix), usable with the keyboard |
 | `Checkbox` | Checkbox (Radix), checked with the mouse or the Space key |
 | `Input` | Text field; `aria-invalid` shows the error state |
 | `Label` | Field label, associated with its field through `htmlFor` |

@@ -13,7 +13,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 - Data: the Hono API (`apps/api`) through `@repo/resources`
 - Validation: Zod schemas from `@repo/schemas`, shared with the API
 - i18n: Paraglide JS 2.9 (see "Languages")
-- UI: components from `@repo/ui` (shadcn) and the `brand` theme of `@repo/themes`
+- UI: components from `@repo/ui` (shadcn) and the `brand` theme of `@repo/themes`; icons from `lucide-react` (version shared with `@repo/ui` through the `catalog:`)
 - Tests: Vitest (jsdom) and Testing Library
 
 ## Commands
@@ -27,7 +27,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 
 - `src/routes/`: TanStack routes; one file per route, thin (loader + page component). `__root.tsx` renders the HTML document, the header and the appearance, and loads the signed-in user. `_authenticated.tsx` is the layout of the pages reserved to signed-in users (`_authenticated/*`).
 - `src/features/<feature>/`: components, hooks and logic specific to a feature (`appearance`, `auth`, `profile`, `lists`, `sharing`, `i18n`, `home`)
-- `src/components/`: generic components specific to this app (`Header`, `Logo`, `SelectField` (`tone`: `inverse` in the header, `default` on pages), `TextField`, `InlineEditForm`, `ConfirmButton` (an action confirmed in a dialog), `FormAlert`, `Loading`, `NotFound`, `ErrorView`; shared components go in `packages/ui`)
+- `src/components/`: generic components specific to this app (`Header`, `Logo`, `header-styles.ts` (`headerButtonClass`, for buttons on the header's band), `SelectField` (`tone`: `inverse` or `default`), `TextField`, `InlineEditForm`, `ConfirmButton` (an action confirmed in a dialog), `FormAlert`, `Loading`, `NotFound`, `ErrorView`; shared components go in `packages/ui`)
 - `src/server/`: server-only code (`env.ts`: the server's API URL)
 - `src/lib/`: utilities specific to the app (`api.ts`: the API client; `error-messages.ts`: error codes to messages; `redirect.ts`: the safe `redirect` search parameter; `cookies.ts`)
 - `src/env.ts`: public environment variables (`VITE_*`), validated with Zod
@@ -42,14 +42,14 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 
 - English (`en`, default), French (`fr`) and Spanish (`es`). Every user-facing text is a message in `messages/<locale>.json`, present in all three files, used as `m.<key>()` from `@/paraglide/messages`.
 - The locale isn't in the URL: it comes from the `PARAGLIDE_LOCALE` cookie (the user's choice in the header), then the browser's language, then English. On the server, `src/server.ts` detects it for each request.
-- Changing the language calls `setLocale()`, which stores the cookie and reloads the page.
+- The language is chosen in the header's menu (`LanguageMenu`). Changing it calls `setLocale()`, which stores the cookie and reloads the page.
 - The language names in the selector are written in their own language (`Français`), the same in every locale.
 - The Paraglide options are set twice, in `vite.config.ts` and in the `i18n` script of `package.json`: keep them in sync.
 - In tests, `setTestLocale(locale)` renders the messages in a given locale.
 
 ## Appearance
 
-- Light, dark or system, chosen in the header and stored in the `appearance` cookie. `getAppearance()` reads it on the server and in the browser; the root route renders the `dark` class on `<html>` so the page doesn't flash.
+- Light, dark or system, chosen in the header's menu (`AppearanceMenu`, whose icon shows the current choice) and stored in the `appearance` cookie. `getAppearance()` reads it on the server and in the browser; the root route renders the `dark` class on `<html>` so the page doesn't flash.
 - With "system", the server can't know the system's appearance: a small inline script sets the class before the first paint, and `<html>` has `suppressHydrationWarning` for that reason.
 
 ## API and session

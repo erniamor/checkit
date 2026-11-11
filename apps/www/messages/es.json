@@ -129,5 +129,7 @@
 	"invitation_expired_text": "Ha caducado o ya se ha usado. Pide una nueva.",
 	"share_link_revoked_title": "Este enlace ya no funciona",
 	"share_link_revoked_text": "El propietario de la lista lo ha revocado. Pídele uno nuevo.",
-	"go_to_lists": "Ir a mis listas"
+	"go_to_lists": "Ir a mis listas",
+	"language_menu_label": "Idioma: {language}",
+	"appearance_menu_label": "Apariencia: {appearance}"
 }

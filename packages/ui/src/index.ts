@@ -13,6 +13,17 @@ export {
 } from "@repo/ui/components/ui/alert-dialog";
 export { Button, buttonVariants } from "@repo/ui/components/ui/button";
 export { Checkbox } from "@repo/ui/components/ui/checkbox";
+export {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@repo/ui/components/ui/dropdown-menu";
 export { Input } from "@repo/ui/components/ui/input";
 export { Label } from "@repo/ui/components/ui/label";
 export { Toaster } from "@repo/ui/components/ui/sonner";

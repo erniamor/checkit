@@ -54,59 +54,47 @@ describe("Header", () => {
 	});
 
 	it.each([
-		["en", "Language", "Appearance", "System"],
-		["fr", "Langue", "Apparence", "Système"],
-		["es", "Idioma", "Apariencia", "Sistema"],
+		["en", "Language: English", "Appearance: System"],
+		["fr", "Langue : Français", "Apparence : Système"],
+		["es", "Idioma: Español", "Apariencia: Sistema"],
 	] as const)(
-		"is translated in %s",
-		async (locale, language, appearance, system) => {
+		"names its menus with their current choice, in %s",
+		async (locale, language, appearance) => {
 			setTestLocale(locale);
 
 			const header = await renderHeader();
 
 			expect(
-				within(header).getByRole("combobox", { name: language }),
-			).toHaveValue(locale);
-			const appearanceSelect = within(header).getByRole("combobox", {
-				name: appearance,
-			});
+				within(header).getByRole("button", { name: language }),
+			).toHaveAttribute("aria-haspopup", "menu");
 			expect(
-				within(appearanceSelect).getByRole("option", { name: system }),
-			).toHaveProperty("selected", true);
+				within(header).getByRole("button", { name: appearance }),
+			).toHaveAttribute("aria-haspopup", "menu");
 		},
 	);
-
-	it("names each language in itself", async () => {
-		setTestLocale("fr");
-		const header = await renderHeader();
-
-		const languages = within(
-			within(header).getByRole("combobox", { name: "Langue" }),
-		).getAllByRole("option");
-
-		expect(languages.map((option) => option.textContent)).toEqual([
-			"English",
-			"Français",
-			"Español",
-		]);
-	});
 
 	it("switches to dark mode from the keyboard", async () => {
 		mockSystemAppearance(false);
 		const user = userEvent.setup();
 		const header = await renderHeader();
-		const select = within(header).getByRole("combobox", {
-			name: "Appearance",
+		const trigger = within(header).getByRole("button", {
+			name: "Appearance: System",
 		});
 
 		await user.tab();
 		await user.tab();
 		await user.tab();
-		expect(select).toHaveFocus();
-		await user.selectOptions(select, "Dark");
+		expect(trigger).toHaveFocus();
+		await user.keyboard("{Enter}");
+		expect(
+			screen.getByRole("menuitemradio", { name: "System" }),
+		).toHaveAttribute("aria-checked", "true");
+		await user.click(screen.getByRole("menuitemradio", { name: "Dark" }));
 
-		expect(select).toHaveValue("dark");
 		expect(document.documentElement).toHaveClass("dark");
 		expect(readCookie(document.cookie, "appearance")).toBe("dark");
+		expect(
+			within(header).getByRole("button", { name: "Appearance: Dark" }),
+		).toHaveFocus();
 	});
 });

@@ -1,10 +1,10 @@
 import type { Profile } from "@repo/schemas";
 import { Link } from "@tanstack/react-router";
 import { Logo } from "@/components/Logo";
-import { AppearanceSelect } from "@/features/appearance/AppearanceSelect";
+import { AppearanceMenu } from "@/features/appearance/AppearanceMenu";
 import type { Appearance } from "@/features/appearance/appearance";
 import { UserMenu } from "@/features/auth/UserMenu";
-import { LanguageSelect } from "@/features/i18n/LanguageSelect";
+import { LanguageMenu } from "@/features/i18n/LanguageMenu";
 import { m } from "@/paraglide/messages";
 import { getLocale, setLocale } from "@/paraglide/runtime";
 
@@ -19,10 +19,10 @@ export function Header({ appearance, me }: HeaderProps) {
 		<header className="border-inverse-border border-b bg-inverse text-inverse-foreground">
 			<div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
 				<Logo />
-				<div className="flex flex-wrap items-center gap-2">
+				<div className="flex flex-wrap items-center gap-1">
 					{/* Changing the language reloads the page in that language */}
-					<LanguageSelect locale={getLocale()} onLocaleChange={setLocale} />
-					<AppearanceSelect initialAppearance={appearance} />
+					<LanguageMenu locale={getLocale()} onLocaleChange={setLocale} />
+					<AppearanceMenu initialAppearance={appearance} />
 					{me ? (
 						<UserMenu me={me} />
 					) : (
