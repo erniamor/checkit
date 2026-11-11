@@ -1,3 +1,4 @@
+import { TooltipProvider } from "@repo/ui";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
 	createMemoryHistory,
@@ -17,7 +18,9 @@ function testQueryClient() {
 /** Renders a component that uses TanStack Query (mutations, queries). */
 export function renderWithQueryClient(ui: ReactNode) {
 	return render(
-		<QueryClientProvider client={testQueryClient()}>{ui}</QueryClientProvider>,
+		<QueryClientProvider client={testQueryClient()}>
+			<TooltipProvider>{ui}</TooltipProvider>
+		</QueryClientProvider>,
 	);
 }
 
@@ -27,7 +30,11 @@ export function renderWithRouter(ui: ReactNode) {
 	const router = createRouter({
 		// Suspense: pages read their data with useSuspenseQuery
 		routeTree: createRootRoute({
-			component: () => <Suspense fallback={<p>Loading</p>}>{ui}</Suspense>,
+			component: () => (
+				<TooltipProvider>
+					<Suspense fallback={<p>Loading</p>}>{ui}</Suspense>
+				</TooltipProvider>
+			),
 		}),
 		history: createMemoryHistory(),
 		context: { queryClient },

@@ -1,8 +1,11 @@
 import type { UpdateItem } from "@repo/schemas";
+import { buttonVariants } from "@repo/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { UsersIcon } from "lucide-react";
 import { useState } from "react";
 import { FormAlert } from "@/components/FormAlert";
+import { WithTooltip } from "@/components/WithTooltip";
 import { AddItemForm } from "@/features/lists/AddItemForm";
 import { DeleteListButton } from "@/features/lists/DeleteListButton";
 import { ItemsSection } from "@/features/lists/ItemsSection";
@@ -56,13 +59,16 @@ export function ListPage({ listId }: ListPageProps) {
 					}}
 				/>
 				<div className="flex flex-wrap items-center gap-1">
-					<Link
-						to="/lists/$listId/members"
-						params={{ listId }}
-						className="rounded-md px-2 py-1 text-sm underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
-					>
-						{m.members_link()}
-					</Link>
+					<WithTooltip label={m.members_link()}>
+						<Link
+							to="/lists/$listId/members"
+							params={{ listId }}
+							aria-label={m.members_link()}
+							className={buttonVariants({ variant: "ghost", size: "icon" })}
+						>
+							<UsersIcon aria-hidden className="size-4" />
+						</Link>
+					</WithTooltip>
 					{isOwner(list.role) && (
 						<DeleteListButton
 							name={list.name}

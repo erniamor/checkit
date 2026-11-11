@@ -27,7 +27,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 
 - `src/routes/`: TanStack routes; one file per route, thin (loader + page component). `__root.tsx` renders the HTML document, the header and the appearance, and loads the signed-in user. `_authenticated.tsx` is the layout of the pages reserved to signed-in users (`_authenticated/*`).
 - `src/features/<feature>/`: components, hooks and logic specific to a feature (`appearance`, `auth` (with `UserMenu`, the header's account menu), `profile` (`NameForm`, shared by `/welcome` and `/profile`), `lists`, `sharing`, `i18n`, `home`)
-- `src/components/`: generic components specific to this app (`Header`, `Logo`, `header-styles.ts` (`headerButtonClass`, for buttons on the header's band), `SelectField` (`tone`: `inverse` or `default`), `TextField`, `InlineEditForm`, `ConfirmButton` (an action confirmed in a dialog), `FormAlert`, `Loading`, `NotFound`, `ErrorView`; shared components go in `packages/ui`)
+- `src/components/`: generic components specific to this app (`Header`, `Logo`, `header-styles.ts` (`headerButtonClass`, for buttons on the header's band), `SelectField` (`tone`: `inverse` or `default`), `TextField`, `InlineEditForm`, `ConfirmButton` (an action confirmed in a dialog, as text or as an icon), `IconButton` (icon only, with an `aria-label` and a tooltip), `WithTooltip`, `FormAlert`, `Loading`, `NotFound`, `ErrorView`; shared components go in `packages/ui`)
 - `src/server/`: server-only code (`env.ts`: the server's API URL)
 - `src/lib/`: utilities specific to the app (`api.ts`: the API client; `error-messages.ts`: error codes to messages; `redirect.ts`: the safe `redirect` search parameter; `cookies.ts`)
 - `src/env.ts`: public environment variables (`VITE_*`), validated with Zod
@@ -82,6 +82,12 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 - `/invitations/$token` and `/join/$token` are public: their loader loads the preview with `loadPreview()` (unknown token: 404; expired or revoked: `preview: null`). Joining always needs a click on "Join the list", never just opening the link.
 - A share link's URL is built by the front end: `<origin>/join/<token>` (`shareLinkUrl()`).
 - Invitations and share links are only loaded for the owner: the API refuses them to the others.
+
+## Icons and tooltips
+
+- Icons come from `lucide-react`, always `aria-hidden`: the control carries the text.
+- An icon-only control has an accessible name (`aria-label`, which can be more precise than its tooltip: "Rename “Milk”" for "Rename") and a tooltip (`IconButton`, `WithTooltip`). Tooltips don't show on touch screens, so they never hold information found nowhere else.
+- One `TooltipProvider` wraps the app in the root route, and the components rendered by the test helpers.
 
 ## Toasts
 

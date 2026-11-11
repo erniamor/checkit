@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { act, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { ListPage } from "@/features/lists/ListPage";
@@ -192,6 +192,29 @@ describe("ListPage", () => {
 		expect(screen.getByRole("checkbox", { name: "Milk" })).toBeDisabled();
 		expect(screen.queryByLabelText("New item")).toBeNull();
 		expect(screen.queryByRole("button", { name: /Rename|Delete/ })).toBeNull();
+	});
+
+	it("shows icon buttons, named for screen readers and with a tooltip", async () => {
+		const { user } = renderList(fakeListServer({ items: ["Milk"] }));
+
+		const rename = await screen.findByRole("button", {
+			name: "Rename “Milk”",
+		});
+		await user.hover(rename);
+		expect(
+			await screen.findByRole("tooltip", { name: "Rename" }),
+		).toBeInTheDocument();
+
+		await user.unhover(rename);
+		act(() =>
+			screen.getByRole("link", { name: "Members and sharing" }).focus(),
+		);
+		expect(
+			await screen.findByRole("tooltip", { name: "Members and sharing" }),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("link", { name: "Members and sharing" }),
+		).toHaveAttribute("href", `/lists/${listId}/members`);
 	});
 
 	it("only lets the owner delete the list", async () => {

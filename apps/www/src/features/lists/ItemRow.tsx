@@ -1,6 +1,8 @@
 import { type Item, itemLabelSchema, type UpdateItem } from "@repo/schemas";
-import { Button, Checkbox, cn } from "@repo/ui";
+import { Checkbox, cn } from "@repo/ui";
+import { PencilIcon, Trash2Icon } from "lucide-react";
 import { useId, useState } from "react";
+import { IconButton } from "@/components/IconButton";
 import { InlineEditForm } from "@/components/InlineEditForm";
 import { validateField } from "@/lib/validate-field";
 import { m } from "@/paraglide/messages";
@@ -59,24 +61,18 @@ export function ItemRow({ item, editable, onUpdate, onDelete }: ItemRowProps) {
 			</span>
 			{editable && (
 				<div className="flex gap-1">
-					<Button
-						type="button"
-						size="sm"
-						variant="ghost"
-						aria-label={m.rename_item({ label: item.label })}
+					<IconButton
+						icon={PencilIcon}
+						label={m.rename_item({ label: item.label })}
+						tooltip={m.rename_button()}
 						onClick={() => setEditing(true)}
-					>
-						{m.rename_button()}
-					</Button>
-					<Button
-						type="button"
-						size="sm"
-						variant="ghost"
-						aria-label={m.delete_item({ label: item.label })}
+					/>
+					<IconButton
+						icon={Trash2Icon}
+						label={m.delete_item({ label: item.label })}
+						tooltip={m.delete_list_confirm()}
 						onClick={onDelete}
-					>
-						{m.delete_list_confirm()}
-					</Button>
+					/>
 				</div>
 			)}
 		</li>

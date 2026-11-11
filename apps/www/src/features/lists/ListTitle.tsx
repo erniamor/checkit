@@ -1,6 +1,7 @@
 import { listNameSchema } from "@repo/schemas";
-import { Button } from "@repo/ui";
+import { PencilIcon } from "lucide-react";
 import { useState } from "react";
+import { IconButton } from "@/components/IconButton";
 import { InlineEditForm } from "@/components/InlineEditForm";
 import { validateField } from "@/lib/validate-field";
 import { m } from "@/paraglide/messages";
@@ -42,14 +43,11 @@ export function ListTitle({ name, editable, onRename }: ListTitleProps) {
 				{name}
 			</h1>
 			{editable && (
-				<Button
-					type="button"
-					size="sm"
-					variant="ghost"
+				<IconButton
+					icon={PencilIcon}
+					label={m.rename_list_button()}
 					onClick={() => setEditing(true)}
-				>
-					{m.rename_list_button()}
-				</Button>
+				/>
 			)}
 		</div>
 	);

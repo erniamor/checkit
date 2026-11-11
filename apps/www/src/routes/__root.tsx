@@ -1,4 +1,4 @@
-import { Toaster } from "@repo/ui";
+import { Toaster, TooltipProvider } from "@repo/ui";
 import type { QueryClient } from "@tanstack/react-query";
 import {
 	createRootRouteWithContext,
@@ -63,8 +63,12 @@ function RootDocument({ children }: { children: ReactNode }) {
 				)}
 			</head>
 			<body>
-				<Header appearance={appearance} me={me} />
-				<main>{children}</main>
+				{/* One provider for the app's tooltips: hovering from one to the next
+				shows it without the delay */}
+				<TooltipProvider>
+					<Header appearance={appearance} me={me} />
+					<main>{children}</main>
+				</TooltipProvider>
 				<Toaster theme={appearance} position="bottom-center" />
 				<Scripts />
 			</body>

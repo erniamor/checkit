@@ -1,3 +1,4 @@
+import { Trash2Icon } from "lucide-react";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import { m } from "@/paraglide/messages";
 
@@ -16,6 +17,7 @@ export function DeleteListButton({
 	return (
 		<ConfirmButton
 			label={m.delete_list_button()}
+			icon={Trash2Icon}
 			title={m.delete_list_title({ name })}
 			description={m.delete_list_text()}
 			confirmLabel={m.delete_list_confirm()}
