@@ -7,9 +7,15 @@ import { m } from "@/paraglide/messages";
 interface SignInPageProps {
 	redirect: string;
 	onSignedIn: () => void | Promise<void>;
+	/** Prefills the email field. */
+	defaultEmail?: string;
 }
 
-export function SignInPage({ redirect, onSignedIn }: SignInPageProps) {
+export function SignInPage({
+	redirect,
+	onSignedIn,
+	defaultEmail,
+}: SignInPageProps) {
 	const { step, sendLink, sendCode, signIn, restart } = useSignIn({
 		redirect,
 		onSignedIn,
@@ -30,6 +36,7 @@ export function SignInPage({ redirect, onSignedIn }: SignInPageProps) {
 					onSubmit={(email) => sendLink.mutate(email)}
 					pending={sendLink.isPending}
 					error={sendLink.error}
+					defaultEmail={defaultEmail}
 				/>
 			)}
 			{step.kind === "check-email" && (

@@ -1,15 +1,4 @@
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
-	Button,
-} from "@repo/ui";
+import { ConfirmButton } from "@/components/ConfirmButton";
 import { m } from "@/paraglide/messages";
 
 interface DeleteListButtonProps {
@@ -25,26 +14,13 @@ export function DeleteListButton({
 	onConfirm,
 }: DeleteListButtonProps) {
 	return (
-		<AlertDialog>
-			<AlertDialogTrigger asChild>
-				<Button type="button" variant="ghost" size="sm" disabled={pending}>
-					{m.delete_list_button()}
-				</Button>
-			</AlertDialogTrigger>
-			<AlertDialogContent>
-				<AlertDialogHeader>
-					<AlertDialogTitle>{m.delete_list_title({ name })}</AlertDialogTitle>
-					<AlertDialogDescription>
-						{m.delete_list_text()}
-					</AlertDialogDescription>
-				</AlertDialogHeader>
-				<AlertDialogFooter>
-					<AlertDialogCancel>{m.cancel_button()}</AlertDialogCancel>
-					<AlertDialogAction variant="destructive" onClick={onConfirm}>
-						{m.delete_list_confirm()}
-					</AlertDialogAction>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
+		<ConfirmButton
+			label={m.delete_list_button()}
+			title={m.delete_list_title({ name })}
+			description={m.delete_list_text()}
+			confirmLabel={m.delete_list_confirm()}
+			pending={pending}
+			onConfirm={onConfirm}
+		/>
 	);
 }

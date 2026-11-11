@@ -1,4 +1,12 @@
-import type { Item, List, MemberRole } from "@repo/schemas";
+import type {
+	Invitation,
+	Item,
+	List,
+	Member,
+	MemberRole,
+	ShareableRole,
+	ShareLink,
+} from "@repo/schemas";
 import type { ApiRequest, ApiResponse } from "@/test/mock-api";
 
 export const listId = "0b7e3f4a-1c2d-4e5f-8a9b-0c1d2e3f4a5b";
@@ -33,6 +41,15 @@ function makeItem(label: string, position: number): Item {
 	};
 }
 
+function member(
+	userId: string,
+	name: string,
+	email: string,
+	role: MemberRole,
+): Member {
+	return { userId, name, email, image: null, role, joinedAt: date };
+}
+
 function paginated<T>(data: T[]) {
 	return { data, pagination: { page: 1, pageSize: 50, total: data.length } };
 }
@@ -51,6 +68,20 @@ export function fakeListServer({
 	let myRole = role;
 	let stored = items.map((label, index) => makeItem(label, index + 1));
 	let failure: number | undefined;
+	// When I'm not the owner, someone else is
+	let others: Member[] =
+		role === "owner"
+			? [member(otherUserId, "Bob", "bob@example.com", "editor")]
+			: [member(otherUserId, "Carol", "carol@example.com", "owner")];
+	let invitations: Invitation[] = [];
+	let links: ShareLink[] = [];
+	let nextId = 1;
+	const newId = () =>
+		`11111111-1111-4111-8111-${String(nextId++).padStart(12, "0")}`;
+	const members = () => [
+		member(meId, "Alice", "alice@example.com", myRole),
+		...others,
+	];
 
 	const list = (): List => ({
 		id: listId,
@@ -76,6 +107,10 @@ export function fakeListServer({
 			};
 		}
 		const input = (body ?? {}) as Record<string, unknown>;
+		const sharing = respondSharing(method, path, input);
+		if (sharing) {
+			return sharing;
+		}
 		const itemPath = path.match(/^\/lists\/[^/]+\/items\/([^/]+)$/);
 
 		if (method === "GET" && path === "/lists") {
@@ -124,8 +159,95 @@ export function fakeListServer({
 		return undefined;
 	}
 
+	function respondSharing(
+		method: string,
+		path: string,
+		input: Record<string, unknown>,
+	): ApiResponse | undefined {
+		const base = `/lists/${listId}`;
+		const memberPath = path.match(/^\/lists\/[^/]+\/members\/([^/]+)$/);
+		const invitationPath = path.match(/^\/lists\/[^/]+\/invitations\/([^/]+)$/);
+		const linkPath = path.match(/^\/lists\/[^/]+\/share-links\/([^/]+)$/);
+
+		if (method === "GET" && path === `${base}/members`) {
+			return { status: 200, body: paginated(members()) };
+		}
+		if (method === "DELETE" && path === `${base}/members/me`) {
+			return { status: 204 };
+		}
+		if (memberPath && method === "PATCH") {
+			others = others.map((other) =>
+				other.userId === memberPath[1]
+					? { ...other, role: input.role as MemberRole }
+					: other,
+			);
+			return {
+				status: 200,
+				body: others.find((other) => other.userId === memberPath[1]),
+			};
+		}
+		if (memberPath && method === "DELETE") {
+			others = others.filter((other) => other.userId !== memberPath[1]);
+			return { status: 204 };
+		}
+		if (method === "GET" && path === `${base}/invitations`) {
+			return { status: 200, body: paginated(invitations) };
+		}
+		if (method === "POST" && path === `${base}/invitations`) {
+			const email = String(input.email);
+			if (members().some((existing) => existing.email === email)) {
+				return {
+					status: 409,
+					body: { error: { code: "already_member", message: "" } },
+				};
+			}
+			const invitation: Invitation = {
+				id: newId(),
+				listId,
+				email,
+				role: input.role as ShareableRole,
+				invitedById: meId,
+				expiresAt: date,
+				createdAt: date,
+			};
+			invitations = [
+				...invitations.filter((pending) => pending.email !== email),
+				invitation,
+			];
+			return { status: 201, body: invitation };
+		}
+		if (invitationPath && method === "DELETE") {
+			invitations = invitations.filter(
+				(pending) => pending.id !== invitationPath[1],
+			);
+			return { status: 204 };
+		}
+		if (method === "GET" && path === `${base}/share-links`) {
+			return { status: 200, body: paginated(links) };
+		}
+		if (method === "POST" && path === `${base}/share-links`) {
+			const link: ShareLink = {
+				id: newId(),
+				listId,
+				role: input.role as ShareableRole,
+				token: `token-${nextId}`,
+				createdAt: date,
+			};
+			links = [...links.filter((active) => active.role !== link.role), link];
+			return { status: 201, body: link };
+		}
+		if (linkPath && method === "DELETE") {
+			links = links.filter((active) => active.id !== linkPath[1]);
+			return { status: 204 };
+		}
+		return undefined;
+	}
+
 	return {
 		respond,
+		memberEmails: () => members().map((existing) => existing.email),
+		invitationEmails: () => invitations.map((pending) => pending.email),
+		linkRoles: () => links.map((active) => active.role),
 		failNext(status = 500) {
 			failure = status;
 		},

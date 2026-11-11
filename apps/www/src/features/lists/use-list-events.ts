@@ -1,5 +1,5 @@
 import type { ConnectionState, Page } from "@repo/resources";
-import type { Item, List } from "@repo/schemas";
+import type { Item, List, Member } from "@repo/schemas";
 import { toast } from "@repo/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -22,6 +22,7 @@ export function useListEvents(listId: string, meId: string): ConnectionState {
 	useEffect(() => {
 		const itemsKey = listKeys.items(listId);
 		const listKey = listKeys.detail(listId);
+		const membersKey = listKeys.members(listId);
 
 		async function leave(reason: "deleted" | "access_lost") {
 			const name = queryClient.getQueryData<List>(listKey)?.name ?? "";
@@ -45,6 +46,7 @@ export function useListEvents(listId: string, meId: string): ConnectionState {
 				const applied = applyListEvent(event, meId, {
 					items: queryClient.getQueryData<Page<Item>>(itemsKey),
 					list: queryClient.getQueryData<List>(listKey),
+					members: queryClient.getQueryData<Page<Member>>(membersKey),
 				});
 				// A load in progress started before this change and would overwrite
 				// the patch with older data: load again instead (the API saved the
@@ -59,6 +61,15 @@ export function useListEvents(listId: string, meId: string): ConnectionState {
 					if (applied.list) {
 						queryClient.setQueryData(listKey, applied.list);
 					}
+					if (applied.members) {
+						queryClient.setQueryData(membersKey, applied.members);
+					}
+				}
+				// An accepted invitation is no longer pending
+				if (event.type === "member.added") {
+					void queryClient.invalidateQueries({
+						queryKey: listKeys.invitations(listId),
+					});
 				}
 				switch (applied.outcome.kind) {
 					case "reload":

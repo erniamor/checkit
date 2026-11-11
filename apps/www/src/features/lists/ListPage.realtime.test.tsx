@@ -2,6 +2,7 @@ import { Toaster } from "@repo/ui";
 import { act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { ListLive } from "@/features/lists/ListLive";
 import { ListPage } from "@/features/lists/ListPage";
 import { FakeEventSource } from "@/test/fake-event-source";
 import {
@@ -24,7 +25,9 @@ async function renderLive(server: ReturnType<typeof fakeListServer>) {
 	const requests = mockApi(server.respond);
 	const result = renderWithRouter(
 		<>
-			<ListPage listId={listId} meId={meId} />
+			<ListLive listId={listId} meId={meId}>
+				<ListPage listId={listId} />
+			</ListLive>
 			<Toaster />
 		</>,
 	);

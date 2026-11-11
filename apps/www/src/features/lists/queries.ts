@@ -9,6 +9,9 @@ export const listKeys = {
 	all: ["lists"] as const,
 	detail: (listId: string) => ["lists", listId] as const,
 	items: (listId: string) => ["lists", listId, "items"] as const,
+	members: (listId: string) => ["lists", listId, "members"] as const,
+	invitations: (listId: string) => ["lists", listId, "invitations"] as const,
+	shareLinks: (listId: string) => ["lists", listId, "share-links"] as const,
 };
 
 /** The user's lists. */

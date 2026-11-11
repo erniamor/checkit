@@ -13,8 +13,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
+import { Route as InvitationsTokenRouteImport } from './routes/invitations/$token'
+import { Route as JoinTokenRouteImport } from './routes/join/$token'
 import { Route as AuthenticatedListsIndexRouteImport } from './routes/_authenticated/lists/index'
-import { Route as AuthenticatedListsListIdRouteImport } from './routes/_authenticated/lists/$listId'
+import { Route as AuthenticatedListsListIdRouteRouteImport } from './routes/_authenticated/lists/$listId/route'
+import { Route as AuthenticatedListsListIdIndexRouteImport } from './routes/_authenticated/lists/$listId/index'
+import { Route as AuthenticatedListsListIdMembersRouteImport } from './routes/_authenticated/lists/$listId/members'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -35,31 +39,60 @@ const AuthenticatedWelcomeRoute = AuthenticatedWelcomeRouteImport.update({
   path: '/welcome',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const InvitationsTokenRoute = InvitationsTokenRouteImport.update({
+  id: '/invitations/$token',
+  path: '/invitations/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoinTokenRoute = JoinTokenRouteImport.update({
+  id: '/join/$token',
+  path: '/join/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedListsIndexRoute = AuthenticatedListsIndexRouteImport.update({
   id: '/lists/',
   path: '/lists/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedListsListIdRoute =
-  AuthenticatedListsListIdRouteImport.update({
+const AuthenticatedListsListIdRouteRoute =
+  AuthenticatedListsListIdRouteRouteImport.update({
     id: '/lists/$listId',
     path: '/lists/$listId',
     getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedListsListIdIndexRoute =
+  AuthenticatedListsListIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedListsListIdRouteRoute,
+  } as any)
+const AuthenticatedListsListIdMembersRoute =
+  AuthenticatedListsListIdMembersRouteImport.update({
+    id: '/members',
+    path: '/members',
+    getParentRoute: () => AuthenticatedListsListIdRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/sign-in': typeof SignInRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
-  '/lists/$listId': typeof AuthenticatedListsListIdRoute
+  '/invitations/$token': typeof InvitationsTokenRoute
+  '/join/$token': typeof JoinTokenRoute
+  '/lists/$listId': typeof AuthenticatedListsListIdRouteRouteWithChildren
   '/lists/': typeof AuthenticatedListsIndexRoute
+  '/lists/$listId/members': typeof AuthenticatedListsListIdMembersRoute
+  '/lists/$listId/': typeof AuthenticatedListsListIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sign-in': typeof SignInRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
-  '/lists/$listId': typeof AuthenticatedListsListIdRoute
+  '/invitations/$token': typeof InvitationsTokenRoute
+  '/join/$token': typeof JoinTokenRoute
   '/lists': typeof AuthenticatedListsIndexRoute
+  '/lists/$listId/members': typeof AuthenticatedListsListIdMembersRoute
+  '/lists/$listId': typeof AuthenticatedListsListIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -67,28 +100,55 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/sign-in': typeof SignInRoute
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
-  '/_authenticated/lists/$listId': typeof AuthenticatedListsListIdRoute
+  '/invitations/$token': typeof InvitationsTokenRoute
+  '/join/$token': typeof JoinTokenRoute
+  '/_authenticated/lists/$listId': typeof AuthenticatedListsListIdRouteRouteWithChildren
   '/_authenticated/lists/': typeof AuthenticatedListsIndexRoute
+  '/_authenticated/lists/$listId/members': typeof AuthenticatedListsListIdMembersRoute
+  '/_authenticated/lists/$listId/': typeof AuthenticatedListsListIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sign-in' | '/welcome' | '/lists/$listId' | '/lists/'
+  fullPaths:
+    | '/'
+    | '/sign-in'
+    | '/welcome'
+    | '/invitations/$token'
+    | '/join/$token'
+    | '/lists/$listId'
+    | '/lists/'
+    | '/lists/$listId/members'
+    | '/lists/$listId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sign-in' | '/welcome' | '/lists/$listId' | '/lists'
+  to:
+    | '/'
+    | '/sign-in'
+    | '/welcome'
+    | '/invitations/$token'
+    | '/join/$token'
+    | '/lists'
+    | '/lists/$listId/members'
+    | '/lists/$listId'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/sign-in'
     | '/_authenticated/welcome'
+    | '/invitations/$token'
+    | '/join/$token'
     | '/_authenticated/lists/$listId'
     | '/_authenticated/lists/'
+    | '/_authenticated/lists/$listId/members'
+    | '/_authenticated/lists/$listId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   SignInRoute: typeof SignInRoute
+  InvitationsTokenRoute: typeof InvitationsTokenRoute
+  JoinTokenRoute: typeof JoinTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -121,6 +181,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWelcomeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/invitations/$token': {
+      id: '/invitations/$token'
+      path: '/invitations/$token'
+      fullPath: '/invitations/$token'
+      preLoaderRoute: typeof InvitationsTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/join/$token': {
+      id: '/join/$token'
+      path: '/join/$token'
+      fullPath: '/join/$token'
+      preLoaderRoute: typeof JoinTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/lists/': {
       id: '/_authenticated/lists/'
       path: '/lists'
@@ -132,21 +206,52 @@ declare module '@tanstack/react-router' {
       id: '/_authenticated/lists/$listId'
       path: '/lists/$listId'
       fullPath: '/lists/$listId'
-      preLoaderRoute: typeof AuthenticatedListsListIdRouteImport
+      preLoaderRoute: typeof AuthenticatedListsListIdRouteRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/lists/$listId/': {
+      id: '/_authenticated/lists/$listId/'
+      path: '/'
+      fullPath: '/lists/$listId/'
+      preLoaderRoute: typeof AuthenticatedListsListIdIndexRouteImport
+      parentRoute: typeof AuthenticatedListsListIdRouteRoute
+    }
+    '/_authenticated/lists/$listId/members': {
+      id: '/_authenticated/lists/$listId/members'
+      path: '/members'
+      fullPath: '/lists/$listId/members'
+      preLoaderRoute: typeof AuthenticatedListsListIdMembersRouteImport
+      parentRoute: typeof AuthenticatedListsListIdRouteRoute
     }
   }
 }
 
+interface AuthenticatedListsListIdRouteRouteChildren {
+  AuthenticatedListsListIdMembersRoute: typeof AuthenticatedListsListIdMembersRoute
+  AuthenticatedListsListIdIndexRoute: typeof AuthenticatedListsListIdIndexRoute
+}
+
+const AuthenticatedListsListIdRouteRouteChildren: AuthenticatedListsListIdRouteRouteChildren =
+  {
+    AuthenticatedListsListIdMembersRoute: AuthenticatedListsListIdMembersRoute,
+    AuthenticatedListsListIdIndexRoute: AuthenticatedListsListIdIndexRoute,
+  }
+
+const AuthenticatedListsListIdRouteRouteWithChildren =
+  AuthenticatedListsListIdRouteRoute._addFileChildren(
+    AuthenticatedListsListIdRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedWelcomeRoute: typeof AuthenticatedWelcomeRoute
-  AuthenticatedListsListIdRoute: typeof AuthenticatedListsListIdRoute
+  AuthenticatedListsListIdRouteRoute: typeof AuthenticatedListsListIdRouteRouteWithChildren
   AuthenticatedListsIndexRoute: typeof AuthenticatedListsIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedWelcomeRoute: AuthenticatedWelcomeRoute,
-  AuthenticatedListsListIdRoute: AuthenticatedListsListIdRoute,
+  AuthenticatedListsListIdRouteRoute:
+    AuthenticatedListsListIdRouteRouteWithChildren,
   AuthenticatedListsIndexRoute: AuthenticatedListsIndexRoute,
 }
 
@@ -158,6 +263,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   SignInRoute: SignInRoute,
+  InvitationsTokenRoute: InvitationsTokenRoute,
+  JoinTokenRoute: JoinTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

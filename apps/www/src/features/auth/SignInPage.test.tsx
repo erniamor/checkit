@@ -23,6 +23,18 @@ async function submitEmail(
 }
 
 describe("SignInPage", () => {
+	it("prefills the email, e.g. with the address of an invitation", () => {
+		renderWithQueryClient(
+			<SignInPage
+				redirect="/invitations/tok"
+				defaultEmail="bob@example.com"
+				onSignedIn={vi.fn()}
+			/>,
+		);
+
+		expect(screen.getByLabelText("Email")).toHaveValue("bob@example.com");
+	});
+
 	it("emails a link that brings the user back to the requested page", async () => {
 		const requests = mockApi(() => ({ status: 200, body: { status: true } }));
 		const { user } = renderSignIn();

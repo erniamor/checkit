@@ -1,41 +1,27 @@
-import { NotFoundError } from "@repo/resources";
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { ListLive } from "@/features/lists/ListLive";
 import { ListNotFound } from "@/features/lists/ListNotFound";
-import { ListPage } from "@/features/lists/ListPage";
-import {
-	itemsQueryOptions,
-	listKeys,
-	listQueryOptions,
-} from "@/features/lists/queries";
+import { orListNotFound } from "@/features/lists/or-list-not-found";
+import { listQueryOptions } from "@/features/lists/queries";
 
+// Layout of a list's pages (items, members): checks that the list exists for
+// the user, and keeps the pages up to date in real time
 export const Route = createFileRoute("/_authenticated/lists/$listId")({
-	loader: async ({ context, params }) => {
-		try {
-			await Promise.all([
-				context.queryClient.ensureQueryData(listQueryOptions(params.listId)),
-				context.queryClient.ensureQueryData(itemsQueryOptions(params.listId)),
-			]);
-		} catch (error) {
-			// Unknown, deleted, or not shared with the user: the API doesn't tell
-			if (error instanceof NotFoundError) {
-				// Nothing about this list is handed to the browser's cache
-				await context.queryClient.cancelQueries({
-					queryKey: listKeys.detail(params.listId),
-				});
-				context.queryClient.removeQueries({
-					queryKey: listKeys.detail(params.listId),
-				});
-				throw notFound();
-			}
-			throw error;
-		}
-	},
+	loader: ({ context, params }) =>
+		orListNotFound(context.queryClient, params.listId, () =>
+			context.queryClient.ensureQueryData(listQueryOptions(params.listId)),
+		),
 	notFoundComponent: ListNotFound,
-	component: ListRoute,
+	component: ListLayout,
 });
 
-function ListRoute() {
+function ListLayout() {
 	const { listId } = Route.useParams();
 	const { me } = Route.useRouteContext();
-	return <ListPage listId={listId} meId={me.id} />;
+
+	return (
+		<ListLive listId={listId} meId={me.id}>
+			<Outlet />
+		</ListLive>
+	);
 }

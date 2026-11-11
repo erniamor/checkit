@@ -4,28 +4,24 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { FormAlert } from "@/components/FormAlert";
 import { AddItemForm } from "@/features/lists/AddItemForm";
-import { ConnectionStatus } from "@/features/lists/ConnectionStatus";
 import { DeleteListButton } from "@/features/lists/DeleteListButton";
 import { ItemsSection } from "@/features/lists/ItemsSection";
 import { ListTitle } from "@/features/lists/ListTitle";
 import { canEdit, isOwner } from "@/features/lists/permissions";
 import { itemsQueryOptions, listQueryOptions } from "@/features/lists/queries";
 import { splitItems } from "@/features/lists/split-items";
-import { useListEvents } from "@/features/lists/use-list-events";
 import { useListMutations } from "@/features/lists/use-list-mutations";
 import { saveErrorMessage } from "@/lib/error-messages";
 import { m } from "@/paraglide/messages";
 
 interface ListPageProps {
 	listId: string;
-	/** The signed-in user, to tell their own changes from the others'. */
-	meId: string;
 }
 
-export function ListPage({ listId, meId }: ListPageProps) {
+/** The list and its items; kept up to date by `ListLive`, around it. */
+export function ListPage({ listId }: ListPageProps) {
 	const { data: list } = useSuspenseQuery(listQueryOptions(listId));
 	const { data: page } = useSuspenseQuery(itemsQueryOptions(listId));
-	const connection = useListEvents(listId, meId);
 	const [error, setError] = useState<string>();
 	const mutations = useListMutations(listId, (failure) =>
 		setError(saveErrorMessage(failure)),
@@ -59,18 +55,26 @@ export function ListPage({ listId, meId }: ListPageProps) {
 						mutations.renameList.mutate(name);
 					}}
 				/>
-				{isOwner(list.role) && (
-					<DeleteListButton
-						name={list.name}
-						pending={mutations.deleteList.isPending}
-						onConfirm={() => mutations.deleteList.mutate()}
-					/>
-				)}
+				<div className="flex flex-wrap items-center gap-1">
+					<Link
+						to="/lists/$listId/members"
+						params={{ listId }}
+						className="rounded-md px-2 py-1 text-sm underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+					>
+						{m.members_link()}
+					</Link>
+					{isOwner(list.role) && (
+						<DeleteListButton
+							name={list.name}
+							pending={mutations.deleteList.isPending}
+							onConfirm={() => mutations.deleteList.mutate()}
+						/>
+					)}
+				</div>
 			</header>
 			{!editable && (
 				<p className="text-muted-foreground text-sm">{m.list_read_only()}</p>
 			)}
-			<ConnectionStatus state={connection} />
 			<FormAlert message={error} />
 			{editable && (
 				<AddItemForm

@@ -114,3 +114,66 @@ describe("applyListEvent", () => {
 		).toEqual({ kind: "ignored" });
 	});
 });
+
+describe("applyListEvent and the members", () => {
+	function member(userId: string, role: "editor" | "viewer" = "editor") {
+		return {
+			userId,
+			name: "",
+			email: `${userId}@example.com`,
+			image: null,
+			role,
+			joinedAt: "",
+		};
+	}
+	const members = {
+		items: [member(me), member(other)],
+		page: 1,
+		pageSize: 100,
+		total: 2,
+	};
+
+	it("adds, updates and removes another member", () => {
+		const carol = member("carol");
+		const added = applyListEvent(
+			{ type: "member.added", listId, actorId: "carol", member: carol },
+			me,
+			{ items: undefined, list, members },
+		);
+		expect(added.members?.items.map((m) => m.userId)).toEqual([
+			me,
+			other,
+			"carol",
+		]);
+
+		const updated = applyListEvent(
+			{
+				type: "member.updated",
+				listId,
+				actorId: me,
+				member: member(other, "viewer"),
+			},
+			me,
+			{ items: undefined, list, members },
+		);
+		expect(updated.members?.items[1]?.role).toBe("viewer");
+		expect(updated.list).toBeUndefined();
+
+		const removed = applyListEvent(
+			{ type: "member.removed", listId, actorId: me, userId: other },
+			me,
+			{ items: undefined, list, members },
+		);
+		expect(removed.members?.items.map((m) => m.userId)).toEqual([me]);
+	});
+
+	it("doesn't leave the page twice when I leave the list myself", () => {
+		expect(
+			applyListEvent(
+				{ type: "member.removed", listId, actorId: me, userId: me },
+				me,
+				{ items: undefined, list, members },
+			).outcome,
+		).toEqual({ kind: "ignored" });
+	});
+});

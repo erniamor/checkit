@@ -15,8 +15,8 @@ A small web app to manage short to-do lists shared between several users: lists 
 | Front end: API client (`packages/resources`), sign-in, name at first sign-in | Done |
 | Front end: lists and items | Done |
 | Front end: real time | Done |
-| Front end: sharing | Next |
-| Voice input | Planned (browser Web Speech API, server transcription as fallback) |
+| Front end: sharing | Done |
+| Voice input | Next (browser Web Speech API, server transcription as fallback) |
 | Email provider, hosting | Not chosen (see [docs/hosting.md](docs/hosting.md)) |
 
 ## Repository

@@ -13,8 +13,16 @@ interface SelectFieldProps<Value extends string> {
 	onChange: (value: Value) => void;
 	/** Hides the label visually; it stays available to screen readers. */
 	hideLabel?: boolean;
+	/** "inverse" on the header's dark band, "default" on the pages. */
+	tone?: "inverse" | "default";
+	disabled?: boolean;
 	className?: string;
 }
+
+const toneClasses = {
+	inverse: "border-inverse-border bg-inverse text-inverse-foreground",
+	default: "border-input bg-background text-foreground",
+};
 
 /** A native select with its label: keyboard and screen reader support for free. */
 export function SelectField<Value extends string>({
@@ -23,6 +31,8 @@ export function SelectField<Value extends string>({
 	options,
 	onChange,
 	hideLabel = false,
+	tone = "inverse",
+	disabled = false,
 	className,
 }: SelectFieldProps<Value>) {
 	const id = useId();
@@ -35,6 +45,7 @@ export function SelectField<Value extends string>({
 			<select
 				id={id}
 				value={value}
+				disabled={disabled}
 				onChange={(event) => {
 					const option = options.find(
 						(candidate) => candidate.value === event.target.value,
@@ -43,7 +54,10 @@ export function SelectField<Value extends string>({
 						onChange(option.value);
 					}
 				}}
-				className="h-9 cursor-pointer rounded-md border border-inverse-border bg-inverse px-2 text-inverse-foreground text-sm focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
+				className={cn(
+					"h-9 cursor-pointer rounded-md border px-2 text-sm focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+					toneClasses[tone],
+				)}
 			>
 				{options.map((option) => (
 					<option key={option.value} value={option.value}>

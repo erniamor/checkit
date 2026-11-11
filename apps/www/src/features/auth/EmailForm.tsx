@@ -8,9 +8,16 @@ interface EmailFormProps {
 	onSubmit: (email: string) => void;
 	pending: boolean;
 	error: unknown;
+	/** Prefills the field, e.g. with the address an invitation was sent to. */
+	defaultEmail?: string;
 }
 
-export function EmailForm({ onSubmit, pending, error }: EmailFormProps) {
+export function EmailForm({
+	onSubmit,
+	pending,
+	error,
+	defaultEmail,
+}: EmailFormProps) {
 	const errors = error ? formErrors(error) : { fields: {} };
 
 	return (
@@ -27,6 +34,7 @@ export function EmailForm({ onSubmit, pending, error }: EmailFormProps) {
 				name="email"
 				type="email"
 				autoComplete="email"
+				defaultValue={defaultEmail}
 				required
 				error={errors.fields.email}
 			/>

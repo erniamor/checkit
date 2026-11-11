@@ -26,8 +26,8 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 ## Structure
 
 - `src/routes/`: TanStack routes; one file per route, thin (loader + page component). `__root.tsx` renders the HTML document, the header and the appearance, and loads the signed-in user. `_authenticated.tsx` is the layout of the pages reserved to signed-in users (`_authenticated/*`).
-- `src/features/<feature>/`: components, hooks and logic specific to a feature (`appearance`, `auth`, `profile`, `lists`, `i18n`, `home`)
-- `src/components/`: generic components specific to this app (`Header`, `Logo`, `SelectField`, `TextField`, `FormAlert`, `NotFound`, `ErrorView`; shared components go in `packages/ui`)
+- `src/features/<feature>/`: components, hooks and logic specific to a feature (`appearance`, `auth`, `profile`, `lists`, `sharing`, `i18n`, `home`)
+- `src/components/`: generic components specific to this app (`Header`, `Logo`, `SelectField` (`tone`: `inverse` in the header, `default` on pages), `TextField`, `InlineEditForm`, `ConfirmButton` (an action confirmed in a dialog), `FormAlert`, `Loading`, `NotFound`, `ErrorView`; shared components go in `packages/ui`)
 - `src/server/`: server-only code (`env.ts`: the server's API URL)
 - `src/lib/`: utilities specific to the app (`api.ts`: the API client; `error-messages.ts`: error codes to messages; `redirect.ts`: the safe `redirect` search parameter; `cookies.ts`)
 - `src/env.ts`: public environment variables (`VITE_*`), validated with Zod
@@ -75,6 +75,13 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 - If a load of the list is in progress when an event arrives, reload instead of patching: the load started before the change and would overwrite the patch.
 - Every `ready` (connection and reconnection) reloads the list: missed events aren't replayed.
 - A deleted list, or a lost access, leaves the page for `/lists` with a toast.
+
+## Sharing
+
+- A list's pages live under `routes/_authenticated/lists/$listId/`: `route.tsx` is their layout (checks the list exists, wraps them in `ListLive` for real time), `index.tsx` the items, `members.tsx` the members and sharing. Their loaders go through `orListNotFound()`, so a 404 shows "list not found".
+- `/invitations/$token` and `/join/$token` are public: their loader loads the preview with `loadPreview()` (unknown token: 404; expired or revoked: `preview: null`). Joining always needs a click on "Join the list", never just opening the link.
+- A share link's URL is built by the front end: `<origin>/join/<token>` (`shareLinkUrl()`).
+- Invitations and share links are only loaded for the owner: the API refuses them to the others.
 
 ## Toasts
 
