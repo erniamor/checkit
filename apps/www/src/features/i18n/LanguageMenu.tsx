@@ -6,7 +6,6 @@ import {
 	DropdownMenuRadioItem,
 	DropdownMenuTrigger,
 } from "@repo/ui";
-import { LanguagesIcon } from "lucide-react";
 import { headerButtonClass } from "@/components/header-styles";
 import { m } from "@/paraglide/messages";
 import { isLocale, type Locale, locales } from "@/paraglide/runtime";
@@ -24,7 +23,7 @@ interface LanguageMenuProps {
 	onLocaleChange: (locale: Locale) => void;
 }
 
-/** The header's language menu: an icon and the current language's code. */
+/** The header's language menu: its button shows the current language's code. */
 export function LanguageMenu({ locale, onLocaleChange }: LanguageMenuProps) {
 	return (
 		<DropdownMenu>
@@ -34,8 +33,7 @@ export function LanguageMenu({ locale, onLocaleChange }: LanguageMenuProps) {
 					aria-label={m.language_menu_label({ language: localeNames[locale] })}
 					className={headerButtonClass}
 				>
-					<LanguagesIcon aria-hidden className="size-5" />
-					<span aria-hidden className="font-medium uppercase">
+					<span aria-hidden className="min-w-6 font-medium uppercase">
 						{locale}
 					</span>
 				</button>

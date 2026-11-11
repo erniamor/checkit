@@ -1,5 +1,7 @@
 import type { Profile } from "@repo/schemas";
 import { Link } from "@tanstack/react-router";
+import { LogInIcon } from "lucide-react";
+import { headerButtonClass } from "@/components/header-styles";
 import { Logo } from "@/components/Logo";
 import { AppearanceMenu } from "@/features/appearance/AppearanceMenu";
 import type { Appearance } from "@/features/appearance/appearance";
@@ -26,10 +28,8 @@ export function Header({ appearance, me }: HeaderProps) {
 					{me ? (
 						<UserMenu me={me} />
 					) : (
-						<Link
-							to="/sign-in"
-							className="flex h-9 items-center rounded-md border border-inverse-border px-3 text-sm hover:bg-inverse-foreground/10 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
-						>
+						<Link to="/sign-in" className={headerButtonClass}>
+							<LogInIcon aria-hidden className="size-5" />
 							{m.sign_in_link()}
 						</Link>
 					)}
