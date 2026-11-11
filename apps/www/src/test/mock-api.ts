@@ -1,0 +1,60 @@
+import { createApi } from "@repo/resources";
+import { vi } from "vitest";
+import { getApi } from "@/lib/api";
+
+export interface ApiRequest {
+	method: string;
+	/** Path under /v1, e.g. "/me". */
+	path: string;
+	body: unknown;
+}
+
+export interface ApiResponse {
+	status: number;
+	body?: unknown;
+}
+
+type Respond = (
+	request: ApiRequest,
+) => ApiResponse | undefined | Promise<ApiResponse | undefined>;
+
+/**
+ * Answers the app's API calls with `respond`, at the network level: the real
+ * @repo/resources client runs on top. Requires `vi.mock("@/lib/api")` in the
+ * test file. Returns the requests received.
+ */
+export function mockApi(respond: Respond): ApiRequest[] {
+	const requests: ApiRequest[] = [];
+	const api = createApi({
+		baseUrl: "http://api.test",
+		fetch: async (url, init) => {
+			const request: ApiRequest = {
+				method: init?.method ?? "GET",
+				path: new URL(String(url)).pathname.replace(/^\/v1/, ""),
+				body:
+					typeof init?.body === "string" ? JSON.parse(init.body) : undefined,
+			};
+			requests.push(request);
+			const response = (await respond(request)) ?? {
+				status: 404,
+				body: { error: { code: "not_found", message: "Route not found" } },
+			};
+			return new Response(
+				response.body === undefined ? null : JSON.stringify(response.body),
+				{
+					status: response.status,
+					headers: { "Content-Type": "application/json" },
+				},
+			);
+		},
+	});
+	vi.mocked(getApi).mockReturnValue(api);
+	return requests;
+}
+
+export const aliceProfile = {
+	id: "5f1b7c2e-8d4a-4e6b-9c3f-1a2b3c4d5e6f",
+	email: "alice@example.com",
+	name: "Alice",
+	image: null,
+};

@@ -13,27 +13,27 @@ The Zod schemas of the API's inputs and responses live in `packages/schemas`, sh
 - TypeScript in `strict` mode, with no dependency on React or a front-end framework: the core is usable anywhere.
 - Zod schemas from `@repo/schemas` to validate inputs and some responses
 - Native `fetch` as transport
-- Tests: Vitest, with a mocked network
-- <Add: TanStack Query, if `queryOptions` are provided by this package>
+- Tests: Vitest, with a mocked network (`src/test/fake-fetch.ts`)
+- No TanStack Query here: the query options (`queryOptions`, query keys) live in the apps, next to their routes, so this package stays a plain client
 - The `apps/api` REST API, versioned (`/v1`), with its `{ data, pagination }` responses and `{ error: { code, message, details? } }` errors
 - No Hono RPC client (`hc`): it would require importing the `AppType` type from `apps/api`, and a package never depends on an app
 
 ## Commands
 
-- Tests: `pnpm --filter resources test`
-- Typecheck: `pnpm --filter resources typecheck`
+- Tests: `pnpm --filter @repo/resources test`
+- Typecheck: `pnpm --filter @repo/resources typecheck`
 
 ## Structure
 
-- `src/http/`: base HTTP client (API URL, headers, authentication, timeouts)
-- `src/api/`: everything specific to the backend's API
-  - building query parameters (filters, sort, pagination...)
-  - reading the response envelope and the error envelope
-- `src/<resource>/`: one folder per business resource
-  - `<resource>.resource.ts`: the resource's operations
+- `src/http/client.ts`: base HTTP client (`createApiClient`: URL under `/v1`, headers, credentials, response validation) and `parseInput()` to validate an input before sending
+- `src/api/errors.ts`: reading the error envelopes (the API's `{ error: { ... } }` and Better Auth's `{ code, message }`) into typed errors
+- `src/<resource>/`: one folder per business resource (`auth`, `me`)
+  - `<resource>.resource.ts`: the resource's operations, as `create<Resource>Resource(client)`
   - `<resource>.resource.test.ts`: their tests
-- `src/errors.ts`: typed error classes (network, validation, authentication, authorization, not found, server)
-- `src/index.ts`: the package's public API (what is exported here is the contract)
+- `src/errors.ts`: typed error classes (`ApiError` and its subclasses, `NetworkError`)
+- `src/test/`: test helpers (`fakeFetch()`, `fakeApi()`)
+- `src/index.ts`: the package's public API: `createApi(config)`, which groups the resources, the error classes and the types (what is exported here is the contract)
+- Resource operations are `async`: an invalid input rejects the promise with a `ValidationError`, it never throws synchronously.
 
 ## Package rules
 
@@ -60,7 +60,7 @@ The Zod schemas of the API's inputs and responses live in `packages/schemas`, sh
 
 ## Authentication
 
-- The API uses a session cookie: requests are sent with `credentials: "include"` and the package handles no token. A server-to-server key never reaches the browser.
+- The API uses a session cookie and the package never reads or stores it. In the browser, the app creates the API with `credentials: "include"`; during server rendering, it forwards the incoming request's `Cookie` header through `headers`, a function called at every request. A server-to-server key never reaches the browser.
 - A 401 or 403 response produces a typed error; the redirect or session refresh is decided by the app, not by this package.
 
 ## Compatibility

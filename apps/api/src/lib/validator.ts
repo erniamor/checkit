@@ -1,14 +1,8 @@
 import { zValidator } from "@hono/zod-validator";
+import type { ValidationIssue } from "@repo/schemas";
 import type { ValidationTargets } from "hono";
 import type { z } from "zod";
 import { AppError } from "@/lib/errors";
-
-export interface ValidationIssue {
-	/** Dotted path of the invalid field, empty for the whole input. */
-	field: string;
-	/** Error code (the schema's message), translated by the front ends. */
-	message: string;
-}
 
 /** `zValidator` answering invalid input with a 422 in the API's error format. */
 export function validate<

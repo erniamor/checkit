@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
 	createMemoryHistory,
 	createRootRoute,
@@ -5,13 +6,38 @@ import {
 	RouterProvider,
 } from "@tanstack/react-router";
 import { render } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { type ReactNode, Suspense } from "react";
 
-/** Renders a component that uses router features (links) inside a test router. */
-export function renderWithRouter(ui: ReactNode) {
-	const router = createRouter({
-		routeTree: createRootRoute({ component: () => ui }),
-		history: createMemoryHistory(),
+function testQueryClient() {
+	return new QueryClient({
+		defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
 	});
-	return render(<RouterProvider router={router} />);
+}
+
+/** Renders a component that uses TanStack Query (mutations, queries). */
+export function renderWithQueryClient(ui: ReactNode) {
+	return render(
+		<QueryClientProvider client={testQueryClient()}>{ui}</QueryClientProvider>,
+	);
+}
+
+/** Renders a component that uses router features (links, navigation) and TanStack Query. */
+export function renderWithRouter(ui: ReactNode) {
+	const queryClient = testQueryClient();
+	const router = createRouter({
+		// Suspense: pages read their data with useSuspenseQuery
+		routeTree: createRootRoute({
+			component: () => <Suspense fallback={<p>Loading</p>}>{ui}</Suspense>,
+		}),
+		history: createMemoryHistory(),
+		context: { queryClient },
+	});
+	return {
+		router,
+		...render(
+			<QueryClientProvider client={queryClient}>
+				<RouterProvider router={router} />
+			</QueryClientProvider>,
+		),
+	};
 }

@@ -1,17 +1,9 @@
 import { z } from "zod";
-import { dateTimeSchema } from "./common";
+import { dateTimeSchema, emailSchema } from "./common";
 import { shareableRoleSchema } from "./members.schema";
 
-// Error messages are codes, translated by the front ends.
-// trim() and toLowerCase(): emails are compared case-insensitively.
-export const invitationEmailSchema = z
-	.string()
-	.trim()
-	.toLowerCase()
-	.pipe(z.email("email_invalid"));
-
 export const createInvitationSchema = z.strictObject({
-	email: invitationEmailSchema,
+	email: emailSchema,
 	role: shareableRoleSchema,
 });
 

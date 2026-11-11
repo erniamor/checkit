@@ -28,7 +28,11 @@ Apps import only from `@repo/ui` and `@repo/ui/styles.css`, never from internal 
 
 | Export | Description |
 | --- | --- |
+| `AlertDialog` and its parts (`AlertDialogTrigger`, `AlertDialogContent`, `AlertDialogHeader`, `AlertDialogTitle`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogCancel`, `AlertDialogAction`) | Confirmation dialog for an action that can't be undone |
 | `Button`, `buttonVariants` | shadcn button and its variants |
+| `Checkbox` | Checkbox (Radix), checked with the mouse or the Space key |
+| `Input` | Text field; `aria-invalid` shows the error state |
+| `Label` | Field label, associated with its field through `htmlFor` |
 | `cn` | Merges class names and resolves Tailwind conflicts (from the `cn` package) |
 
 ## Adding a component

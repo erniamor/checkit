@@ -12,8 +12,10 @@ A small web app to manage short to-do lists shared between several users: lists 
 | API: sharing (invitations, share links, member management) | Done |
 | API: real time (Server-Sent Events) | Done |
 | Front end: foundation (header, languages, appearance) | Done |
-| Front end: API client (`packages/resources`) and sign-in | Next |
-| Front end: lists, real time, sharing | Planned |
+| Front end: API client (`packages/resources`), sign-in, name at first sign-in | Done |
+| Front end: lists and items | Done |
+| Front end: real time | Next |
+| Front end: sharing | Planned |
 | Voice input | Planned (browser Web Speech API, server transcription as fallback) |
 | Email provider, hosting | Not chosen (see [docs/hosting.md](docs/hosting.md)) |
 
@@ -26,7 +28,7 @@ A pnpm monorepo:
 | [`apps/api`](apps/api) | REST API: Hono, Drizzle, PostgreSQL, Better Auth |
 | [`apps/www`](apps/www) | Front end: React, TanStack Start, TanStack Query, Paraglide JS |
 | [`packages/schemas`](packages/schemas) | Zod schemas shared by the API and the front ends |
-| [`packages/resources`](packages/resources) | Typed API client for the front ends (not started) |
+| [`packages/resources`](packages/resources) | Typed API client for the front ends |
 | [`packages/ui`](packages/ui) | shadcn/ui components |
 | [`packages/themes`](packages/themes) | Tailwind/shadcn themes (tokens, light and dark) |
 | [`packages/config-ts`](packages/config-ts) | Shared TypeScript configurations |
@@ -52,11 +54,14 @@ cp apps/api/.env.example apps/api/.env   # then set BETTER_AUTH_SECRET (openssl 
 pnpm --filter api db:up
 pnpm --filter api db:migrate
 
-pnpm --filter api dev                    # http://localhost:3001/v1/health
+# Front end: environment
+cp apps/www/.env.example apps/www/.env
 
-# Front end, in another terminal
-pnpm --filter www dev                    # http://localhost:3000
+# API (http://localhost:3001) and front end (http://localhost:3000) together
+pnpm dev
 ```
+
+Docker must be running: the API needs its database (`pnpm --filter api db:up` starts it).
 
 In development, sign-in emails (links and codes) are printed in the API's console. See [apps/api/README.md](apps/api/README.md) and [apps/www/README.md](apps/www/README.md) for the details.
 
@@ -66,6 +71,7 @@ From the root:
 
 | Command | Effect |
 | --- | --- |
+| `pnpm dev` | Start the API and the front end in parallel, with each line prefixed by its app |
 | `pnpm typecheck` | Typecheck every app and package |
 | `pnpm test` | Run every test suite (Docker must be running for the API's) |
 | `pnpm build` | Build every app |

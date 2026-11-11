@@ -20,3 +20,32 @@ export interface Paginated<T> {
 	data: T[];
 	pagination: Pagination;
 }
+
+// Error messages are codes, translated by the front ends.
+// trim() and toLowerCase(): emails are compared case-insensitively.
+export const emailSchema = z
+	.string()
+	.trim()
+	.toLowerCase()
+	.pipe(z.email("email_invalid"));
+
+/** One invalid field of a 422 error. */
+export const validationIssueSchema = z.object({
+	/** Dotted path of the field, empty for the whole input. */
+	field: z.string(),
+	/** Error code, e.g. "list_name_required". */
+	message: z.string(),
+});
+
+export type ValidationIssue = z.infer<typeof validationIssueSchema>;
+
+/** Body of every error response of the API. */
+export const apiErrorBodySchema = z.object({
+	error: z.object({
+		code: z.string(),
+		message: z.string(),
+		details: z.unknown().optional(),
+	}),
+});
+
+export type ApiErrorBody = z.infer<typeof apiErrorBodySchema>;

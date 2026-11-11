@@ -58,9 +58,10 @@ Handled by Better Auth under `/v1/auth/*`, with a session in an HTTP-only cookie
 | `POST /v1/auth/sign-in/email-otp` `{ email, otp }` | Signs in with the code (creates the account if needed) |
 | `POST /v1/auth/sign-in/magic-link` `{ email, callbackURL }` | Emails a sign-in link; opening it signs in and redirects to `callbackURL` (must be one of `CORS_ORIGINS`) |
 | `POST /v1/auth/sign-out` | Signs out |
-| `GET /v1/me` | Profile of the signed-in user |
+| `GET /v1/me` | Profile of the signed-in user (`name` is empty until they choose one) |
+| `PATCH /v1/me` `{ name }` | Sets the user's name (1 to 60 characters) |
 
-Codes and links are valid for 10 minutes. Emails are in English, French or Spanish depending on the browser's `Accept-Language`. Password sign-in is disabled.
+Codes and links are valid for 10 minutes. Emails are in English, French or Spanish depending on the request's `Accept-Language` (the front end sends the app's language). Password sign-in is disabled. Errors of the `/v1/auth/*` routes come from Better Auth, as `{ code, message }` with uppercase codes (e.g. `INVALID_OTP`); `@repo/resources` reads them like the API's.
 
 ### Lists
 

@@ -1,12 +1,8 @@
+import type { ApiErrorBody } from "@repo/schemas";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-export interface ErrorBody {
-	error: {
-		code: string;
-		message: string;
-		details?: unknown;
-	};
-}
+/** Body of every error response; its shape is shared with the front ends. */
+export type ErrorBody = ApiErrorBody;
 
 /** Expected error, turned into an `ErrorBody` response by the global error handler. */
 export class AppError extends Error {

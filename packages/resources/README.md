@@ -1,5 +1,55 @@
 # @repo/resources
 
-Typed client of the Checkit API for the front ends: one resource per domain (`lists`, `items`, `members`...), whose operations call the API, validate inputs with [`@repo/schemas`](../schemas), and return clean typed data or typed errors.
+Typed client of the Checkit API for the front ends. Each resource groups the operations of one domain; inputs are validated with [`@repo/schemas`](../schemas) before sending, responses are validated against their schema, and failures come back as typed errors.
 
-**Not started yet.** It will be written with the front end; its rules are in [`CLAUDE.md`](CLAUDE.md). Until then, the API's routes are documented in [apps/api/README.md](../../apps/api/README.md).
+## Usage
+
+```ts
+import { createApi, UnauthorizedError, ValidationError } from "@repo/resources";
+
+const api = createApi({
+	baseUrl: "http://localhost:3001", // without /v1
+	credentials: "include", // in the browser: sends the session cookie
+	headers: () => ({ "Accept-Language": "fr" }), // read at every request
+});
+
+try {
+	const me = await api.me.get();
+} catch (error) {
+	if (error instanceof UnauthorizedError) {
+		// not signed in
+	}
+}
+```
+
+During server rendering, pass the incoming request's cookie in `headers` instead of `credentials` (see `apps/www/src/lib/api.ts`).
+
+## Resources
+
+| Resource | Operations |
+| --- | --- |
+| `auth` | `sendMagicLink({ email, callbackURL })`, `sendSignInCode({ email })`, `signInWithCode({ email, code })`, `signOut()` |
+| `me` | `get()`, `update({ name })` |
+| `lists` | `list({ page?, pageSize? })`, `get(listId)`, `create({ name })`, `rename(listId, { name })`, `remove(listId)` |
+| `items` | `list(listId, { page?, pageSize? })`, `add(listId, { label })`, `addMany(listId, { labels })`, `update(listId, itemId, { label?, done?, position? })`, `remove(listId, itemId)` |
+
+Paginated operations return a `Page<T>`: `{ items, page, pageSize, total }`, without the API's `{ data, pagination }` envelope. Identifiers are encoded in the path, so they can't change the requested route.
+
+## Errors
+
+| Class | When | Useful fields |
+| --- | --- | --- |
+| `ValidationError` | Invalid input, caught before sending or answered by the API (400, 422) | `code`, `issues: [{ field, message }]` with error codes from `@repo/schemas` |
+| `UnauthorizedError` | 401, no valid session | `code` |
+| `ForbiddenError` | 403 | `code` |
+| `NotFoundError` | 404 | `code` |
+| `RateLimitError` | 429 | `code` |
+| `ServerError` | 5xx, or a response that doesn't match its schema (`code: "unexpected_response"`) | `code` |
+| `ApiError` | Any other error status (e.g. 409, 410); parent class of all the above | `status`, `code`, `message` |
+| `NetworkError` | The API couldn't be reached | `cause` |
+
+Errors of the sign-in routes (handled by Better Auth) are read the same way, with their codes lowercased: a wrong code is a `ValidationError` with the code `invalid_otp`. A cancelled request (`AbortSignal`) rejects with the original `AbortError`.
+
+## Scripts
+
+`pnpm --filter @repo/resources test`, `pnpm --filter @repo/resources typecheck`.

@@ -18,19 +18,20 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 
 ## Commands
 
-- Dev: `pnpm --filter www dev`
+- Dev: `pnpm --filter www dev` (fails if port 3000 is taken, rather than taking the API's 3001; copy `.env.example` to `.env` first)
 - Build: `pnpm --filter www build` (output in `dist/`)
 - Tests: `pnpm --filter www test`
 - Typecheck: `pnpm --filter www typecheck` (compiles the messages first, through the `i18n` script)
 
 ## Structure
 
-- `src/routes/`: TanStack routes; one file per route, thin (loader + page component). `__root.tsx` renders the HTML document, the header and the appearance.
-- `src/features/<feature>/`: components, hooks and logic specific to a feature (`appearance`, `i18n`, `home`)
-- `src/components/`: generic components specific to this app (`Header`, `Logo`, `SelectField`, `NotFound`, `ErrorView`; shared components go in `packages/ui`)
-- `src/server/`: server functions (data access, secrets)
-- `src/lib/`: utilities specific to the app (`cookies.ts`)
-- `src/test/`: test helpers (`setTestLocale()`, `renderWithRouter()`, `mockSystemAppearance()`)
+- `src/routes/`: TanStack routes; one file per route, thin (loader + page component). `__root.tsx` renders the HTML document, the header and the appearance, and loads the signed-in user. `_authenticated.tsx` is the layout of the pages reserved to signed-in users (`_authenticated/*`).
+- `src/features/<feature>/`: components, hooks and logic specific to a feature (`appearance`, `auth`, `profile`, `lists`, `i18n`, `home`)
+- `src/components/`: generic components specific to this app (`Header`, `Logo`, `SelectField`, `TextField`, `FormAlert`, `NotFound`, `ErrorView`; shared components go in `packages/ui`)
+- `src/server/`: server-only code (`env.ts`: the server's API URL)
+- `src/lib/`: utilities specific to the app (`api.ts`: the API client; `error-messages.ts`: error codes to messages; `redirect.ts`: the safe `redirect` search parameter; `cookies.ts`)
+- `src/env.ts`: public environment variables (`VITE_*`), validated with Zod
+- `src/test/`: test helpers (`setTestLocale()`, `renderWithRouter()`, `renderWithQueryClient()`, `mockApi()`, `fakeListServer()`: an in-memory API for one list, `mockSystemAppearance()`)
 - `src/router.tsx`: creates the router and the `QueryClient`
 - `src/server.ts`: server entry; runs Paraglide's middleware around TanStack Start's handler
 - `src/styles.css`: Tailwind, the theme and `@repo/ui`'s styles
@@ -50,6 +51,22 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 
 - Light, dark or system, chosen in the header and stored in the `appearance` cookie. `getAppearance()` reads it on the server and in the browser; the root route renders the `dark` class on `<html>` so the page doesn't flash.
 - With "system", the server can't know the system's appearance: a small inline script sets the class before the first paint, and `<html>` has `suppressHydrationWarning` for that reason.
+
+## API and session
+
+- Every call goes through `getApi()` (`src/lib/api.ts`), the resources of `@repo/resources`. In the browser it calls the API directly with the session cookie (`credentials: "include"`); during server rendering it forwards the incoming request's cookie. Both send the app's language as `Accept-Language`.
+- The signed-in user is the `me` query (`features/auth/me-query.ts`): `null` for a visitor. The root route loads it and puts it in the route context (`context.me`), used by the header and the routes' checks.
+- After signing in, out or changing the profile, call `useSessionChange()` (`refresh` or `clear`): it updates the `me` query, re-runs the routes' checks and navigates.
+- A page reserved to signed-in users goes under `src/routes/_authenticated/`. A signed-in user without a name is sent to `/welcome` first (root route).
+- A `redirect` search parameter is always parsed with `redirectSearchSchema`: only internal paths are kept, so a link can't send users to another site.
+- Query options and keys (`queryOptions`) live in the features, not in `@repo/resources`.
+
+## Lists
+
+- Query options and keys are in `features/lists/queries.ts` (`listKeys`): `["lists"]`, `["lists", listId]`, `["lists", listId, "items"]`. Invalidating `["lists"]` reloads everything about the lists.
+- Item changes and the list's renaming are optimistic (`use-list-mutations.ts`): the cache is updated at once, rolled back if the API refuses, then reloaded. Validate the input with its schema (`validateField()`) before an optimistic change, so an invalid value never shows.
+- The actions shown follow the role (`permissions.ts`); the API enforces it anyway.
+- One page of data: 100 lists, 200 items per list (`LISTS_PAGE_SIZE`, `ITEMS_PAGE_SIZE`). Add a "load more" before raising them.
 
 ## Routes and data
 
@@ -92,7 +109,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 
 - Test components with Vitest and Testing Library, from the user's point of view (roles, labels, visible text).
 - Prioritize testing forms, `features/` logic and error cases.
-- Mock the API at the `resources` or network level; don't call a real API in tests.
+- Mock the API at the `resources` or network level; don't call a real API in tests. In practice: `vi.mock("@/lib/api", () => ({ getApi: vi.fn() }))` in the test file, then `mockApi(respond)` answers the requests and returns them.
 
 ## Never do
 

@@ -2,6 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import {
 	createRootRouteWithContext,
 	HeadContent,
+	redirect,
 	Scripts,
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
@@ -11,6 +12,7 @@ import {
 	systemAppearanceScript,
 } from "@/features/appearance/appearance";
 import { getAppearance } from "@/features/appearance/get-appearance";
+import { meQueryOptions } from "@/features/auth/me-query";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 import stylesUrl from "@/styles.css?url";
@@ -20,7 +22,14 @@ interface RouterContext {
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
-	beforeLoad: () => ({ appearance: getAppearance() }),
+	beforeLoad: async ({ context, location }) => {
+		const me = await context.queryClient.ensureQueryData(meQueryOptions());
+		// A user without a name chooses one before anything else
+		if (me && !me.name && location.pathname !== "/welcome") {
+			throw redirect({ to: "/welcome", search: { redirect: location.href } });
+		}
+		return { appearance: getAppearance(), me };
+	},
 	head: () => ({
 		meta: [
 			{ charSet: "utf-8" },
@@ -33,7 +42,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootDocument({ children }: { children: ReactNode }) {
-	const { appearance } = Route.useRouteContext();
+	const { appearance, me } = Route.useRouteContext();
 
 	return (
 		// With the "system" appearance, the class set by the script below differs
@@ -53,7 +62,7 @@ function RootDocument({ children }: { children: ReactNode }) {
 				)}
 			</head>
 			<body>
-				<Header appearance={appearance} />
+				<Header appearance={appearance} me={me} />
 				<main>{children}</main>
 				<Scripts />
 			</body>

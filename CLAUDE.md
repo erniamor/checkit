@@ -72,7 +72,7 @@ From the root:
 
 IMPORTANT: after any change, run the typecheck, Biome and the tests of the affected apps and packages before declaring the task done. If the change touches a shared package, also check every app that uses it.
 
-Root shortcuts: `pnpm typecheck`, `pnpm test`, `pnpm build` (recursive), `pnpm check` / `pnpm check:fix` (Biome). Biome ignores `docs/`, Markdown files and generated files.
+Root shortcuts: `pnpm dev` (API and front end in parallel), `pnpm typecheck`, `pnpm test`, `pnpm build` (recursive), `pnpm check` / `pnpm check:fix` (Biome). Biome ignores `docs/`, Markdown files and generated files.
 
 ## Typical front-end app structure (TanStack Start)
 

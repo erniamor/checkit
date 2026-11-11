@@ -1,22 +1,38 @@
+import type { Profile } from "@repo/schemas";
+import { Link } from "@tanstack/react-router";
 import { Logo } from "@/components/Logo";
 import { AppearanceSelect } from "@/features/appearance/AppearanceSelect";
 import type { Appearance } from "@/features/appearance/appearance";
+import { UserMenu } from "@/features/auth/UserMenu";
 import { LanguageSelect } from "@/features/i18n/LanguageSelect";
+import { m } from "@/paraglide/messages";
 import { getLocale, setLocale } from "@/paraglide/runtime";
 
 interface HeaderProps {
 	appearance: Appearance;
+	/** The signed-in user, null for a visitor. */
+	me: Profile | null;
 }
 
-export function Header({ appearance }: HeaderProps) {
+export function Header({ appearance, me }: HeaderProps) {
 	return (
 		<header className="border-inverse-border border-b bg-inverse text-inverse-foreground">
-			<div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
+			<div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
 				<Logo />
-				<div className="flex items-center gap-2">
+				<div className="flex flex-wrap items-center gap-2">
 					{/* Changing the language reloads the page in that language */}
 					<LanguageSelect locale={getLocale()} onLocaleChange={setLocale} />
 					<AppearanceSelect initialAppearance={appearance} />
+					{me ? (
+						<UserMenu me={me} />
+					) : (
+						<Link
+							to="/sign-in"
+							className="flex h-9 items-center rounded-md border border-inverse-border px-3 text-sm hover:bg-inverse-foreground/10 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
+						>
+							{m.sign_in_link()}
+						</Link>
+					)}
 				</div>
 			</div>
 		</header>

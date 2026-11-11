@@ -8,6 +8,7 @@
 		"pnpm": ">=10"
 	},
 	"scripts": {
+		"dev": "pnpm --parallel --filter api --filter www dev",
 		"build": "pnpm -r build",
 		"test": "pnpm -r test",
 		"typecheck": "pnpm -r typecheck",
