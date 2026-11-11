@@ -1,0 +1,17 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"app_name": "Checkit",
+	"logo_home_link": "Checkit, home",
+	"language_label": "Language",
+	"appearance_label": "Appearance",
+	"appearance_light": "Light",
+	"appearance_dark": "Dark",
+	"appearance_system": "System",
+	"home_title": "Your to-do lists, shared",
+	"home_intro": "Create short lists, share them with the people you live or work with, and add items with your voice. Changes show up for everyone in real time.",
+	"not_found_title": "Page not found",
+	"not_found_text": "This page doesn't exist or has moved.",
+	"not_found_home_link": "Back to home",
+	"error_title": "Something went wrong",
+	"error_retry": "Try again"
+}

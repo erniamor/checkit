@@ -18,7 +18,8 @@ The site is multilingual by default: English (default locale), French and Spanis
 ## Stack
 
 - Monorepo: pnpm workspaces
-- Front-end app (`www`): React + TanStack Start (TanStack Router routing, server functions)
+- Front-end app (`www`): React + TanStack Start (TanStack Router routing, server functions), TanStack Query for server state
+- i18n: Paraglide JS (`apps/www`); the API translates its emails itself
 - Backend (`apps/api`): Hono on Node with Drizzle and PostgreSQL, consumed by the front end through `packages/resources`
 - TypeScript in `strict` mode
 - Data validation: Zod

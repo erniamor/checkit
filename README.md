@@ -11,7 +11,9 @@ A small web app to manage short to-do lists shared between several users: lists 
 | API: lists, items, members, role-based access | Done |
 | API: sharing (invitations, share links, member management) | Done |
 | API: real time (Server-Sent Events) | Done |
-| Front end (`apps/www`) | Not started |
+| Front end: foundation (header, languages, appearance) | Done |
+| Front end: API client (`packages/resources`) and sign-in | Next |
+| Front end: lists, real time, sharing | Planned |
 | Voice input | Planned (browser Web Speech API, server transcription as fallback) |
 | Email provider, hosting | Not chosen (see [docs/hosting.md](docs/hosting.md)) |
 
@@ -22,7 +24,7 @@ A pnpm monorepo:
 | Folder | Content |
 | --- | --- |
 | [`apps/api`](apps/api) | REST API: Hono, Drizzle, PostgreSQL, Better Auth |
-| [`apps/www`](apps/www) | Front end: React, TanStack Start (not started) |
+| [`apps/www`](apps/www) | Front end: React, TanStack Start, TanStack Query, Paraglide JS |
 | [`packages/schemas`](packages/schemas) | Zod schemas shared by the API and the front ends |
 | [`packages/resources`](packages/resources) | Typed API client for the front ends (not started) |
 | [`packages/ui`](packages/ui) | shadcn/ui components |
@@ -51,9 +53,12 @@ pnpm --filter api db:up
 pnpm --filter api db:migrate
 
 pnpm --filter api dev                    # http://localhost:3001/v1/health
+
+# Front end, in another terminal
+pnpm --filter www dev                    # http://localhost:3000
 ```
 
-In development, sign-in emails (links and codes) are printed in the API's console. See [apps/api/README.md](apps/api/README.md) for the details.
+In development, sign-in emails (links and codes) are printed in the API's console. See [apps/api/README.md](apps/api/README.md) and [apps/www/README.md](apps/www/README.md) for the details.
 
 ## Commands
 

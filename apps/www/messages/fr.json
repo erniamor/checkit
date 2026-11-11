@@ -1,0 +1,17 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"app_name": "Checkit",
+	"logo_home_link": "Checkit, accueil",
+	"language_label": "Langue",
+	"appearance_label": "Apparence",
+	"appearance_light": "Claire",
+	"appearance_dark": "Sombre",
+	"appearance_system": "Système",
+	"home_title": "Vos listes de tâches, partagées",
+	"home_intro": "Créez de courtes listes, partagez-les avec les personnes avec qui vous vivez ou travaillez, et ajoutez des éléments à la voix. Les modifications apparaissent chez tout le monde en temps réel.",
+	"not_found_title": "Page introuvable",
+	"not_found_text": "Cette page n'existe pas ou a été déplacée.",
+	"not_found_home_link": "Retour à l'accueil",
+	"error_title": "Une erreur est survenue",
+	"error_retry": "Réessayer"
+}

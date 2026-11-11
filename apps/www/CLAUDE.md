@@ -4,33 +4,52 @@
 
 ## Role
 
-<One sentence: what this app does, who it is for, and what data it consumes (backend API, third-party services).>
+Checkit's web app, for the people who keep shared to-do lists: sign-in, lists and their items, sharing, real-time updates and voice input. Consumes the API of `apps/api` (REST and Server-Sent Events) through `@repo/resources`.
 
 ## App-specific stack
 
-- React + TanStack Start (file-based routing, loaders, server functions)
+- React + TanStack Start (file-based routing, loaders, server functions), on Vite 8, served on `http://localhost:3000` in development
+- Server state: TanStack Query, wired to the router with `@tanstack/react-router-ssr-query` (data loaded during server rendering is handed to the browser's cache)
 - Data: the Hono API (`apps/api`) through `@repo/resources`
 - Validation: Zod schemas from `@repo/schemas`, shared with the API
-- UI: components from `@repo/ui` (shadcn) and themes from `@repo/themes`
-- <Add here: server state management (TanStack Query), forms (TanStack Form | React Hook Form), i18n, analytics...>
+- i18n: Paraglide JS 2.9 (see "Languages")
+- UI: components from `@repo/ui` (shadcn) and the `brand` theme of `@repo/themes`
+- Tests: Vitest (jsdom) and Testing Library
 
 ## Commands
 
 - Dev: `pnpm --filter www dev`
-- Build: `pnpm --filter www build`
+- Build: `pnpm --filter www build` (output in `dist/`)
 - Tests: `pnpm --filter www test`
-- Typecheck: `pnpm --filter www typecheck`
+- Typecheck: `pnpm --filter www typecheck` (compiles the messages first, through the `i18n` script)
 
 ## Structure
 
-- `src/routes/`: TanStack routes; one file per route, thin (loader + page component)
-- `src/features/<feature>/`: components, hooks and logic specific to a feature
-- `src/components/`: generic components specific to this app (shared components go in `packages/ui`)
+- `src/routes/`: TanStack routes; one file per route, thin (loader + page component). `__root.tsx` renders the HTML document, the header and the appearance.
+- `src/features/<feature>/`: components, hooks and logic specific to a feature (`appearance`, `i18n`, `home`)
+- `src/components/`: generic components specific to this app (`Header`, `Logo`, `SelectField`, `NotFound`, `ErrorView`; shared components go in `packages/ui`)
 - `src/server/`: server functions (data access, secrets)
-- `src/lib/`: utilities specific to the app
-- `src/routeTree.gen.ts`: generated, never edit
+- `src/lib/`: utilities specific to the app (`cookies.ts`)
+- `src/test/`: test helpers (`setTestLocale()`, `renderWithRouter()`, `mockSystemAppearance()`)
+- `src/router.tsx`: creates the router and the `QueryClient`
+- `src/server.ts`: server entry; runs Paraglide's middleware around TanStack Start's handler
+- `src/styles.css`: Tailwind, the theme and `@repo/ui`'s styles
+- `messages/<locale>.json`: the translations; `project.inlang/`: Paraglide's configuration
+- `src/routeTree.gen.ts` (committed) and `src/paraglide/` (ignored): generated, never edit
 
-<Adapt to the real structure.>
+## Languages
+
+- English (`en`, default), French (`fr`) and Spanish (`es`). Every user-facing text is a message in `messages/<locale>.json`, present in all three files, used as `m.<key>()` from `@/paraglide/messages`.
+- The locale isn't in the URL: it comes from the `PARAGLIDE_LOCALE` cookie (the user's choice in the header), then the browser's language, then English. On the server, `src/server.ts` detects it for each request.
+- Changing the language calls `setLocale()`, which stores the cookie and reloads the page.
+- The language names in the selector are written in their own language (`Français`), the same in every locale.
+- The Paraglide options are set twice, in `vite.config.ts` and in the `i18n` script of `package.json`: keep them in sync.
+- In tests, `setTestLocale(locale)` renders the messages in a given locale.
+
+## Appearance
+
+- Light, dark or system, chosen in the header and stored in the `appearance` cookie. `getAppearance()` reads it on the server and in the browser; the root route renders the `dark` class on `<html>` so the page doesn't flash.
+- With "system", the server can't know the system's appearance: a small inline script sets the class before the first paint, and `<html>` has `suppressHydrationWarning` for that reason.
 
 ## Routes and data
 

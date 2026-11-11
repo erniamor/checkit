@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@import "@repo/themes/base.css";
+@import "@repo/themes/brand.css";
+@import "@repo/ui/styles.css";
+
+/* Lets Tailwind generate the classes used by the shared components */
+@source "../../../packages/ui/src";

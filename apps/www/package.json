@@ -1,0 +1,41 @@
+{
+	"name": "www",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev --port 3000",
+		"build": "vite build",
+		"i18n": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide --strategy cookie preferredLanguage baseLocale --emit-ts-declarations --silent",
+		"typecheck": "pnpm run i18n && tsc --noEmit",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@repo/schemas": "workspace:*",
+		"@repo/themes": "workspace:*",
+		"@repo/ui": "workspace:*",
+		"@tanstack/react-query": "^5.107.1",
+		"@tanstack/react-router": "^1.170.46",
+		"@tanstack/react-router-ssr-query": "^1.167.3",
+		"@tanstack/react-start": "^1.169.5",
+		"react": "catalog:",
+		"react-dom": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@inlang/paraglide-js": "~2.9.1",
+		"@repo/config-ts": "workspace:*",
+		"@tailwindcss/vite": "^4.3.5",
+		"@testing-library/jest-dom": "catalog:",
+		"@testing-library/react": "catalog:",
+		"@testing-library/user-event": "catalog:",
+		"@types/react": "catalog:",
+		"@types/react-dom": "catalog:",
+		"@vitejs/plugin-react": "^6.3.0",
+		"jsdom": "catalog:",
+		"tailwindcss": "catalog:",
+		"typescript": "catalog:",
+		"vite": "^8.3.7",
+		"vitest": "catalog:"
+	}
+}
