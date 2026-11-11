@@ -2,7 +2,11 @@ import type { Item, List, MemberRole } from "@repo/schemas";
 import type { ApiRequest, ApiResponse } from "@/test/mock-api";
 
 export const listId = "0b7e3f4a-1c2d-4e5f-8a9b-0c1d2e3f4a5b";
-const userId = "5f1b7c2e-8d4a-4e6b-9c3f-1a2b3c4d5e6f";
+/** The signed-in user, who created the items. */
+export const meId = "5f1b7c2e-8d4a-4e6b-9c3f-1a2b3c4d5e6f";
+const userId = meId;
+/** Another member of the list. */
+export const otherUserId = "8e7d6c5b-4a3f-4e2d-9c1b-0a9f8e7d6c5b";
 const date = "2026-11-10T08:00:00.000Z";
 
 interface FakeListServerOptions {
@@ -44,13 +48,14 @@ export function fakeListServer({
 	otherLists = [],
 }: FakeListServerOptions = {}) {
 	let name = "Groceries";
+	let myRole = role;
 	let stored = items.map((label, index) => makeItem(label, index + 1));
 	let failure: number | undefined;
 
 	const list = (): List => ({
 		id: listId,
 		name,
-		role,
+		role: myRole,
 		itemCount: stored.length,
 		doneCount: stored.filter((item) => item.done).length,
 		createdAt: date,
@@ -125,5 +130,44 @@ export function fakeListServer({
 			failure = status;
 		},
 		labels: () => stored.map((item) => item.label),
+		/** The stored item at `position` (from 1). */
+		item(position: number): Item {
+			const found = stored.find((item) => item.position === position);
+			if (!found) {
+				throw new Error(`No item at position ${position}`);
+			}
+			return found;
+		},
+		/** Another member's changes, made straight in the "database". */
+		other: {
+			addItem(label: string): Item {
+				const item = {
+					...makeItem(label, stored.length + 1),
+					createdById: otherUserId,
+				};
+				stored = [...stored, item];
+				return item;
+			},
+			updateItem(itemId: string, changes: Partial<Item>): Item {
+				stored = stored.map((item) =>
+					item.id === itemId ? { ...item, ...changes } : item,
+				);
+				const updated = stored.find((item) => item.id === itemId);
+				if (!updated) {
+					throw new Error(`No item ${itemId}`);
+				}
+				return updated;
+			},
+			removeItem(itemId: string): void {
+				stored = stored.filter((item) => item.id !== itemId);
+			},
+			renameList(newName: string): void {
+				name = newName;
+			},
+			/** The owner changes the signed-in user's role. */
+			changeMyRole(newRole: MemberRole): void {
+				myRole = newRole;
+			},
+		},
 	};
 }

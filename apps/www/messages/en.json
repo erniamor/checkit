@@ -75,5 +75,9 @@
 	"error_list_name_required": "Enter a name for the list.",
 	"error_list_name_too_long": "The name is too long (100 characters at most).",
 	"error_item_label_required": "Enter the item.",
-	"error_item_label_too_long": "The item is too long (200 characters at most)."
+	"error_item_label_too_long": "The item is too long (200 characters at most).",
+	"toast_list_deleted": "“{name}” was deleted.",
+	"toast_access_lost": "You no longer have access to “{name}”.",
+	"connection_reconnecting": "Connection lost, reconnecting…",
+	"connection_closed": "Live updates are off. Reload the page to see the latest changes."
 }

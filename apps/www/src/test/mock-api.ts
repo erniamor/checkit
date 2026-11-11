@@ -1,6 +1,7 @@
 import { createApi } from "@repo/resources";
 import { vi } from "vitest";
 import { getApi } from "@/lib/api";
+import { FakeEventSource } from "@/test/fake-event-source";
 
 export interface ApiRequest {
 	method: string;
@@ -21,12 +22,15 @@ type Respond = (
 /**
  * Answers the app's API calls with `respond`, at the network level: the real
  * @repo/resources client runs on top. Requires `vi.mock("@/lib/api")` in the
- * test file. Returns the requests received.
+ * test file. Returns the requests received. Real-time streams use a
+ * FakeEventSource.
  */
 export function mockApi(respond: Respond): ApiRequest[] {
 	const requests: ApiRequest[] = [];
 	const api = createApi({
 		baseUrl: "http://api.test",
+		// Real-time streams are driven by the test through FakeEventSource.latest()
+		EventSource: FakeEventSource as unknown as typeof EventSource,
 		fetch: async (url, init) => {
 			const request: ApiRequest = {
 				method: init?.method ?? "GET",

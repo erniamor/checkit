@@ -18,6 +18,10 @@ export {
 } from "./errors";
 export type { ApiClientConfig } from "./http/client";
 export type { ItemsResource } from "./items/items.resource";
+export type {
+	ConnectionState,
+	ListEventHandlers,
+} from "./lists/list-events";
 export type { ListsResource } from "./lists/lists.resource";
 export type { MeResource } from "./me/me.resource";
 

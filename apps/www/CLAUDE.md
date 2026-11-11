@@ -31,7 +31,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 - `src/server/`: server-only code (`env.ts`: the server's API URL)
 - `src/lib/`: utilities specific to the app (`api.ts`: the API client; `error-messages.ts`: error codes to messages; `redirect.ts`: the safe `redirect` search parameter; `cookies.ts`)
 - `src/env.ts`: public environment variables (`VITE_*`), validated with Zod
-- `src/test/`: test helpers (`setTestLocale()`, `renderWithRouter()`, `renderWithQueryClient()`, `mockApi()`, `fakeListServer()`: an in-memory API for one list, `mockSystemAppearance()`)
+- `src/test/`: test helpers (`setTestLocale()`, `renderWithRouter()`, `renderWithQueryClient()`, `mockApi()`, `fakeListServer()`: an in-memory API for one list, with `other.*` for another member's changes, `FakeEventSource`: drives the real-time stream, `mockSystemAppearance()`)
 - `src/router.tsx`: creates the router and the `QueryClient`
 - `src/server.ts`: server entry; runs Paraglide's middleware around TanStack Start's handler
 - `src/styles.css`: Tailwind, the theme and `@repo/ui`'s styles
@@ -67,6 +67,18 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 - Item changes and the list's renaming are optimistic (`use-list-mutations.ts`): the cache is updated at once, rolled back if the API refuses, then reloaded. Validate the input with its schema (`validateField()`) before an optimistic change, so an invalid value never shows.
 - The actions shown follow the role (`permissions.ts`); the API enforces it anyway.
 - One page of data: 100 lists, 200 items per list (`LISTS_PAGE_SIZE`, `ITEMS_PAGE_SIZE`). Add a "load more" before raising them.
+
+## Real time
+
+- The list's page listens to its stream with `useListEvents(listId, meId)` (`lists.subscribe` of `@repo/resources`), in a `useEffect`: it syncs with an external system. Never subscribe during server rendering.
+- `applyListEvent()` (pure, tested) turns an event into a cache change. My own `items.created` reloads the items instead, since my optimistic addition already shows them with a temporary id.
+- If a load of the list is in progress when an event arrives, reload instead of patching: the load started before the change and would overwrite the patch.
+- Every `ready` (connection and reconnection) reloads the list: missed events aren't replayed.
+- A deleted list, or a lost access, leaves the page for `/lists` with a toast.
+
+## Toasts
+
+- One `<Toaster />` in the root route; call `toast` from `@repo/ui` for a message that must survive a navigation or doesn't belong to a form. Errors about a form stay next to it (`FormAlert`, field errors).
 
 ## Routes and data
 

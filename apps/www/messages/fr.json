@@ -75,5 +75,9 @@
 	"error_list_name_required": "Saisissez un nom pour la liste.",
 	"error_list_name_too_long": "Le nom est trop long (100 caractères au maximum).",
 	"error_item_label_required": "Saisissez l'élément.",
-	"error_item_label_too_long": "L'élément est trop long (200 caractères au maximum)."
+	"error_item_label_too_long": "L'élément est trop long (200 caractères au maximum).",
+	"toast_list_deleted": "« {name} » a été supprimée.",
+	"toast_access_lost": "Vous n'avez plus accès à « {name} ».",
+	"connection_reconnecting": "Connexion perdue, reconnexion…",
+	"connection_closed": "Les mises à jour en direct sont coupées. Rechargez la page pour voir les derniers changements."
 }

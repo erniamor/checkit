@@ -75,5 +75,9 @@
 	"error_list_name_required": "Escribe un nombre para la lista.",
 	"error_list_name_too_long": "El nombre es demasiado largo (100 caracteres como máximo).",
 	"error_item_label_required": "Escribe el elemento.",
-	"error_item_label_too_long": "El elemento es demasiado largo (200 caracteres como máximo)."
+	"error_item_label_too_long": "El elemento es demasiado largo (200 caracteres como máximo).",
+	"toast_list_deleted": "«{name}» se ha eliminado.",
+	"toast_access_lost": "Ya no tienes acceso a «{name}».",
+	"connection_reconnecting": "Conexión perdida, reconectando…",
+	"connection_closed": "Las actualizaciones en directo están desactivadas. Recarga la página para ver los últimos cambios."
 }

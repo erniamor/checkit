@@ -4,23 +4,28 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { FormAlert } from "@/components/FormAlert";
 import { AddItemForm } from "@/features/lists/AddItemForm";
+import { ConnectionStatus } from "@/features/lists/ConnectionStatus";
 import { DeleteListButton } from "@/features/lists/DeleteListButton";
 import { ItemsSection } from "@/features/lists/ItemsSection";
 import { ListTitle } from "@/features/lists/ListTitle";
 import { canEdit, isOwner } from "@/features/lists/permissions";
 import { itemsQueryOptions, listQueryOptions } from "@/features/lists/queries";
 import { splitItems } from "@/features/lists/split-items";
+import { useListEvents } from "@/features/lists/use-list-events";
 import { useListMutations } from "@/features/lists/use-list-mutations";
 import { saveErrorMessage } from "@/lib/error-messages";
 import { m } from "@/paraglide/messages";
 
 interface ListPageProps {
 	listId: string;
+	/** The signed-in user, to tell their own changes from the others'. */
+	meId: string;
 }
 
-export function ListPage({ listId }: ListPageProps) {
+export function ListPage({ listId, meId }: ListPageProps) {
 	const { data: list } = useSuspenseQuery(listQueryOptions(listId));
 	const { data: page } = useSuspenseQuery(itemsQueryOptions(listId));
+	const connection = useListEvents(listId, meId);
 	const [error, setError] = useState<string>();
 	const mutations = useListMutations(listId, (failure) =>
 		setError(saveErrorMessage(failure)),
@@ -65,6 +70,7 @@ export function ListPage({ listId }: ListPageProps) {
 			{!editable && (
 				<p className="text-muted-foreground text-sm">{m.list_read_only()}</p>
 			)}
+			<ConnectionStatus state={connection} />
 			<FormAlert message={error} />
 			{editable && (
 				<AddItemForm

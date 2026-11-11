@@ -33,6 +33,7 @@ Apps import only from `@repo/ui` and `@repo/ui/styles.css`, never from internal 
 | `Checkbox` | Checkbox (Radix), checked with the mouse or the Space key |
 | `Input` | Text field; `aria-invalid` shows the error state |
 | `Label` | Field label, associated with its field through `htmlFor` |
+| `Toaster`, `toast` | Toasts (Sonner): render one `<Toaster theme={appearance} />` in the app, then call `toast.info("...")` anywhere. Adapted from shadcn: the theme comes from the app instead of `next-themes` |
 | `cn` | Merges class names and resolves Tailwind conflicts (from the `cn` package) |
 
 ## Adding a component

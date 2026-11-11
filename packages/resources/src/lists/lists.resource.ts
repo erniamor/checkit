@@ -15,6 +15,7 @@ import {
 	withQuery,
 } from "../api/page";
 import { type ApiClient, parseInput } from "../http/client";
+import { type ListEventHandlers, subscribeToList } from "./list-events";
 
 /** The user's lists. A list the user can't see answers a NotFoundError. */
 export function createListsResource(client: ApiClient) {
@@ -69,6 +70,14 @@ export function createListsResource(client: ApiClient) {
 				method: "DELETE",
 				path: `/lists/${segment(listId)}`,
 			});
+		},
+
+		/**
+		 * Listens to the list's changes in real time (browser only). Returns the
+		 * function that stops listening.
+		 */
+		subscribe(listId: string, handlers: ListEventHandlers): () => void {
+			return subscribeToList(client, listId, handlers);
 		},
 	};
 }

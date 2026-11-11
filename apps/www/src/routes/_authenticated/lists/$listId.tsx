@@ -36,5 +36,6 @@ export const Route = createFileRoute("/_authenticated/lists/$listId")({
 
 function ListRoute() {
 	const { listId } = Route.useParams();
-	return <ListPage listId={listId} />;
+	const { me } = Route.useRouteContext();
+	return <ListPage listId={listId} meId={me.id} />;
 }

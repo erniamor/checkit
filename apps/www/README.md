@@ -2,7 +2,7 @@
 
 Checkit's web app: the screens where users sign in, manage their lists, share them and add items by voice. Built with React and TanStack Start, TanStack Query, Paraglide JS for translations, Tailwind CSS and the components of [`@repo/ui`](../../packages/ui).
 
-**In progress.** For now: a header (logo, language and appearance selectors, the signed-in user and sign-out), sign-in by magic link or code, the name asked at the first sign-in, the lists and their items, a home page for visitors, and the 404 and error pages. Real time comes next.
+**In progress.** For now: a header (logo, language and appearance selectors, the signed-in user and sign-out), sign-in by magic link or code, the name asked at the first sign-in, the lists and their items, updated in real time with the other members' changes, a home page for visitors, and the 404 and error pages. Sharing comes next.
 
 ## Screens
 
@@ -11,7 +11,7 @@ Checkit's web app: the screens where users sign in, manage their lists, share th
 | `/` | Presentation for visitors; signed-in users go to `/lists` |
 | `/sign-in`, `/welcome` | Sign-in, then the name at the first sign-in |
 | `/lists` | My lists: each with its progress and whether it's shared with me; creates a list |
-| `/lists/:listId` | A list: add, check, rename and delete items; rename the list; delete it (owner, after a confirmation). Read only for a viewer. Checked items are shown below the others |
+| `/lists/:listId` | A list: add, check, rename and delete items; rename the list; delete it (owner, after a confirmation). Read only for a viewer. Checked items are shown below the others. The other members' changes show up live; if the list is deleted or the user loses access, they're sent back to `/lists` with a toast |
 
 The app calls the API through [`@repo/resources`](../../packages/resources): it needs the API running (see [apps/api/README.md](../api/README.md)).
 

@@ -2,7 +2,7 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { ListPage } from "@/features/lists/ListPage";
-import { fakeListServer, listId } from "@/test/fake-list-server";
+import { fakeListServer, listId, meId } from "@/test/fake-list-server";
 import { mockApi } from "@/test/mock-api";
 import { renderWithRouter } from "@/test/render-with-router";
 
@@ -10,7 +10,7 @@ vi.mock("@/lib/api", () => ({ getApi: vi.fn() }));
 
 function renderList(server: ReturnType<typeof fakeListServer>) {
 	const requests = mockApi(server.respond);
-	const result = renderWithRouter(<ListPage listId={listId} />);
+	const result = renderWithRouter(<ListPage listId={listId} meId={meId} />);
 	return { ...result, requests, user: userEvent.setup() };
 }
 

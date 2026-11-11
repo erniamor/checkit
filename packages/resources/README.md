@@ -30,10 +30,16 @@ During server rendering, pass the incoming request's cookie in `headers` instead
 | --- | --- |
 | `auth` | `sendMagicLink({ email, callbackURL })`, `sendSignInCode({ email })`, `signInWithCode({ email, code })`, `signOut()` |
 | `me` | `get()`, `update({ name })` |
-| `lists` | `list({ page?, pageSize? })`, `get(listId)`, `create({ name })`, `rename(listId, { name })`, `remove(listId)` |
+| `lists` | `list({ page?, pageSize? })`, `get(listId)`, `create({ name })`, `rename(listId, { name })`, `remove(listId)`, `subscribe(listId, handlers)` |
 | `items` | `list(listId, { page?, pageSize? })`, `add(listId, { label })`, `addMany(listId, { labels })`, `update(listId, itemId, { label?, done?, position? })`, `remove(listId, itemId)` |
 
 Paginated operations return a `Page<T>`: `{ items, page, pageSize, total }`, without the API's `{ data, pagination }` envelope. Identifiers are encoded in the path, so they can't change the requested route.
+
+## Real time
+
+`lists.subscribe(listId, { onReady, onEvent, onConnectionChange })` listens to a list's changes (Server-Sent Events) and returns the function that stops listening. Each event is validated with `listEventSchema` of `@repo/schemas`; an event outside the contract is ignored. `onReady` is called on the first connection and after each reconnection: events missed meanwhile aren't replayed, so reload the list there. `onConnectionChange` reports `"connecting"`, `"open"`, `"reconnecting"` (the browser retries by itself) or `"closed"` (it gave up, e.g. the user lost access).
+
+It needs an `EventSource`, which only browsers have: pass `EventSource` in the configuration to replace it (tests), and don't subscribe during server rendering.
 
 ## Errors
 

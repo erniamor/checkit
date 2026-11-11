@@ -1,3 +1,4 @@
+import { Toaster } from "@repo/ui";
 import type { QueryClient } from "@tanstack/react-query";
 import {
 	createRootRouteWithContext,
@@ -64,6 +65,7 @@ function RootDocument({ children }: { children: ReactNode }) {
 			<body>
 				<Header appearance={appearance} me={me} />
 				<main>{children}</main>
+				<Toaster theme={appearance} position="bottom-center" />
 				<Scripts />
 			</body>
 		</html>
