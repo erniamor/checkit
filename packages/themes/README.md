@@ -47,6 +47,18 @@ Placeholder for the product's identity: replace its values with the project's co
 
 Based on shadcn/ui's neutral theme, in pure grays with system fonts and a `0.625rem` radius. A reference to check that `packages/ui` components don't depend on the `brand` theme. Two values differ from shadcn to meet WCAG AA in light mode: `--muted-foreground` (`#6b6b6b` instead of `#737373`) and `--ring` (`#8a8a8a` instead of `#a1a1a1`).
 
+### Variants to choose the product's identity
+
+Five complete themes, light and dark, all with system fonts (nothing to load). Preview them in the app with the theme menu of the header (development only). Once one is chosen, it becomes `brand` and the others are deleted.
+
+| Theme | Name | Idea | Fonts | Radius |
+| --- | --- | --- | --- | --- |
+| `variant-a` | Stationery | A paper notebook: cream paper, navy ink, terracotta stamp, sage accent | Book serifs (Charter, Iowan Old Style) | `0.25rem` |
+| `variant-b` | Synthwave | An 80s arcade at night: lavender by day, deep indigo with neon pink and cyan by night | Avenir, monospace headings | `0.75rem` |
+| `variant-c` | Kitchen garden | Leaves and soil: pale sage, forest green, straw accent, terracotta for danger | Rounded (SF Pro Rounded) | `1rem` |
+| `variant-d` | Citrus | Energetic and sunny: tangerine, lemon accent, candied-orange band | Avenir, geometric headings (Futura) | `1.25rem` |
+| `variant-e` | Brutalist | Raw black and white, black borders, signal-yellow band and accent, electric blue focus | Monospace, grotesque headings | none |
+
 ## Verified contrasts
 
 `pnpm --filter themes test` checks, for each theme and each mode, that every token is defined and that these pairs meet WCAG AA: text ≥ 4.5:1 (`background`/`foreground`, `background`/`muted-foreground`, `background`/`primary`, each surface with its `-foreground`, `inverse` with both its texts), focus ring ≥ 3:1 on `background`.

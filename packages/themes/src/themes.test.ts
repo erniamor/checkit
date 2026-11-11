@@ -3,10 +3,20 @@ import baseCss from "./base.css?raw";
 import { defaultTheme, isThemeName, type ThemeName, themes } from "./index";
 import brandCss from "./themes/brand.css?raw";
 import neutralCss from "./themes/neutral.css?raw";
+import variantACss from "./themes/variant-a.css?raw";
+import variantBCss from "./themes/variant-b.css?raw";
+import variantCCss from "./themes/variant-c.css?raw";
+import variantDCss from "./themes/variant-d.css?raw";
+import variantECss from "./themes/variant-e.css?raw";
 
 const themeCss: Record<ThemeName, string> = {
 	brand: brandCss,
 	neutral: neutralCss,
+	"variant-a": variantACss,
+	"variant-b": variantBCss,
+	"variant-c": variantCCss,
+	"variant-d": variantDCss,
+	"variant-e": variantECss,
 };
 
 type Mode = "light" | "dark";

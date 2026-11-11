@@ -1,0 +1,74 @@
+/*
+ * "variant-c" theme, "Kitchen garden": leaves and soil. Pale sage backgrounds,
+ * forest green, a straw accent, terracotta for destructive actions. Rounded
+ * fonts and large radius: soft and organic.
+ * Fonts are system fonts: nothing to load.
+ */
+
+[data-theme="variant-c"] {
+	--background: #f5f7ef;
+	--foreground: #1c2b1e;
+	--card: #fbfcf7;
+	--card-foreground: #1c2b1e;
+	--popover: #fbfcf7;
+	--popover-foreground: #1c2b1e;
+	--primary: #2e6a3a;
+	--primary-foreground: #f5f7ef;
+	--secondary: #e6ecd8;
+	--secondary-foreground: #24361f;
+	--muted: #e9eedf;
+	--muted-foreground: #4f5e4a;
+	--accent: #f6e6c8;
+	--accent-foreground: #5a3b0d;
+	--destructive: #a8331e;
+	--destructive-foreground: #fbfcf7;
+	--border: #d7e0c6;
+	--input: #bfcca8;
+	--ring: #2e6a3a;
+
+	--inverse: #22332a;
+	--inverse-foreground: #f5f7ef;
+	--inverse-muted-foreground: #b8c8b0;
+	--inverse-border: #344a3d;
+
+	--typeface-body:
+		ui-rounded, "SF Pro Rounded", "Varela Round", Nunito, system-ui, sans-serif;
+	--typeface-heading:
+		ui-rounded, "SF Pro Rounded", "Varela Round", Nunito, system-ui, sans-serif;
+
+	--radius: 1rem;
+}
+
+[data-theme="variant-c"].dark {
+	--background: #111712;
+	--foreground: #e8efe2;
+	--card: #18201a;
+	--card-foreground: #e8efe2;
+	--popover: #18201a;
+	--popover-foreground: #e8efe2;
+	--primary: #8fd19e;
+	--primary-foreground: #0f2414;
+	--secondary: #202b22;
+	--secondary-foreground: #e8efe2;
+	--muted: #1e2720;
+	--muted-foreground: #a8b8a2;
+	--accent: #3a2f18;
+	--accent-foreground: #f3d9a4;
+	--destructive: #f0937f;
+	--destructive-foreground: #1a0d09;
+	--border: #2a372c;
+	--input: #38483a;
+	--ring: #8fd19e;
+
+	--inverse: #0a0f0b;
+	--inverse-foreground: #e8efe2;
+	--inverse-muted-foreground: #a8b8a2;
+	--inverse-border: #1f2a21;
+
+	--typeface-body:
+		ui-rounded, "SF Pro Rounded", "Varela Round", Nunito, system-ui, sans-serif;
+	--typeface-heading:
+		ui-rounded, "SF Pro Rounded", "Varela Round", Nunito, system-ui, sans-serif;
+
+	--radius: 1rem;
+}

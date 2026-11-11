@@ -3,6 +3,8 @@ import { z } from "zod";
 // Variables exposed to the browser: only VITE_* ones, never a secret
 const publicEnvSchema = z.object({
 	VITE_API_URL: z.url(),
+	// Shows the theme menu outside development, e.g. on staging
+	VITE_THEME_SWITCHER: z.enum(["true", "false"]).optional(),
 });
 
 export type PublicEnv = z.infer<typeof publicEnvSchema>;

@@ -7,7 +7,12 @@
 		".": "./src/index.ts",
 		"./base.css": "./src/base.css",
 		"./brand.css": "./src/themes/brand.css",
-		"./neutral.css": "./src/themes/neutral.css"
+		"./neutral.css": "./src/themes/neutral.css",
+		"./variant-a.css": "./src/themes/variant-a.css",
+		"./variant-b.css": "./src/themes/variant-b.css",
+		"./variant-c.css": "./src/themes/variant-c.css",
+		"./variant-d.css": "./src/themes/variant-d.css",
+		"./variant-e.css": "./src/themes/variant-e.css"
 	},
 	"scripts": {
 		"typecheck": "tsc --noEmit",

@@ -1,4 +1,14 @@
-export const themes = ["brand", "neutral"] as const;
+export const themes = [
+	"brand",
+	"neutral",
+	// Variants presented to choose the product's identity: once one is chosen,
+	// it becomes "brand" and the others are deleted
+	"variant-a",
+	"variant-b",
+	"variant-c",
+	"variant-d",
+	"variant-e",
+] as const;
 
 export type ThemeName = (typeof themes)[number];
 

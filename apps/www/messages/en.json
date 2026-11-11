@@ -136,5 +136,14 @@
 	"profile_title": "Profile",
 	"profile_intro": "Your name is shown to the people you share lists with.",
 	"profile_email_label": "Email",
-	"toast_profile_saved": "Your name was saved."
+	"toast_profile_saved": "Your name was saved.",
+	"theme_label": "Theme (preview)",
+	"theme_menu_label": "Theme: {theme}",
+	"theme_brand": "Current",
+	"theme_neutral": "Neutral",
+	"theme_variant_a": "Stationery",
+	"theme_variant_b": "Synthwave",
+	"theme_variant_c": "Kitchen garden",
+	"theme_variant_d": "Citrus",
+	"theme_variant_e": "Brutalist"
 }

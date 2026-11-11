@@ -1,0 +1,72 @@
+/*
+ * "variant-e" theme, "Brutalist": raw black and white, black borders, no
+ * radius, a signal-yellow band and accent, an electric blue focus ring.
+ * Monospace body, grotesque headings.
+ * Fonts are system fonts: nothing to load.
+ */
+
+[data-theme="variant-e"] {
+	--background: #ffffff;
+	--foreground: #000000;
+	--card: #ffffff;
+	--card-foreground: #000000;
+	--popover: #ffffff;
+	--popover-foreground: #000000;
+	--primary: #000000;
+	--primary-foreground: #ffffff;
+	--secondary: #f0f0f0;
+	--secondary-foreground: #000000;
+	--muted: #f0f0f0;
+	--muted-foreground: #4a4a4a;
+	--accent: #ffe600;
+	--accent-foreground: #000000;
+	--destructive: #d00000;
+	--destructive-foreground: #ffffff;
+	--border: #000000;
+	--input: #000000;
+	--ring: #0047ff;
+
+	--inverse: #ffe600;
+	--inverse-foreground: #000000;
+	--inverse-muted-foreground: #3d3600;
+	--inverse-border: #000000;
+
+	--typeface-body:
+		ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+	--typeface-heading: "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+	--radius: 0rem;
+}
+
+[data-theme="variant-e"].dark {
+	--background: #000000;
+	--foreground: #ffffff;
+	--card: #0a0a0a;
+	--card-foreground: #ffffff;
+	--popover: #0a0a0a;
+	--popover-foreground: #ffffff;
+	--primary: #ffffff;
+	--primary-foreground: #000000;
+	--secondary: #1f1f1f;
+	--secondary-foreground: #ffffff;
+	--muted: #1a1a1a;
+	--muted-foreground: #b8b8b8;
+	--accent: #ffe600;
+	--accent-foreground: #000000;
+	--destructive: #ff5c5c;
+	--destructive-foreground: #000000;
+	--border: #ffffff;
+	--input: #ffffff;
+	--ring: #4d8bff;
+
+	--inverse: #ffe600;
+	--inverse-foreground: #000000;
+	--inverse-muted-foreground: #3d3600;
+	--inverse-border: #000000;
+
+	--typeface-body:
+		ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+	--typeface-heading: "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+	--radius: 0rem;
+}

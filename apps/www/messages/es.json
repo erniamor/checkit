@@ -136,5 +136,14 @@
 	"profile_title": "Perfil",
 	"profile_intro": "Tu nombre se muestra a las personas con quienes compartes listas.",
 	"profile_email_label": "Correo electrónico",
-	"toast_profile_saved": "Tu nombre se ha guardado."
+	"toast_profile_saved": "Tu nombre se ha guardado.",
+	"theme_label": "Tema (vista previa)",
+	"theme_menu_label": "Tema: {theme}",
+	"theme_brand": "Actual",
+	"theme_neutral": "Neutro",
+	"theme_variant_a": "Papelería",
+	"theme_variant_b": "Synthwave",
+	"theme_variant_c": "Huerto",
+	"theme_variant_d": "Cítricos",
+	"theme_variant_e": "Brutalista"
 }

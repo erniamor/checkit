@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 async function renderHeader(me: Profile | null = null) {
-	renderWithRouter(<Header appearance="system" me={me} />);
+	renderWithRouter(<Header appearance="system" theme="brand" me={me} />);
 	return screen.findByRole("banner");
 }
 
@@ -104,6 +104,8 @@ describe("Header", () => {
 			name: "Appearance: System",
 		});
 
+		// Logo, language, theme (development only), then appearance
+		await user.tab();
 		await user.tab();
 		await user.tab();
 		await user.tab();

@@ -83,6 +83,12 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 - A share link's URL is built by the front end: `<origin>/join/<token>` (`shareLinkUrl()`).
 - Invitations and share links are only loaded for the owner: the API refuses them to the others.
 
+## Theme preview
+
+- The header's theme menu (`ThemeMenu`, palette icon) previews the themes of `@repo/themes` on the real pages. It only shows in development, or where `VITE_THEME_SWITCHER` is `"true"` (e.g. staging); otherwise the `theme` cookie is ignored and the default theme applies.
+- Like the appearance, the theme is stored in the `theme` cookie, read on the server (`getTheme()`) and rendered as `data-theme` on `<html>`: no flash.
+- `styles.css` imports every variant for the preview; once one is chosen, remove the others from it.
+
 ## Icons and tooltips
 
 - Icons come from `lucide-react`, always `aria-hidden`: the control carries the text.

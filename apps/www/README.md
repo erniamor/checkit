@@ -27,6 +27,7 @@ Copy `.env.example` to `.env`:
 | --- | --- |
 | `VITE_API_URL` | Public URL of the API, called by the browser (exposed to the client) |
 | `API_URL` | Optional: URL of the API for the server's requests during rendering (e.g. an internal address). Defaults to `VITE_API_URL`. Read from the process environment, not from `.env` |
+| `VITE_THEME_SWITCHER` | Optional: `"true"` shows the theme menu outside development, e.g. on staging (it always shows in development) |
 
 ## Sign-in
 

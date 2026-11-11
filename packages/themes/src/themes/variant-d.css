@@ -1,0 +1,70 @@
+/*
+ * "variant-d" theme, "Citrus": energetic and sunny. Tangerine primary color,
+ * lemon accent, a cream background and a candied-orange band. Geometric
+ * headings, very round corners.
+ * Fonts are system fonts: nothing to load.
+ */
+
+[data-theme="variant-d"] {
+	--background: #fffbef;
+	--foreground: #26170a;
+	--card: #ffffff;
+	--card-foreground: #26170a;
+	--popover: #ffffff;
+	--popover-foreground: #26170a;
+	--primary: #c2410c;
+	--primary-foreground: #ffffff;
+	--secondary: #fff1c2;
+	--secondary-foreground: #5c3a00;
+	--muted: #fdf3dc;
+	--muted-foreground: #6b5233;
+	--accent: #fde047;
+	--accent-foreground: #3d2a00;
+	--destructive: #be123c;
+	--destructive-foreground: #ffffff;
+	--border: #f5e2b8;
+	--input: #e9cf95;
+	--ring: #c2410c;
+
+	--inverse: #3d1f05;
+	--inverse-foreground: #fffbef;
+	--inverse-muted-foreground: #f2c98f;
+	--inverse-border: #5a3210;
+
+	--typeface-body: "Avenir Next", Avenir, "Segoe UI", system-ui, sans-serif;
+	--typeface-heading: Futura, "Century Gothic", "Trebuchet MS", sans-serif;
+
+	--radius: 1.25rem;
+}
+
+[data-theme="variant-d"].dark {
+	--background: #1a1206;
+	--foreground: #fff4dc;
+	--card: #241a0b;
+	--card-foreground: #fff4dc;
+	--popover: #241a0b;
+	--popover-foreground: #fff4dc;
+	--primary: #fdba74;
+	--primary-foreground: #2a1404;
+	--secondary: #33250e;
+	--secondary-foreground: #fff4dc;
+	--muted: #2e220d;
+	--muted-foreground: #d9c19a;
+	--accent: #fde047;
+	--accent-foreground: #2a1f00;
+	--destructive: #fb7185;
+	--destructive-foreground: #2a0a10;
+	--border: #3b2c12;
+	--input: #4d3a19;
+	--ring: #fde047;
+
+	--inverse: #0d0903;
+	--inverse-foreground: #fff4dc;
+	--inverse-muted-foreground: #d9c19a;
+	--inverse-border: #2b210d;
+
+	--typeface-body: "Avenir Next", Avenir, "Segoe UI", system-ui, sans-serif;
+	--typeface-heading: Futura, "Century Gothic", "Trebuchet MS", sans-serif;
+
+	--radius: 1.25rem;
+}

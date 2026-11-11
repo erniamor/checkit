@@ -1,0 +1,72 @@
+/*
+ * "variant-b" theme, "Synthwave": an 80s arcade at night. Lavender light mode,
+ * a deep indigo dark mode lit by neon pink and cyan. Monospace headings,
+ * rounded corners.
+ * Fonts are system fonts: nothing to load.
+ */
+
+[data-theme="variant-b"] {
+	--background: #fbf8ff;
+	--foreground: #1b1033;
+	--card: #ffffff;
+	--card-foreground: #1b1033;
+	--popover: #ffffff;
+	--popover-foreground: #1b1033;
+	--primary: #7b2cf0;
+	--primary-foreground: #ffffff;
+	--secondary: #f0e8ff;
+	--secondary-foreground: #3a1d70;
+	--muted: #f3eefb;
+	--muted-foreground: #5d5179;
+	--accent: #ffe1f5;
+	--accent-foreground: #7a0f5c;
+	--destructive: #c41545;
+	--destructive-foreground: #ffffff;
+	--border: #e6dcf7;
+	--input: #cdbdee;
+	--ring: #d0168f;
+
+	--inverse: #1b1033;
+	--inverse-foreground: #fbf8ff;
+	--inverse-muted-foreground: #c2b4e6;
+	--inverse-border: #33215a;
+
+	--typeface-body: "Avenir Next", Avenir, "Segoe UI", system-ui, sans-serif;
+	--typeface-heading:
+		ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+
+	--radius: 0.75rem;
+}
+
+[data-theme="variant-b"].dark {
+	--background: #0f0a1f;
+	--foreground: #f2ecff;
+	--card: #181030;
+	--card-foreground: #f2ecff;
+	--popover: #181030;
+	--popover-foreground: #f2ecff;
+	--primary: #ff6ad5;
+	--primary-foreground: #1a0626;
+	--secondary: #241843;
+	--secondary-foreground: #f2ecff;
+	--muted: #211639;
+	--muted-foreground: #b8a9dc;
+	--accent: #0f3b47;
+	--accent-foreground: #7ff3ff;
+	--destructive: #ff7a8f;
+	--destructive-foreground: #1a0626;
+	--border: #2e2052;
+	--input: #3d2b6b;
+	--ring: #58e1ff;
+
+	--inverse: #05020d;
+	--inverse-foreground: #f2ecff;
+	--inverse-muted-foreground: #b8a9dc;
+	--inverse-border: #22173d;
+
+	--typeface-body: "Avenir Next", Avenir, "Segoe UI", system-ui, sans-serif;
+	--typeface-heading:
+		ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+
+	--radius: 0.75rem;
+}
