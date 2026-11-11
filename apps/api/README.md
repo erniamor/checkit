@@ -28,6 +28,7 @@ Validated at startup by [`src/env.ts`](src/env.ts): the API refuses to start wit
 | `DATABASE_URL` | yes | PostgreSQL connection URL |
 | `CORS_ORIGINS` | yes | Comma-separated front-end origins allowed to call the API (with cookies) |
 | `BETTER_AUTH_SECRET` | yes | At least 32 characters; signs sessions and tokens |
+| `RESEND_API_KEY`, `EMAIL_FROM` | in production | Send the emails with [Resend](https://resend.com); both or none. `EMAIL_FROM` is `Name <address>` or `address`, on a domain verified in Resend. Without them (development, tests), emails are printed to the console |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | no | Enable Google sign-in; both or none. Redirect URI: `<API_URL>/v1/auth/callback/google` |
 
 ## Scripts
@@ -158,7 +159,17 @@ Every error has the same shape:
 | 422 | `validation_error` | Invalid input; `details` lists each field with an error code from `@repo/schemas` |
 | 429 | `too_many_invitations` | The list already has 50 pending invitations |
 | 500 | `internal_error` | Unexpected error, logged on the server, never detailed in the response |
-| 503 | `email_unavailable` | Production without an email provider (none chosen yet) |
+| 503 | `email_unavailable` | Resend refused the email or didn't answer in 10 seconds (the reason is logged on the server) |
+
+## Email sending
+
+Sign-in links and codes and invitations are sent with Resend's REST API (`src/lib/mailer.ts`, no SDK), as plain text, in the recipient's language.
+
+1. In Resend, add the sender's domain in the **EU region** (Ireland), then add the DNS records Resend gives (SPF, DKIM). Use a subdomain (e.g. `mail.example.com`) to keep the main domain's reputation separate.
+2. Create an API key with "Sending access", restricted to that domain.
+3. Set `RESEND_API_KEY` and `EMAIL_FROM` in `.env` (or the host's secrets in production).
+
+Before the domain is verified, `EMAIL_FROM=onboarding@resend.dev` works for trying it out, but only towards the email address of the Resend account. To print the emails again in development, remove both variables.
 
 ## Tests
 
@@ -170,7 +181,7 @@ The tests call the app in memory through `app.request()` and use the `checkit_te
 
 ## Production notes
 
-- Sign-in by email is unavailable until an email provider is chosen: in production, the API refuses to print links and codes to the logs.
+- Emails are sent with Resend, required in production: the API refuses to start without `RESEND_API_KEY` and `EMAIL_FROM`, rather than print sign-in links and codes to the logs. See "Email sending".
 - Better Auth's rate limiting is active in production only, kept in memory: enough for a single instance.
 - Hosting options: [docs/hosting.md](../../docs/hosting.md). Real time needs a long-running process holding the SSE connections, not serverless functions.
 - Real-time events only reach the connections of the instance that published them: with several API instances, replace the in-memory bus (`src/realtime/list-events.ts`) with PostgreSQL `LISTEN/NOTIFY`.

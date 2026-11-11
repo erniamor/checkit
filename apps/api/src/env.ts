@@ -14,6 +14,17 @@ const envSchema = z
 		BETTER_AUTH_SECRET: z
 			.string()
 			.min(32, "BETTER_AUTH_SECRET must be at least 32 characters long"),
+		// Resend: sends the emails; required in production, optional elsewhere
+		// (without it, emails are printed to the console)
+		RESEND_API_KEY: z.string().startsWith("re_").optional(),
+		// Sender of the emails, as "Name <address>" or "address", on a domain verified in Resend
+		EMAIL_FROM: z
+			.string()
+			.regex(
+				/^(?:[^<>]+ <[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+>|[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+)$/,
+				'EMAIL_FROM must be "Name <address>" or "address"',
+			)
+			.optional(),
 		GOOGLE_CLIENT_ID: z.string().min(1).optional(),
 		GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
 		// Comma-separated list in the environment, turned into an array of origins
@@ -35,7 +46,20 @@ const envSchema = z
 			message: "GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be set together",
 			path: ["GOOGLE_CLIENT_SECRET"],
 		},
-	);
+	)
+	.refine(
+		(env) =>
+			(env.RESEND_API_KEY === undefined) === (env.EMAIL_FROM === undefined),
+		{
+			message: "RESEND_API_KEY and EMAIL_FROM must be set together",
+			path: ["EMAIL_FROM"],
+		},
+	)
+	// Without it, sign-in links and codes could only end up in the logs
+	.refine((env) => env.NODE_ENV !== "production" || env.RESEND_API_KEY, {
+		message: "RESEND_API_KEY and EMAIL_FROM are required in production",
+		path: ["RESEND_API_KEY"],
+	});
 
 export type Env = z.infer<typeof envSchema>;
 

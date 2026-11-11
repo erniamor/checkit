@@ -8,7 +8,7 @@ Status: recommendation, no decision yet.
 | --- | --- |
 | `apps/www` (TanStack Start) | SSR runtime (Node or edge), CDN for static assets |
 | `apps/api` (Hono) | Long-running Node process (Server-Sent Events for real time), PostgreSQL database, daily backups |
-| Email sending | Transactional email provider for magic links, sign-in codes and invitations |
+| Email sending | Chosen: Resend, sending domain in its EU region (Ireland), for magic links, sign-in codes and invitations |
 | Personal data | Accounts (email, name), lists and their items, list memberships; voice recordings only in transit if server-side transcription is used: data location and backups matter |
 
 Four constraints shape the choice:

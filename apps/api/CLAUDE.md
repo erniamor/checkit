@@ -57,7 +57,8 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 - Its tables (`users`, `sessions`, `accounts`, `verifications`) are written by hand in `src/db/schema/` (plural names, `usePlural: true`, uuid ids). `auth.schema.test.ts` checks them against what Better Auth expects: after a Better Auth upgrade or a new plugin, run the tests and add the missing fields with a migration.
 - Protect a route with the `requireAuth` middleware, then read `c.get("user")`; never trust a user identifier sent by the client.
 - Keep `advanced.disableOriginCheck: false`: Better Auth otherwise skips its callback URL and origin checks when `NODE_ENV` is `test`.
-- Emails go through `mailer`: printed to the console in development and tests, unavailable in production until an email provider is chosen. Their locale comes from the request's `Accept-Language` header.
+- Emails go through `mailer`: sent with Resend when `RESEND_API_KEY` and `EMAIL_FROM` are set (always in production, the environment requires them), printed to the console otherwise. Their locale comes from the request's `Accept-Language` header.
+- A failed sending is logged without the email's content (it holds sign-in links and codes) and answered with a 503 `email_unavailable`. Tests never call Resend: `captureEmails()` replaces `mailer.send`.
 
 ## Lists and access
 

@@ -9,6 +9,8 @@ const validSource = {
 	DATABASE_URL: "postgres://user:password@db.example.com:5432/checkit",
 	BETTER_AUTH_SECRET: "a-production-secret-of-at-least-32-chars",
 	CORS_ORIGINS: "https://checkit.example.com, https://www.checkit.example.com",
+	RESEND_API_KEY: "re_production_key",
+	EMAIL_FROM: "Checkit <hello@checkit.example.com>",
 };
 
 describe("parseEnv", () => {
@@ -24,6 +26,8 @@ describe("parseEnv", () => {
 				"https://checkit.example.com",
 				"https://www.checkit.example.com",
 			],
+			RESEND_API_KEY: "re_production_key",
+			EMAIL_FROM: "Checkit <hello@checkit.example.com>",
 		});
 	});
 
@@ -70,6 +74,43 @@ describe("parseEnv", () => {
 			parseEnv({ ...validSource, GOOGLE_CLIENT_ID: "client-id" }),
 		).toThrow(/must be set together/);
 	});
+
+	it("requires Resend in production", () => {
+		const { RESEND_API_KEY, EMAIL_FROM, ...rest } = validSource;
+		expect(() => parseEnv(rest)).toThrow(/required in production/);
+	});
+
+	it("doesn't require Resend outside production", () => {
+		const { RESEND_API_KEY, EMAIL_FROM, ...rest } = validSource;
+		expect(parseEnv({ ...rest, NODE_ENV: "development" })).not.toHaveProperty(
+			"RESEND_API_KEY",
+		);
+	});
+
+	it("rejects a Resend key without its sender", () => {
+		const { EMAIL_FROM, ...rest } = validSource;
+		expect(() => parseEnv({ ...rest, NODE_ENV: "development" })).toThrow(
+			/must be set together/,
+		);
+	});
+
+	it.each(["hello@checkit.example.com", "Checkit <hello@checkit.example.com>"])(
+		"accepts the sender %s",
+		(from) => {
+			expect(parseEnv({ ...validSource, EMAIL_FROM: from })).toMatchObject({
+				EMAIL_FROM: from,
+			});
+		},
+	);
+
+	it.each(["Checkit", "Checkit <hello>", "<hello@checkit.example.com"])(
+		"rejects the sender %s",
+		(from) => {
+			expect(() => parseEnv({ ...validSource, EMAIL_FROM: from })).toThrow(
+				/EMAIL_FROM/,
+			);
+		},
+	);
 
 	it("rejects an invalid CORS origin", () => {
 		expect(() =>
