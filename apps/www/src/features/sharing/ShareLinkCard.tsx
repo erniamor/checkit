@@ -1,7 +1,9 @@
 import type { ShareableRole, ShareLink } from "@repo/schemas";
 import { Button, Input, Label, toast } from "@repo/ui";
+import { CopyIcon, Link2OffIcon } from "lucide-react";
 import { useId, useRef } from "react";
 import { ConfirmButton } from "@/components/ConfirmButton";
+import { IconButton } from "@/components/IconButton";
 import { useOrigin } from "@/lib/use-origin";
 import { m } from "@/paraglide/messages";
 
@@ -56,15 +58,15 @@ export function ShareLinkCard({
 							onFocus={(event) => event.currentTarget.select()}
 							className="min-w-48 flex-1"
 						/>
-						<Button
-							type="button"
-							size="sm"
+						<IconButton
+							icon={CopyIcon}
+							label={m.copy_link_button()}
+							variant="outline"
 							onClick={() => copy(shareLinkUrl(origin, link.token))}
-						>
-							{m.copy_link_button()}
-						</Button>
+						/>
 						<ConfirmButton
 							label={m.revoke_link_button()}
+							icon={Link2OffIcon}
 							title={m.revoke_link_title()}
 							description={m.revoke_link_text()}
 							confirmLabel={m.revoke_link_button()}

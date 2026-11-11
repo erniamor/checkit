@@ -1,4 +1,5 @@
 import type { Member, ShareableRole } from "@repo/schemas";
+import { UserMinusIcon } from "lucide-react";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import { SelectField } from "@/components/SelectField";
 import { roleLabel } from "@/features/sharing/role-label";
@@ -55,6 +56,7 @@ export function MemberRow({
 					/>
 					<ConfirmButton
 						label={m.remove_member_button()}
+						icon={UserMinusIcon}
 						ariaLabel={m.remove_member_label({ name })}
 						title={m.remove_member_title({ name })}
 						description={m.remove_member_text()}

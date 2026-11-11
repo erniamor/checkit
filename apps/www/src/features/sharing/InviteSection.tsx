@@ -1,6 +1,7 @@
-import { Button } from "@repo/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { XIcon } from "lucide-react";
 import { useId } from "react";
+import { IconButton } from "@/components/IconButton";
 import { InviteForm } from "@/features/sharing/InviteForm";
 import { invitationsQueryOptions } from "@/features/sharing/queries";
 import { roleLabel } from "@/features/sharing/role-label";
@@ -51,18 +52,15 @@ export function InviteSection({ listId, sharing }: InviteSectionProps) {
 										· {roleLabel(invitation.role)}
 									</span>
 								</span>
-								<Button
-									type="button"
-									size="sm"
-									variant="ghost"
-									aria-label={m.cancel_invitation_label({
+								<IconButton
+									icon={XIcon}
+									label={m.cancel_invitation_label({
 										email: invitation.email,
 									})}
+									tooltip={m.cancel_button()}
 									disabled={sharing.cancelInvitation.isPending}
 									onClick={() => sharing.cancelInvitation.mutate(invitation.id)}
-								>
-									{m.cancel_button()}
-								</Button>
+								/>
 							</li>
 						))}
 					</ul>
