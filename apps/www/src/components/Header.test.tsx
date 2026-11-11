@@ -54,6 +54,20 @@ describe("Header", () => {
 		);
 	});
 
+	it("links to the lists for a signed-in user only", async () => {
+		const header = await renderHeader(aliceProfile);
+
+		expect(
+			within(header).getByRole("link", { name: "My lists" }),
+		).toHaveAttribute("href", "/lists");
+	});
+
+	it("doesn't link a visitor to the lists, reserved to signed-in users", async () => {
+		const header = await renderHeader();
+
+		expect(within(header).queryByRole("link", { name: "My lists" })).toBeNull();
+	});
+
 	it("shows the logo linking to the home page", async () => {
 		const header = await renderHeader();
 

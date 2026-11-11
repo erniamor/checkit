@@ -1,6 +1,7 @@
 import type { Profile } from "@repo/schemas";
+import { cn } from "@repo/ui";
 import { Link } from "@tanstack/react-router";
-import { LogInIcon } from "lucide-react";
+import { ListChecksIcon, LogInIcon } from "lucide-react";
 import { headerButtonClass } from "@/components/header-styles";
 import { Logo } from "@/components/Logo";
 import { AppearanceMenu } from "@/features/appearance/AppearanceMenu";
@@ -22,6 +23,19 @@ export function Header({ appearance, me }: HeaderProps) {
 			<div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
 				<Logo />
 				<div className="flex flex-wrap items-center gap-1">
+					{/* The lists are reserved to signed-in users */}
+					{me && (
+						<Link
+							to="/lists"
+							aria-label={m.lists_title()}
+							className={cn(
+								headerButtonClass,
+								"data-[status=active]:bg-inverse-foreground/10",
+							)}
+						>
+							<ListChecksIcon aria-hidden className="size-5" />
+						</Link>
+					)}
 					{/* Changing the language reloads the page in that language */}
 					<LanguageMenu locale={getLocale()} onLocaleChange={setLocale} />
 					<AppearanceMenu initialAppearance={appearance} />
