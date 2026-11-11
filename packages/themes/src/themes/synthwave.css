@@ -1,11 +1,11 @@
 /*
- * "variant-b" theme, "Synthwave": an 80s arcade at night. Lavender light mode,
+ * "synthwave" theme: an 80s arcade at night. Lavender light mode,
  * a deep indigo dark mode lit by neon pink and cyan. Monospace headings,
  * rounded corners.
  * Fonts are system fonts: nothing to load.
  */
 
-[data-theme="variant-b"] {
+[data-theme="synthwave"] {
 	--background: #fbf8ff;
 	--foreground: #1b1033;
 	--card: #ffffff;
@@ -38,7 +38,7 @@
 	--radius: 0.75rem;
 }
 
-[data-theme="variant-b"].dark {
+[data-theme="synthwave"].dark {
 	--background: #0f0a1f;
 	--foreground: #f2ecff;
 	--card: #181030;

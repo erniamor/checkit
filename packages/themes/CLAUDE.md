@@ -8,12 +8,12 @@ Defines the product's appearance as values, with no components: color, radius, s
 
 It makes it possible to:
 - separate appearance (here) from components (`packages/ui`);
-- present several visual variants to the client before choosing;
+- offer several themes to the users, and present new variants before adding them;
 - prepare a theme library reusable in other projects.
 
 Consumed by `apps/www`. `packages/ui` doesn't depend on it: its components use semantic tokens only.
 
-With a single front end, this package doesn't exist to share code between apps but for separation of responsibilities, presenting variants to the client, and future extraction (see below).
+With a single front end, this package doesn't exist to share code between apps but for separation of responsibilities, the themes offered to users, and future extraction (see below).
 
 ## Package-specific stack
 
@@ -31,8 +31,8 @@ With a single front end, this package doesn't exist to share code between apps b
 ## Structure
 
 - `src/base.css`: Tailwind mapping (`@theme inline`) from the semantic variables to Tailwind utilities. Common to all themes.
-- `src/themes/<name>.css`: one standalone file per theme, with its light and dark variants: `brand.css` (default theme, the product's identity, to customize) and `neutral.css` (reference theme, from shadcn's neutral theme)
-- `src/index.ts`: list of themes (`themes`), `ThemeName` type, default theme
+- `src/themes/<name>.css`: one standalone file per theme, with its light and dark variants: `stationery.css` (default theme), `synthwave.css`, `garden.css`, `brutalist.css`, and `neutral.css` (from shadcn's neutral theme, also the reference theme)
+- `src/index.ts`: list of themes offered to users (`themes`), `ThemeName` type, default theme
 - `README.md`: intent and characteristics of each theme (main colors, usage, verified contrasts)
 
 
@@ -58,16 +58,17 @@ With a single front end, this package doesn't exist to share code between apps b
 
 - A theme is selected by the `data-theme="<name>"` attribute on `<html>`; dark mode by the `.dark` class on `<html>`. The two axes are independent.
 - Each theme defines its light and dark values; a theme without a dark variant is forbidden.
-- The default theme (`defaultTheme` in `src/index.ts`, currently `brand`) is the product's, used when no attribute is present: its selectors are `:root:not([data-theme])` and `[data-theme="<name>"]`. Other themes only apply through their attribute.
+- The default theme (`defaultTheme` in `src/index.ts`, currently `stationery`) is the product's, used when no attribute is present: its selectors are `:root:not([data-theme])` and `[data-theme="<name>"]`. Other themes only apply through their attribute.
 - Use consistent color spaces across themes (for example all in `oklch` or all in `hsl`), not a mix.
 - Contrast: normal text ≥ 4.5:1 and large text ≥ 3:1 (WCAG AA), for every background/text pair, in every theme and every mode.
 - Typography: fonts referenced through variables (`--font-sans`...), loaded by the app; the theme doesn't load a font itself.
 
-## Variants offered to the client
+## Themes offered to users
 
-- Each variant is a complete, standalone theme file, named plainly (`variant-a`, `variant-b`).
-- To present them, use a theme switcher reserved for development or staging, never shipped to production without a request.
-- Once a variant is chosen, it becomes the default theme; archive or delete the others, don't leave them dead in the repository.
+- Users choose among all the themes listed in `themes` (the app's appearance menu). Every listed theme is therefore a product theme: complete, documented in `README.md`, and checked visually.
+- A theme is named after its idea (`garden`), never after a value or a brand.
+- New variants under evaluation are complete, standalone files named plainly (`variant-a`, `variant-b`), presented in development or staging only; once kept, give them a real name and add them to `themes`; delete the rejected ones, don't leave them dead in the repository.
+- Removing or renaming an offered theme is a breaking change: the apps fall back to the default theme for a stored choice that no longer exists.
 
 ## SSR (TanStack Start)
 
@@ -106,5 +107,5 @@ To keep the extraction simple:
 - Add components, logic JavaScript or dependencies on React.
 - Hard-code project-specific elements (brand, assets) in a theme.
 - Ship an incomplete theme, one without a dark variant, or one with insufficient contrast.
-- Store the theme only in `localStorage`, or leave a development switcher in production.
+- Store the theme only in `localStorage`, or offer users a variant still under evaluation.
 - Rename or remove a token without updating all its consumers.

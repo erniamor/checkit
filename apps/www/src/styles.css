@@ -1,14 +1,11 @@
 @import "tailwindcss";
 @import "@repo/themes/base.css";
-@import "@repo/themes/brand.css";
-/* Theme variants, previewed with the theme menu (development only): remove
-   them once one is chosen */
+/* The themes offered in the appearance menu; stationery is the default */
+@import "@repo/themes/stationery.css";
+@import "@repo/themes/synthwave.css";
+@import "@repo/themes/garden.css";
+@import "@repo/themes/brutalist.css";
 @import "@repo/themes/neutral.css";
-@import "@repo/themes/variant-a.css";
-@import "@repo/themes/variant-b.css";
-@import "@repo/themes/variant-c.css";
-@import "@repo/themes/variant-d.css";
-@import "@repo/themes/variant-e.css";
 @import "@repo/ui/styles.css";
 
 /* Lets Tailwind generate the classes used by the shared components */

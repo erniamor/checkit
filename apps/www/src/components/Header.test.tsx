@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 async function renderHeader(me: Profile | null = null) {
-	renderWithRouter(<Header appearance="system" theme="brand" me={me} />);
+	renderWithRouter(<Header appearance="system" theme="stationery" me={me} />);
 	return screen.findByRole("banner");
 }
 
@@ -77,9 +77,9 @@ describe("Header", () => {
 	});
 
 	it.each([
-		["en", "Language: English", "Appearance: System"],
-		["fr", "Langue : Français", "Apparence : Système"],
-		["es", "Idioma: Español", "Apariencia: Sistema"],
+		["en", "Language: English", "Appearance: System, Stationery"],
+		["fr", "Langue : Français", "Apparence : Système, Papeterie"],
+		["es", "Idioma: Español", "Apariencia: Sistema, Papelería"],
 	] as const)(
 		"names its menus with their current choice, in %s",
 		async (locale, language, appearance) => {
@@ -101,11 +101,10 @@ describe("Header", () => {
 		const user = userEvent.setup();
 		const header = await renderHeader();
 		const trigger = within(header).getByRole("button", {
-			name: "Appearance: System",
+			name: "Appearance: System, Stationery",
 		});
 
-		// Logo, language, theme (development only), then appearance
-		await user.tab();
+		// Logo, language, then appearance
 		await user.tab();
 		await user.tab();
 		await user.tab();
@@ -119,7 +118,9 @@ describe("Header", () => {
 		expect(document.documentElement).toHaveClass("dark");
 		expect(readCookie(document.cookie, "appearance")).toBe("dark");
 		expect(
-			within(header).getByRole("button", { name: "Appearance: Dark" }),
+			within(header).getByRole("button", {
+				name: "Appearance: Dark, Stationery",
+			}),
 		).toHaveFocus();
 	});
 });

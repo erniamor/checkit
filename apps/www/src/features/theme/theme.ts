@@ -1,20 +1,20 @@
 import { defaultTheme, isThemeName, type ThemeName } from "@repo/themes";
-import { getPublicEnv } from "@/env";
 import { writePreferenceCookie } from "@/lib/cookies";
+import { m } from "@/paraglide/messages";
 
 export const THEME_COOKIE = "theme";
 
-/**
- * The theme menu previews the theme variants: in development, or where
- * VITE_THEME_SWITCHER is "true" (e.g. staging). Never in production otherwise.
- */
-export function isThemeSwitcherEnabled(): boolean {
-	return import.meta.env.DEV || getPublicEnv().VITE_THEME_SWITCHER === "true";
-}
+export const themeLabels: Record<ThemeName, () => string> = {
+	stationery: m.theme_stationery,
+	synthwave: m.theme_synthwave,
+	garden: m.theme_garden,
+	brutalist: m.theme_brutalist,
+	neutral: m.theme_neutral,
+};
 
-/** The theme to render: the cookie's, when the switcher is enabled. */
+/** The chosen theme; a missing or no longer offered one falls back to the default. */
 export function parseTheme(value: unknown): ThemeName {
-	return isThemeSwitcherEnabled() && isThemeName(value) ? value : defaultTheme;
+	return isThemeName(value) ? value : defaultTheme;
 }
 
 /** Applies the theme to the page and remembers it for the next visits. */

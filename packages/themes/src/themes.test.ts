@@ -1,22 +1,18 @@
 import { describe, expect, it } from "vitest";
 import baseCss from "./base.css?raw";
 import { defaultTheme, isThemeName, type ThemeName, themes } from "./index";
-import brandCss from "./themes/brand.css?raw";
+import brutalistCss from "./themes/brutalist.css?raw";
+import gardenCss from "./themes/garden.css?raw";
 import neutralCss from "./themes/neutral.css?raw";
-import variantACss from "./themes/variant-a.css?raw";
-import variantBCss from "./themes/variant-b.css?raw";
-import variantCCss from "./themes/variant-c.css?raw";
-import variantDCss from "./themes/variant-d.css?raw";
-import variantECss from "./themes/variant-e.css?raw";
+import stationeryCss from "./themes/stationery.css?raw";
+import synthwaveCss from "./themes/synthwave.css?raw";
 
 const themeCss: Record<ThemeName, string> = {
-	brand: brandCss,
+	stationery: stationeryCss,
+	synthwave: synthwaveCss,
+	garden: gardenCss,
+	brutalist: brutalistCss,
 	neutral: neutralCss,
-	"variant-a": variantACss,
-	"variant-b": variantBCss,
-	"variant-c": variantCCss,
-	"variant-d": variantDCss,
-	"variant-e": variantECss,
 };
 
 type Mode = "light" | "dark";
@@ -89,8 +85,16 @@ describe("index", () => {
 		expect(themes).toContain(defaultTheme);
 	});
 
+	it("applies the default theme, and only it, without a data-theme attribute", () => {
+		for (const name of themes) {
+			expect(themeCss[name].includes(":root:not([data-theme])"), name).toBe(
+				name === defaultTheme,
+			);
+		}
+	});
+
 	it("only accepts known theme names", () => {
-		expect(isThemeName("brand")).toBe(true);
+		expect(isThemeName("garden")).toBe(true);
 		expect(isThemeName("unknown")).toBe(false);
 		expect(isThemeName(undefined)).toBe(false);
 	});

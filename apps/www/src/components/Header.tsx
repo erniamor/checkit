@@ -9,14 +9,12 @@ import { AppearanceMenu } from "@/features/appearance/AppearanceMenu";
 import type { Appearance } from "@/features/appearance/appearance";
 import { UserMenu } from "@/features/auth/UserMenu";
 import { LanguageMenu } from "@/features/i18n/LanguageMenu";
-import { ThemeMenu } from "@/features/theme/ThemeMenu";
-import { isThemeSwitcherEnabled } from "@/features/theme/theme";
 import { m } from "@/paraglide/messages";
 import { getLocale, setLocale } from "@/paraglide/runtime";
 
 interface HeaderProps {
 	appearance: Appearance;
-	/** The previewed theme; its menu only shows in development. */
+	/** The chosen theme, shown in the appearance menu. */
 	theme: ThemeName;
 	/** The signed-in user, null for a visitor. */
 	me: Profile | null;
@@ -43,8 +41,7 @@ export function Header({ appearance, theme, me }: HeaderProps) {
 					)}
 					{/* Changing the language reloads the page in that language */}
 					<LanguageMenu locale={getLocale()} onLocaleChange={setLocale} />
-					{isThemeSwitcherEnabled() && <ThemeMenu initialTheme={theme} />}
-					<AppearanceMenu initialAppearance={appearance} />
+					<AppearanceMenu initialAppearance={appearance} initialTheme={theme} />
 					{me ? (
 						<UserMenu me={me} />
 					) : (

@@ -1,11 +1,12 @@
 /*
- * "variant-a" theme, "Stationery": a paper notebook. Warm cream paper, navy ink,
- * a terracotta stamp as the primary color, a pale sage accent. Book serifs,
- * small radius: the precision of a well-kept notebook.
+ * "stationery" theme: the product's default theme, a paper notebook. Warm
+ * cream paper, navy ink, a terracotta stamp as the primary color, a pale sage
+ * accent. Book serifs, small radius: the precision of a well-kept notebook.
  * Fonts are system fonts: nothing to load.
  */
 
-[data-theme="variant-a"] {
+:root:not([data-theme]),
+[data-theme="stationery"] {
 	--background: #fbf6ec;
 	--foreground: #1f2a44;
 	--card: #fffdf8;
@@ -38,7 +39,8 @@
 	--radius: 0.25rem;
 }
 
-[data-theme="variant-a"].dark {
+:root.dark:not([data-theme]),
+[data-theme="stationery"].dark {
 	--background: #1a1714;
 	--foreground: #f3ead8;
 	--card: #24201b;

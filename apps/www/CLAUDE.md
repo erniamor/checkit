@@ -13,7 +13,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 - Data: the Hono API (`apps/api`) through `@repo/resources`
 - Validation: Zod schemas from `@repo/schemas`, shared with the API
 - i18n: Paraglide JS 2.9 (see "Languages")
-- UI: components from `@repo/ui` (shadcn) and the `brand` theme of `@repo/themes`; icons from `lucide-react` (version shared with `@repo/ui` through the `catalog:`)
+- UI: components from `@repo/ui` (shadcn) and the themes of `@repo/themes`; icons from `lucide-react` (version shared with `@repo/ui` through the `catalog:`)
 - Tests: Vitest (jsdom) and Testing Library
 
 ## Commands
@@ -26,7 +26,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 ## Structure
 
 - `src/routes/`: TanStack routes; one file per route, thin (loader + page component). `__root.tsx` renders the HTML document, the header and the appearance, and loads the signed-in user. `_authenticated.tsx` is the layout of the pages reserved to signed-in users (`_authenticated/*`).
-- `src/features/<feature>/`: components, hooks and logic specific to a feature (`appearance`, `auth` (with `UserMenu`, the header's account menu), `profile` (`NameForm`, shared by `/welcome` and `/profile`), `lists`, `sharing`, `i18n`, `home`)
+- `src/features/<feature>/`: components, hooks and logic specific to a feature (`appearance` (mode), `theme`, `auth` (with `UserMenu`, the header's account menu), `profile` (`NameForm`, shared by `/welcome` and `/profile`), `lists`, `sharing`, `i18n`, `home`)
 - `src/components/`: generic components specific to this app (`Header`, `Logo`, `header-styles.ts` (`headerButtonClass`, for buttons on the header's band), `SelectField` (`tone`: `inverse` or `default`), `TextField`, `InlineEditForm`, `ConfirmButton` (an action confirmed in a dialog, as text or as an icon), `IconButton` (icon only, with an `aria-label` and a tooltip), `WithTooltip`, `FormAlert`, `Loading`, `NotFound`, `ErrorView`; shared components go in `packages/ui`)
 - `src/server/`: server-only code (`env.ts`: the server's API URL)
 - `src/lib/`: utilities specific to the app (`api.ts`: the API client; `error-messages.ts`: error codes to messages; `redirect.ts`: the safe `redirect` search parameter; `cookies.ts`)
@@ -34,7 +34,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 - `src/test/`: test helpers (`setTestLocale()`, `renderWithRouter()`, `renderWithQueryClient()`, `mockApi()`, `fakeListServer()`: an in-memory API for one list, with `other.*` for another member's changes, `FakeEventSource`: drives the real-time stream, `mockSystemAppearance()`)
 - `src/router.tsx`: creates the router and the `QueryClient`
 - `src/server.ts`: server entry; runs Paraglide's middleware around TanStack Start's handler
-- `src/styles.css`: Tailwind, the theme and `@repo/ui`'s styles
+- `src/styles.css`: Tailwind, the themes and `@repo/ui`'s styles
 - `messages/<locale>.json`: the translations; `project.inlang/`: Paraglide's configuration
 - `src/routeTree.gen.ts` (committed) and `src/paraglide/` (ignored): generated, never edit
 
@@ -49,8 +49,12 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 
 ## Appearance
 
-- Light, dark or system, chosen in the header's menu (`AppearanceMenu`, whose icon shows the current choice) and stored in the `appearance` cookie. `getAppearance()` reads it on the server and in the browser; the root route renders the `dark` class on `<html>` so the page doesn't flash.
+- The header's appearance menu (`AppearanceMenu`, whose icon shows the current mode) holds two choices: the mode (`ModeRadioGroup`) and the theme (`ThemeRadioGroup`).
+- Mode: light, dark or system, stored in the `appearance` cookie. `getAppearance()` reads it on the server and in the browser; the root route renders the `dark` class on `<html>` so the page doesn't flash.
 - With "system", the server can't know the system's appearance: a small inline script sets the class before the first paint, and `<html>` has `suppressHydrationWarning` for that reason.
+- Theme: one of the themes offered by `@repo/themes` (`themes`), stored in the `theme` cookie, read on the server (`getTheme()`) and rendered as `data-theme` on `<html>`: no flash. A missing or no longer offered theme falls back to the default one (`stationery`).
+- `styles.css` imports every offered theme; a theme added to `@repo/themes` needs its import there and its label (`themeLabels`, `theme_<name>` messages).
+- The choices are kept per device (cookies), not in the account.
 
 ## API and session
 
@@ -82,12 +86,6 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 - `/invitations/$token` and `/join/$token` are public: their loader loads the preview with `loadPreview()` (unknown token: 404; expired or revoked: `preview: null`). Joining always needs a click on "Join the list", never just opening the link.
 - A share link's URL is built by the front end: `<origin>/join/<token>` (`shareLinkUrl()`).
 - Invitations and share links are only loaded for the owner: the API refuses them to the others.
-
-## Theme preview
-
-- The header's theme menu (`ThemeMenu`, palette icon) previews the themes of `@repo/themes` on the real pages. It only shows in development, or where `VITE_THEME_SWITCHER` is `"true"` (e.g. staging); otherwise the `theme` cookie is ignored and the default theme applies.
-- Like the appearance, the theme is stored in the `theme` cookie, read on the server (`getTheme()`) and rendered as `data-theme` on `<html>`: no flash.
-- `styles.css` imports every variant for the preview; once one is chosen, remove the others from it.
 
 ## Icons and tooltips
 

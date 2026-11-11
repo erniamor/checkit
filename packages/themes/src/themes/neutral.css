@@ -1,6 +1,6 @@
 /*
  * "neutral" theme: reference theme, based on shadcn/ui's neutral theme.
- * Used to check that components don't depend on the "brand" theme.
+ * Used to check that components don't depend on the default theme.
  * Adjusted from shadcn to meet WCAG AA: muted-foreground and ring in light mode.
  */
 

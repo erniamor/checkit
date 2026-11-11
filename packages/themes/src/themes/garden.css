@@ -1,11 +1,11 @@
 /*
- * "variant-c" theme, "Kitchen garden": leaves and soil. Pale sage backgrounds,
+ * "garden" theme, a kitchen garden: leaves and soil. Pale sage backgrounds,
  * forest green, a straw accent, terracotta for destructive actions. Rounded
  * fonts and large radius: soft and organic.
  * Fonts are system fonts: nothing to load.
  */
 
-[data-theme="variant-c"] {
+[data-theme="garden"] {
 	--background: #f5f7ef;
 	--foreground: #1c2b1e;
 	--card: #fbfcf7;
@@ -39,7 +39,7 @@
 	--radius: 1rem;
 }
 
-[data-theme="variant-c"].dark {
+[data-theme="garden"].dark {
 	--background: #111712;
 	--foreground: #e8efe2;
 	--card: #18201a;

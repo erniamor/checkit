@@ -9,7 +9,7 @@ In the app's main stylesheet, after the themes:
 ```css
 @import "tailwindcss";
 @import "@repo/themes/base.css";
-@import "@repo/themes/brand.css";
+@import "@repo/themes/stationery.css";
 @import "@repo/ui/styles.css";
 @source "../../../packages/ui/src"; /* relative to the stylesheet, here apps/<app>/src/ */
 ```

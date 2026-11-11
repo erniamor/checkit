@@ -9,11 +9,11 @@ In the app's main stylesheet, in this order:
 ```css
 @import "tailwindcss";
 @import "@repo/themes/base.css";
-@import "@repo/themes/brand.css";
-@import "@repo/themes/neutral.css"; /* only if the theme should be selectable */
+@import "@repo/themes/stationery.css"; /* the default theme */
+@import "@repo/themes/synthwave.css"; /* other themes, if users can choose them */
 ```
 
-- Theme: `data-theme="<name>"` attribute on `<html>`. Without the attribute, the `brand` theme applies.
+- Theme: `data-theme="<name>"` attribute on `<html>`. Without the attribute, the default theme (`stationery`) applies.
 - Dark mode: `dark` class on `<html>`, independent of the theme.
 - Fonts: the theme declares the families (`--typeface-body`, `--typeface-heading`); the app loads them.
 
@@ -32,32 +32,17 @@ All colors are hexadecimal (sRGB).
 
 ## Themes
 
-### `brand` (default)
+Five complete themes, light and dark, offered to the users. All use system fonts (nothing to load), so their rendering varies slightly between platforms.
 
-Placeholder for the product's identity: replace its values with the project's colors, fonts and radius, keeping the contrasts checked by the tests.
+| Theme | Idea | Fonts | Radius |
+| --- | --- | --- | --- |
+| `stationery` (default) | A paper notebook: cream paper, navy ink, terracotta stamp as the primary color, sage accent | Book serifs (Charter, Iowan Old Style) | `0.25rem` |
+| `synthwave` | An 80s arcade at night: lavender by day, deep indigo with neon pink and cyan by night | Avenir, monospace headings | `0.75rem` |
+| `garden` | A kitchen garden: pale sage, forest green, straw accent, terracotta for danger | Rounded (SF Pro Rounded) | `1rem` |
+| `brutalist` | Raw black and white, black borders, signal-yellow band and accent, electric blue focus | Monospace, grotesque headings | none |
+| `neutral` | Based on shadcn/ui's neutral theme, in pure grays; also a reference to check that `packages/ui` components don't depend on a colored theme | System fonts | `0.625rem` |
 
-- Primary: `#1d4ed8` (blue), white text
-- Text: `#09090b` on `#ffffff`, secondary text `#52525b`
-- Band: `#18181b`, text `#fafafa` / `#a1a1aa`
-- Fonts: system fonts; if the project uses web fonts, declare them here and load them in the app
-- Radius: `0.5rem`
-- Dark mode: the blue is lightened to `#60a5fa` and primary button text turns dark.
-
-### `neutral` (reference)
-
-Based on shadcn/ui's neutral theme, in pure grays with system fonts and a `0.625rem` radius. A reference to check that `packages/ui` components don't depend on the `brand` theme. Two values differ from shadcn to meet WCAG AA in light mode: `--muted-foreground` (`#6b6b6b` instead of `#737373`) and `--ring` (`#8a8a8a` instead of `#a1a1a1`).
-
-### Variants to choose the product's identity
-
-Five complete themes, light and dark, all with system fonts (nothing to load). Preview them in the app with the theme menu of the header (development only). Once one is chosen, it becomes `brand` and the others are deleted.
-
-| Theme | Name | Idea | Fonts | Radius |
-| --- | --- | --- | --- | --- |
-| `variant-a` | Stationery | A paper notebook: cream paper, navy ink, terracotta stamp, sage accent | Book serifs (Charter, Iowan Old Style) | `0.25rem` |
-| `variant-b` | Synthwave | An 80s arcade at night: lavender by day, deep indigo with neon pink and cyan by night | Avenir, monospace headings | `0.75rem` |
-| `variant-c` | Kitchen garden | Leaves and soil: pale sage, forest green, straw accent, terracotta for danger | Rounded (SF Pro Rounded) | `1rem` |
-| `variant-d` | Citrus | Energetic and sunny: tangerine, lemon accent, candied-orange band | Avenir, geometric headings (Futura) | `1.25rem` |
-| `variant-e` | Brutalist | Raw black and white, black borders, signal-yellow band and accent, electric blue focus | Monospace, grotesque headings | none |
+`neutral` differs from shadcn on two values to meet WCAG AA in light mode: `--muted-foreground` (`#6b6b6b` instead of `#737373`) and `--ring` (`#8a8a8a` instead of `#a1a1a1`).
 
 ## Verified contrasts
 

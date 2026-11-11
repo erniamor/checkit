@@ -1,38 +1,37 @@
+import type { ThemeName } from "@repo/themes";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
-	DropdownMenuLabel,
-	DropdownMenuRadioGroup,
-	DropdownMenuRadioItem,
+	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@repo/ui";
-import { type LucideIcon, MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
 import { useState } from "react";
 import { headerButtonClass } from "@/components/header-styles";
 import {
 	type Appearance,
 	applyAppearance,
-	parseAppearance,
 } from "@/features/appearance/appearance";
+import { getAppearanceOption } from "@/features/appearance/appearance-options";
+import { ModeRadioGroup } from "@/features/appearance/ModeRadioGroup";
+import { ThemeRadioGroup } from "@/features/theme/ThemeRadioGroup";
+import { applyTheme, themeLabels } from "@/features/theme/theme";
 import { m } from "@/paraglide/messages";
-
-const options: { value: Appearance; label: () => string; Icon: LucideIcon }[] =
-	[
-		{ value: "light", label: m.appearance_light, Icon: SunIcon },
-		{ value: "dark", label: m.appearance_dark, Icon: MoonIcon },
-		{ value: "system", label: m.appearance_system, Icon: MonitorIcon },
-	];
 
 interface AppearanceMenuProps {
 	/** Appearance read from the cookie when the page was rendered. */
 	initialAppearance: Appearance;
+	/** Theme read from the cookie when the page was rendered. */
+	initialTheme: ThemeName;
 }
 
-/** The header's appearance menu; its icon shows the current choice. */
-export function AppearanceMenu({ initialAppearance }: AppearanceMenuProps) {
+/** The header's appearance menu (mode and theme); its icon shows the current mode. */
+export function AppearanceMenu({
+	initialAppearance,
+	initialTheme,
+}: AppearanceMenuProps) {
 	const [appearance, setAppearance] = useState(initialAppearance);
-	const current =
-		options.find((option) => option.value === appearance) ?? options[2];
+	const [theme, setTheme] = useState(initialTheme);
+	const current = getAppearanceOption(appearance);
 
 	return (
 		<DropdownMenu>
@@ -40,30 +39,30 @@ export function AppearanceMenu({ initialAppearance }: AppearanceMenuProps) {
 				<button
 					type="button"
 					aria-label={m.appearance_menu_label({
-						appearance: current?.label() ?? "",
+						appearance: current.label(),
+						theme: themeLabels[theme](),
 					})}
 					className={headerButtonClass}
 				>
-					{current && <current.Icon aria-hidden className="size-5" />}
+					<current.Icon aria-hidden className="size-5" />
 				</button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end">
-				<DropdownMenuLabel>{m.appearance_label()}</DropdownMenuLabel>
-				<DropdownMenuRadioGroup
+				<ModeRadioGroup
 					value={appearance}
-					onValueChange={(value) => {
-						const next = parseAppearance(value);
+					onValueChange={(next) => {
 						setAppearance(next);
 						applyAppearance(next);
 					}}
-				>
-					{options.map(({ value, label, Icon }) => (
-						<DropdownMenuRadioItem key={value} value={value}>
-							<Icon aria-hidden className="size-4" />
-							{label()}
-						</DropdownMenuRadioItem>
-					))}
-				</DropdownMenuRadioGroup>
+				/>
+				<DropdownMenuSeparator />
+				<ThemeRadioGroup
+					value={theme}
+					onValueChange={(next) => {
+						setTheme(next);
+						applyTheme(next);
+					}}
+				/>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);
