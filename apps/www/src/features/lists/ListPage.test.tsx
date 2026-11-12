@@ -124,6 +124,38 @@ describe("ListPage", () => {
 		expect(displayedItems()).toEqual({ open: ["Milk", "Eggs"], checked: [] });
 	});
 
+	it("moves an item with the keyboard, by its handle, and saves its position", async () => {
+		// jsdom lays nothing out: each row gets its place in the list
+		vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(
+			function (this: Element) {
+				const row = this.closest("li");
+				const index = row?.parentElement
+					? [...row.parentElement.children].indexOf(row)
+					: 0;
+				return new DOMRect(0, index * 48, 320, 48);
+			},
+		);
+		const { user, requests } = renderList(
+			fakeListServer({ items: ["Milk", "Eggs", "Bread"] }),
+		);
+
+		const handle = await screen.findByRole("button", { name: "Move “Milk”" });
+		act(() => handle.focus());
+		await user.keyboard("[Space]");
+		await user.keyboard("[ArrowDown]");
+		await user.keyboard("[Space]");
+
+		await vi.waitFor(() =>
+			expect(displayedItems().open).toEqual(["Eggs", "Milk", "Bread"]),
+		);
+		expect(requests).toContainEqual({
+			method: "PATCH",
+			path: `/lists/${listId}/items/00000000-0000-4000-8000-000000000001`,
+			body: { position: 2.5 },
+		});
+		vi.restoreAllMocks();
+	});
+
 	it("adds an item, keeping the field ready for the next one", async () => {
 		const server = fakeListServer();
 		const { user } = renderList(server);
@@ -234,6 +266,7 @@ describe("ListPage", () => {
 		expect(screen.queryByLabelText("New item")).toBeNull();
 		expect(screen.queryByRole("button", { name: /Rename|Delete/ })).toBeNull();
 		expect(screen.queryByRole("button", { name: /Check all/ })).toBeNull();
+		expect(screen.queryByRole("button", { name: /Move/ })).toBeNull();
 	});
 
 	it("shows icon buttons, named for screen readers and with a tooltip", async () => {

@@ -184,8 +184,10 @@ describe("ListPage in real time", () => {
 		const { stream, requests } = await renderLive(server);
 
 		act(() => stream.fail());
-		expect(screen.getByRole("status")).toHaveTextContent(
-			"Connection lost, reconnecting…",
+		// By its text: the reordering also has a status region, for screen readers
+		expect(screen.getByText("Connection lost, reconnecting…")).toHaveAttribute(
+			"role",
+			"status",
 		);
 
 		// A change made while disconnected, whose event is lost
@@ -197,7 +199,7 @@ describe("ListPage in real time", () => {
 
 		expect(await screen.findByRole("checkbox", { name: "Eggs" })).toBeVisible();
 		expect(itemsLoads()).toBeGreaterThan(before);
-		expect(screen.getByRole("status")).toBeEmptyDOMElement();
+		expect(screen.queryByText("Connection lost, reconnecting…")).toBeNull();
 	});
 
 	it("stops listening when leaving the page", async () => {

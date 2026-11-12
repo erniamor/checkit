@@ -1,11 +1,13 @@
 import type { Item, UpdateItem } from "@repo/schemas";
 import { useId } from "react";
 import { ItemRow } from "@/features/lists/ItemRow";
+import { SortableItems } from "@/features/lists/SortableItems";
 
 interface ItemsSectionProps {
 	/** Visible title of the section; none for the items still to do. */
 	title?: string;
 	items: Item[];
+	/** Editors also reorder the items, within the section. */
 	editable: boolean;
 	onUpdate: (itemId: string, changes: UpdateItem) => void;
 	onDelete: (itemId: string) => void;
@@ -33,17 +35,21 @@ export function ItemsSection({
 					{title}
 				</h2>
 			)}
-			<ul className="divide-y divide-border">
-				{items.map((item) => (
-					<ItemRow
-						key={item.id}
-						item={item}
-						editable={editable}
-						onUpdate={(changes) => onUpdate(item.id, changes)}
-						onDelete={() => onDelete(item.id)}
-					/>
-				))}
-			</ul>
+			{editable ? (
+				<SortableItems items={items} onUpdate={onUpdate} onDelete={onDelete} />
+			) : (
+				<ul className="divide-y divide-border">
+					{items.map((item) => (
+						<ItemRow
+							key={item.id}
+							item={item}
+							editable={false}
+							onUpdate={(changes) => onUpdate(item.id, changes)}
+							onDelete={() => onDelete(item.id)}
+						/>
+					))}
+				</ul>
+			)}
 		</section>
 	);
 }

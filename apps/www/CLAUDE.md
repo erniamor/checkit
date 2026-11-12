@@ -13,6 +13,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 - Data: the Hono API (`apps/api`) through `@repo/resources`
 - Validation: Zod schemas from `@repo/schemas`, shared with the API
 - i18n: Paraglide JS 2.9 (see "Languages")
+- Reordering: `@dnd-kit/core` and `@dnd-kit/sortable` (mouse, touch and keyboard, with screen reader announcements)
 - UI: components from `@repo/ui` (shadcn) and the themes of `@repo/themes`; icons from `lucide-react` (version shared with `@repo/ui` through the `catalog:`)
 - Tests: Vitest (jsdom) and Testing Library
 
@@ -81,6 +82,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 - `/items` shows the items of all the user's lists, grouped by list, filtered by the `status` search parameter (`open` by default, `checked`, `all`). Items can only be checked or unchecked there (if the role allows it); the rest is done in the list. It has no real-time stream: it reloads when the user comes back to it.
 - Item changes and the list's renaming are optimistic (`use-list-mutations.ts`): the cache is updated at once, rolled back if the API refuses, then reloaded. Validate the input with its schema (`validateField()`) before an optimistic change, so an invalid value never shows.
 - The actions shown follow the role (`permissions.ts`); the API enforces it anyway.
+- Editors reorder the items by a handle (`SortableItems`, `SortableItemRow`), within their section (to do, checked): moving between sections is checking. A move only sends the item's new `position`, halfway between its new neighbors (`movedPosition()`, pure and tested), through the optimistic `updateItem`. The screen reader texts are messages (`item-announcements.ts`), never dnd-kit's English defaults.
 - One page of data: 100 lists, 200 items per list (`LISTS_PAGE_SIZE`, `ITEMS_PAGE_SIZE`). Add a "load more" before raising them.
 
 ## Real time

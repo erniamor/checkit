@@ -1,26 +1,42 @@
 import { type Item, itemLabelSchema, type UpdateItem } from "@repo/schemas";
 import { Checkbox, cn } from "@repo/ui";
 import { PencilIcon, Trash2Icon } from "lucide-react";
-import { useId, useState } from "react";
+import {
+	type ComponentPropsWithRef,
+	type ReactNode,
+	useId,
+	useState,
+} from "react";
 import { IconButton } from "@/components/IconButton";
 import { InlineEditForm } from "@/components/InlineEditForm";
 import { validateField } from "@/lib/validate-field";
 import { m } from "@/paraglide/messages";
 
-interface ItemRowProps {
+export interface ItemRowProps {
 	item: Item;
 	editable: boolean;
 	onUpdate: (changes: UpdateItem) => void;
 	onDelete: () => void;
+	/** Handle to move the item, when the items can be reordered. */
+	dragHandle?: ReactNode;
+	/** Props of the row's element, set by the reordering. */
+	rowProps?: ComponentPropsWithRef<"li">;
 }
 
-export function ItemRow({ item, editable, onUpdate, onDelete }: ItemRowProps) {
+export function ItemRow({
+	item,
+	editable,
+	onUpdate,
+	onDelete,
+	dragHandle,
+	rowProps,
+}: ItemRowProps) {
 	const [editing, setEditing] = useState(false);
 	const labelId = useId();
 
 	if (editing) {
 		return (
-			<li className="py-2">
+			<li {...rowProps} className={cn("py-2", rowProps?.className)}>
 				<InlineEditForm
 					label={m.rename_item({ label: item.label })}
 					defaultValue={item.label}
@@ -42,7 +58,14 @@ export function ItemRow({ item, editable, onUpdate, onDelete }: ItemRowProps) {
 	}
 
 	return (
-		<li className="flex min-h-11 items-center gap-3 py-1">
+		<li
+			{...rowProps}
+			className={cn(
+				"flex min-h-11 items-center gap-3 py-1",
+				rowProps?.className,
+			)}
+		>
+			{dragHandle}
 			<Checkbox
 				aria-labelledby={labelId}
 				checked={item.done}

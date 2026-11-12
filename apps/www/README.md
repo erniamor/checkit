@@ -17,7 +17,7 @@ Checkit's web app: the screens where users sign in, manage their lists, share th
 | `/join/:token` | A share link: what it offers, then join or sign in |
 | `/items` | All my items: the items of every list, grouped by list, filtered (to do, checked, all) |
 | `/offline` | Shown by the service worker when a page can't load without a connection |
-| `/lists/:listId` | A list: add, check, rename and delete items; rename the list; delete it (owner, after a confirmation). Read only for a viewer. Checked items are shown below the others. The other members' changes show up live; if the list is deleted or the user loses access, they're sent back to `/lists` with a toast |
+| `/lists/:listId` | A list: add, check, rename, reorder (drag by the handle, or the keyboard) and delete items; rename the list; delete it (owner, after a confirmation). Read only for a viewer. Checked items are shown below the others. The other members' changes show up live; if the list is deleted or the user loses access, they're sent back to `/lists` with a toast |
 
 The app calls the API through [`@repo/resources`](../../packages/resources): it needs the API running (see [apps/api/README.md](../api/README.md)).
 

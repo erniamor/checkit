@@ -150,6 +150,9 @@ export function fakeListServer({
 					? {
 							...item,
 							...(input.label !== undefined && { label: String(input.label) }),
+							...(input.position !== undefined && {
+								position: Number(input.position),
+							}),
 							...(input.done !== undefined && {
 								done: Boolean(input.done),
 								doneAt: input.done ? date : null,
