@@ -1,8 +1,9 @@
 import type { Profile } from "@repo/schemas";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Header } from "@/components/Header";
+import { useInstall } from "@/features/pwa/use-install";
 import { readCookie } from "@/lib/cookies";
 import { setTestLocale } from "@/test/locale";
 import { mockSystemAppearance } from "@/test/match-media";
@@ -10,6 +11,21 @@ import { aliceProfile, mockApi } from "@/test/mock-api";
 import { renderWithRouter } from "@/test/render-with-router";
 
 vi.mock("@/lib/api", () => ({ getApi: vi.fn() }));
+vi.mock("@/features/pwa/use-install", () => ({ useInstall: vi.fn() }));
+
+function mockInstall(state: "ios" | "installed") {
+	vi.mocked(useInstall).mockReturnValue({
+		state,
+		installable: state === "ios",
+		dismissed: false,
+		install: vi.fn(async () => true),
+		dismiss: vi.fn(),
+	});
+}
+
+beforeEach(() => {
+	mockInstall("installed");
+});
 
 afterEach(() => {
 	vi.unstubAllGlobals();
@@ -55,6 +71,36 @@ describe("Header", () => {
 				body: {},
 			}),
 		);
+	});
+
+	it("explains how to install the app from the account menu, where it isn't yet", async () => {
+		mockInstall("ios");
+		const user = userEvent.setup();
+		const header = await renderHeader(aliceProfile);
+
+		await user.click(
+			within(header).getByRole("button", { name: "Account: Alice" }),
+		);
+		await user.click(screen.getByRole("menuitem", { name: "Install the app" }));
+
+		expect(
+			await screen.findByRole("dialog", {
+				name: "Add Checkit to your home screen",
+			}),
+		).toBeVisible();
+	});
+
+	it("doesn't offer to install the app once installed", async () => {
+		const user = userEvent.setup();
+		const header = await renderHeader(aliceProfile);
+
+		await user.click(
+			within(header).getByRole("button", { name: "Account: Alice" }),
+		);
+
+		expect(
+			screen.queryByRole("menuitem", { name: "Install the app" }),
+		).toBeNull();
 	});
 
 	it("links to the lists for a signed-in user only", async () => {

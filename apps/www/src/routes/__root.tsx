@@ -6,7 +6,7 @@ import {
 	redirect,
 	Scripts,
 } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { Header } from "@/components/Header";
 import {
 	serverHtmlClass,
@@ -14,10 +14,18 @@ import {
 } from "@/features/appearance/appearance";
 import { getAppearance } from "@/features/appearance/get-appearance";
 import { meQueryOptions } from "@/features/auth/me-query";
+import { listenForInstallPrompt } from "@/features/pwa/install-prompt";
+import { registerServiceWorker } from "@/features/pwa/service-worker";
+import { themeColorMetas } from "@/features/pwa/theme-color";
 import { getTheme } from "@/features/theme/get-theme";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 import stylesUrl from "@/styles.css?url";
+
+// As early as possible: the browser's install offer can come before hydration
+if (typeof window !== "undefined") {
+	listenForInstallPrompt(window);
+}
 
 interface RouterContext {
 	queryClient: QueryClient;
@@ -37,14 +45,25 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 			{ charSet: "utf-8" },
 			{ name: "viewport", content: "width=device-width, initial-scale=1" },
 			{ title: m.app_name() },
+			{ name: "apple-mobile-web-app-title", content: m.app_name() },
 		],
-		links: [{ rel: "stylesheet", href: stylesUrl }],
+		links: [
+			{ rel: "stylesheet", href: stylesUrl },
+			{ rel: "manifest", href: `/manifest.webmanifest?lang=${getLocale()}` },
+			{ rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+			{ rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+		],
 	}),
 	shellComponent: RootDocument,
 });
 
 function RootDocument({ children }: { children: ReactNode }) {
 	const { appearance, theme, me } = Route.useRouteContext();
+
+	// Syncs with the browser: installable app, offline page
+	useEffect(() => {
+		void registerServiceWorker();
+	}, []);
 
 	return (
 		// With the "system" appearance, the class set by the script below differs
@@ -57,6 +76,11 @@ function RootDocument({ children }: { children: ReactNode }) {
 		>
 			<head>
 				<HeadContent />
+				{/* Installed app: the bars around the page take the header's color.
+				Here rather than in head(), which keeps one tag per name */}
+				{themeColorMetas(theme, appearance).map((meta) => (
+					<meta key={meta.media} {...meta} />
+				))}
 				{/* Constant script: applies the system's appearance before the first paint */}
 				{appearance === "system" && (
 					<script

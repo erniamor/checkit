@@ -9,7 +9,8 @@
 		"start": "node .output/server/index.mjs",
 		"i18n": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide --strategy cookie preferredLanguage baseLocale --emit-ts-declarations --silent",
 		"typecheck": "pnpm run i18n && tsc --noEmit",
-		"test": "vitest run"
+		"test": "vitest run",
+		"icons": "node scripts/generate-icons.mjs"
 	},
 	"dependencies": {
 		"@repo/resources": "workspace:*",

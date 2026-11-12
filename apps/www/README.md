@@ -15,6 +15,8 @@ Checkit's web app: the screens where users sign in, manage their lists, share th
 | `/lists/:listId/members` | Members and sharing: the members and their role; for the owner, changing roles, removing members, inviting by email and the share links; for the others, leaving the list |
 | `/invitations/:token` | The link of an invitation email: what the invitation offers, then join (with the invited email), sign in, or sign out to switch accounts |
 | `/join/:token` | A share link: what it offers, then join or sign in |
+| `/items` | All my items: the items of every list, grouped by list, filtered (to do, checked, all) |
+| `/offline` | Shown by the service worker when a page can't load without a connection |
 | `/lists/:listId` | A list: add, check, rename and delete items; rename the list; delete it (owner, after a confirmation). Read only for a viewer. Checked items are shown below the others. The other members' changes show up live; if the list is deleted or the user loses access, they're sent back to `/lists` with a toast |
 
 The app calls the API through [`@repo/resources`](../../packages/resources): it needs the API running (see [apps/api/README.md](../api/README.md)).
@@ -33,6 +35,8 @@ Copy `.env.example` to `.env`:
 1. `/sign-in`: the user enters their email and receives a magic link, which brings them back to the page they asked for (`?redirect=`).
 2. If the link doesn't work for them (another device, for example), "Get a code instead" emails a 6-digit code to enter on the page.
 3. At the first sign-in, `/welcome` asks for their name, shown to the people they share lists with.
+
+In the app installed on an iPhone or iPad, the email's link would open in Safari, whose cookies the app doesn't share: there, the page sends the code directly.
 
 Pages reserved to signed-in users live under `src/routes/_authenticated/`: visitors are sent to `/sign-in`, then brought back.
 
@@ -53,6 +57,7 @@ pnpm --filter www dev   # http://localhost:3000
 | `start` | Runs the production build (`PORT`, 3000 by default) |
 | `i18n` | Compiles the messages into `src/paraglide/` (also done by `dev`, `build` and the tests) |
 | `typecheck` | Compiles the messages, then checks the types |
+| `icons` | Draws the app's icons into `public/` from the logo (`scripts/generate-icons.mjs`, no dependency); run it after changing the logo or its colors |
 | `test` | Runs the tests (Vitest, jsdom) |
 
 Run them from the repository root with `pnpm --filter www <script>`.
@@ -72,6 +77,15 @@ The language isn't part of the URL. It comes from the user's choice (a cookie se
 ## Appearance
 
 Light, dark or the system's, and one of the themes of `@repo/themes`, chosen in the header's appearance menu. Each choice is stored in a cookie so the server renders the right appearance directly, with no flash on load.
+
+## Installable app (PWA)
+
+The app can be installed on a phone or a computer, and opens on `/lists` in its own window.
+
+- `/manifest.webmanifest?lang=<locale>`: the manifest, in the page's language (a server route, `src/routes/manifest[.]webmanifest.ts`).
+- `public/`: the icons (`icons` script) and the service worker, `sw.js`. The service worker keeps the build's files (hashed names) and shows `/offline` when a page can't load; it never caches pages or API data. It's only registered by production builds: check it with `build` then `start`.
+- Installing: Chromium browsers (Android, Chrome and Edge on computers) show their own dialog from the app's "Install" button. iPhones and iPads can't be prompted: the app explains the Share menu's "Add to Home Screen". The offer is a card on "My lists" ("Not now" hides it for 30 days on the device) and an item of the account menu, both hidden once installed.
+- `<meta name="theme-color">` follows the theme and the mode: the installed app's bars take the header's color.
 
 ## Deployment
 

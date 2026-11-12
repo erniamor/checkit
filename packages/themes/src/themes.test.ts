@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import baseCss from "./base.css?raw";
-import { defaultTheme, isThemeName, type ThemeName, themes } from "./index";
+import {
+	defaultTheme,
+	isThemeName,
+	type ThemeName,
+	themeBarColors,
+	themes,
+} from "./index";
 import brutalistCss from "./themes/brutalist.css?raw";
 import gardenCss from "./themes/garden.css?raw";
 import neutralCss from "./themes/neutral.css?raw";
@@ -130,6 +136,16 @@ describe.each(parsed)("theme %s", (_name, modes) => {
 		it.each(contrastPairs)("contrast %s / %s ≥ %d", (bg, fg, minimum) => {
 			const ratio = contrastRatio(tokens.get(bg) ?? "", tokens.get(fg) ?? "");
 			expect(ratio).toBeGreaterThanOrEqual(minimum);
+		});
+	});
+});
+
+describe("themeBarColors", () => {
+	it.each(themes)("matches the --inverse token of %s", (theme) => {
+		const { light, dark } = parseTheme(themeCss[theme]);
+		expect(themeBarColors[theme]).toEqual({
+			light: light.get("--inverse"),
+			dark: dark.get("--inverse"),
 		});
 	});
 });

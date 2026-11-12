@@ -14,6 +14,16 @@ export {
 export { Button, buttonVariants } from "@repo/ui/components/ui/button";
 export { Checkbox } from "@repo/ui/components/ui/checkbox";
 export {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@repo/ui/components/ui/dialog";
+export {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuGroup,

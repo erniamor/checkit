@@ -16,6 +16,7 @@ In the app's main stylesheet, in this order:
 - Theme: `data-theme="<name>"` attribute on `<html>`. Without the attribute, the default theme (`stationery`) applies.
 - Dark mode: `dark` class on `<html>`, independent of the theme.
 - Fonts: the theme declares the families (`--typeface-body`, `--typeface-heading`); the app loads them.
+- Browser bar color: `themeBarColors[theme].light` / `.dark` (TypeScript), the `--inverse` color of each theme, for `<meta name="theme-color">`. The tests check it matches the CSS.
 
 ## Tokens
 

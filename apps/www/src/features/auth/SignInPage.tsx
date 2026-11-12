@@ -2,6 +2,7 @@ import { CheckEmail } from "@/features/auth/CheckEmail";
 import { CodeForm } from "@/features/auth/CodeForm";
 import { EmailForm } from "@/features/auth/EmailForm";
 import { useSignIn } from "@/features/auth/use-sign-in";
+import { useIsIosApp } from "@/features/pwa/use-is-ios-app";
 import { m } from "@/paraglide/messages";
 
 interface SignInPageProps {
@@ -16,9 +17,11 @@ export function SignInPage({
 	onSignedIn,
 	defaultEmail,
 }: SignInPageProps) {
-	const { step, sendLink, sendCode, signIn, restart } = useSignIn({
+	const codeOnly = useIsIosApp();
+	const { step, sendEmail, sendCode, signIn, restart } = useSignIn({
 		redirect,
 		onSignedIn,
+		codeOnly,
 	});
 
 	return (
@@ -28,14 +31,17 @@ export function SignInPage({
 					{m.sign_in_title()}
 				</h1>
 				{step.kind === "email" && (
-					<p className="text-muted-foreground">{m.sign_in_intro()}</p>
+					<p className="text-muted-foreground">
+						{codeOnly ? m.sign_in_intro_code() : m.sign_in_intro()}
+					</p>
 				)}
 			</header>
 			{step.kind === "email" && (
 				<EmailForm
-					onSubmit={(email) => sendLink.mutate(email)}
-					pending={sendLink.isPending}
-					error={sendLink.error}
+					onSubmit={(email) => sendEmail.mutate(email)}
+					sends={codeOnly ? "code" : "link"}
+					pending={sendEmail.isPending}
+					error={sendEmail.error}
 					defaultEmail={defaultEmail}
 				/>
 			)}

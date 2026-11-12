@@ -2,10 +2,14 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { SignInPage } from "@/features/auth/SignInPage";
+import { useIsIosApp } from "@/features/pwa/use-is-ios-app";
 import { mockApi } from "@/test/mock-api";
 import { renderWithQueryClient } from "@/test/render-with-router";
 
 vi.mock("@/lib/api", () => ({ getApi: vi.fn() }));
+vi.mock("@/features/pwa/use-is-ios-app", () => ({
+	useIsIosApp: vi.fn(() => false),
+}));
 
 function renderSignIn(onSignedIn = vi.fn()) {
 	renderWithQueryClient(
@@ -131,5 +135,21 @@ describe("SignInPage", () => {
 		expect(await screen.findByRole("alert")).toHaveTextContent(
 			"Too many attempts. Wait a minute and try again.",
 		);
+	});
+
+	it("sends a code at once in the app installed on iOS, where a link would open Safari", async () => {
+		vi.mocked(useIsIosApp).mockReturnValueOnce(true).mockReturnValue(true);
+		const requests = mockApi(() => ({ status: 200, body: { success: true } }));
+		const { user } = renderSignIn();
+
+		expect(screen.getByText(/we'll send you a code to sign in/)).toBeVisible();
+		await user.type(screen.getByLabelText("Email"), "alice@example.com");
+		await user.click(screen.getByRole("button", { name: "Send me a code" }));
+
+		expect(await screen.findByLabelText("Sign-in code")).toBeVisible();
+		expect(requests.map((request) => request.path)).toEqual([
+			"/auth/email-otp/send-verification-otp",
+		]);
+		vi.mocked(useIsIosApp).mockReturnValue(false);
 	});
 });

@@ -11,13 +11,22 @@ interface UseSignInOptions {
 	/** Internal path to open once signed in. */
 	redirect: string;
 	onSignedIn: () => void | Promise<void>;
+	/**
+	 * Skip the link and send a code at once: in the app installed on iOS, the
+	 * link would open in Safari, which doesn't share the app's session.
+	 */
+	codeOnly?: boolean;
 }
 
 /**
  * The sign-in steps: email, then "check your email" (magic link), with a
  * one-time code as a fallback.
  */
-export function useSignIn({ redirect, onSignedIn }: UseSignInOptions) {
+export function useSignIn({
+	redirect,
+	onSignedIn,
+	codeOnly = false,
+}: UseSignInOptions) {
 	const [step, setStep] = useState<SignInStep>({ kind: "email" });
 
 	const sendLink = useMutation({
@@ -48,5 +57,8 @@ export function useSignIn({ redirect, onSignedIn }: UseSignInOptions) {
 		setStep({ kind: "email" });
 	}
 
-	return { step, sendLink, sendCode, signIn, restart };
+	/** The first step: the link, or the code when it's the only way. */
+	const sendEmail = codeOnly ? sendCode : sendLink;
+
+	return { step, sendEmail, sendCode, signIn, restart };
 }

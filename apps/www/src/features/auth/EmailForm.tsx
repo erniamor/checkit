@@ -10,6 +10,8 @@ interface EmailFormProps {
 	error: unknown;
 	/** Prefills the field, e.g. with the address an invitation was sent to. */
 	defaultEmail?: string;
+	/** What the email will contain: a sign-in link (default) or a code. */
+	sends?: "link" | "code";
 }
 
 export function EmailForm({
@@ -17,6 +19,7 @@ export function EmailForm({
 	pending,
 	error,
 	defaultEmail,
+	sends = "link",
 }: EmailFormProps) {
 	const errors = error ? formErrors(error) : { fields: {} };
 
@@ -40,7 +43,7 @@ export function EmailForm({
 			/>
 			<FormAlert message={errors.form} />
 			<Button type="submit" disabled={pending}>
-				{m.send_link_button()}
+				{sends === "code" ? m.send_code_button() : m.send_link_button()}
 			</Button>
 		</form>
 	);

@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as ManifestDotwebmanifestRouteImport } from './routes/manifest[.]webmanifest'
+import { Route as OfflineRouteImport } from './routes/offline'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as AuthenticatedItemsRouteImport } from './routes/_authenticated/items'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -29,6 +31,16 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManifestDotwebmanifestRoute = ManifestDotwebmanifestRouteImport.update({
+  id: '/manifest.webmanifest',
+  path: '/manifest.webmanifest',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OfflineRoute = OfflineRouteImport.update({
+  id: '/offline',
+  path: '/offline',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignInRoute = SignInRouteImport.update({
@@ -87,6 +99,8 @@ const AuthenticatedListsListIdMembersRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/manifest.webmanifest': typeof ManifestDotwebmanifestRoute
+  '/offline': typeof OfflineRoute
   '/sign-in': typeof SignInRoute
   '/items': typeof AuthenticatedItemsRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -100,6 +114,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/manifest.webmanifest': typeof ManifestDotwebmanifestRoute
+  '/offline': typeof OfflineRoute
   '/sign-in': typeof SignInRoute
   '/items': typeof AuthenticatedItemsRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -114,6 +130,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/manifest.webmanifest': typeof ManifestDotwebmanifestRoute
+  '/offline': typeof OfflineRoute
   '/sign-in': typeof SignInRoute
   '/_authenticated/items': typeof AuthenticatedItemsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -129,6 +147,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/manifest.webmanifest'
+    | '/offline'
     | '/sign-in'
     | '/items'
     | '/profile'
@@ -142,6 +162,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/manifest.webmanifest'
+    | '/offline'
     | '/sign-in'
     | '/items'
     | '/profile'
@@ -155,6 +177,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/manifest.webmanifest'
+    | '/offline'
     | '/sign-in'
     | '/_authenticated/items'
     | '/_authenticated/profile'
@@ -170,6 +194,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  ManifestDotwebmanifestRoute: typeof ManifestDotwebmanifestRoute
+  OfflineRoute: typeof OfflineRoute
   SignInRoute: typeof SignInRoute
   InvitationsTokenRoute: typeof InvitationsTokenRoute
   JoinTokenRoute: typeof JoinTokenRoute
@@ -189,6 +215,20 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manifest.webmanifest': {
+      id: '/manifest.webmanifest'
+      path: '/manifest.webmanifest'
+      fullPath: '/manifest.webmanifest'
+      preLoaderRoute: typeof ManifestDotwebmanifestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/offline': {
+      id: '/offline'
+      path: '/offline'
+      fullPath: '/offline'
+      preLoaderRoute: typeof OfflineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sign-in': {
@@ -304,6 +344,8 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  ManifestDotwebmanifestRoute: ManifestDotwebmanifestRoute,
+  OfflineRoute: OfflineRoute,
   SignInRoute: SignInRoute,
   InvitationsTokenRoute: InvitationsTokenRoute,
   JoinTokenRoute: JoinTokenRoute,

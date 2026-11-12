@@ -34,6 +34,7 @@ Apps import only from `@repo/ui` and `@repo/ui/styles.css`, never from internal 
 | `Checkbox` | Checkbox (Radix), checked with the mouse or the Space key |
 | `Input` | Text field; `aria-invalid` shows the error state |
 | `Label` | Field label, associated with its field through `htmlFor` |
+| `Dialog`, `DialogTrigger`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogDescription`, `DialogFooter`, `DialogClose` | Modal dialog (Radix): focus kept inside, closes with Escape. Its built-in close buttons are labeled in English: pass `showCloseButton={false}` and add a translated `DialogClose` |
 | `Popover`, `PopoverTrigger`, `PopoverContent` | Panel opened by a button, holding interactive content such as buttons (Radix); closes with Escape or a click outside |
 | `Tooltip`, `TooltipTrigger`, `TooltipContent`, `TooltipProvider` | Tooltip on hover and keyboard focus (Radix); render one `TooltipProvider` around the app |
 | `Toaster`, `toast` | Toasts (Sonner): render one `<Toaster theme={appearance} />` in the app, then call `toast.info("...")` anywhere. Adapted from shadcn: the theme comes from the app instead of `next-themes` |

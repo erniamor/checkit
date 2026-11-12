@@ -13,6 +13,7 @@ import {
 } from "@/features/appearance/appearance";
 import { getAppearanceOption } from "@/features/appearance/appearance-options";
 import { ModeRadioGroup } from "@/features/appearance/ModeRadioGroup";
+import { applyThemeColor } from "@/features/pwa/theme-color";
 import { ThemeRadioGroup } from "@/features/theme/ThemeRadioGroup";
 import { applyTheme, themeLabels } from "@/features/theme/theme";
 import { m } from "@/paraglide/messages";
@@ -53,6 +54,7 @@ export function AppearanceMenu({
 					onValueChange={(next) => {
 						setAppearance(next);
 						applyAppearance(next);
+						applyThemeColor(theme, next);
 					}}
 				/>
 				<DropdownMenuSeparator />
@@ -61,6 +63,7 @@ export function AppearanceMenu({
 					onValueChange={(next) => {
 						setTheme(next);
 						applyTheme(next);
+						applyThemeColor(next, appearance);
 					}}
 				/>
 			</DropdownMenuContent>
