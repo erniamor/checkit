@@ -4,7 +4,10 @@ import {
 	createItemSchema,
 	createItemsBatchSchema,
 	type Item,
+	type ItemStatus,
+	type ItemWithList,
 	itemSchema,
+	itemWithListSchema,
 	paginatedSchema,
 	type UpdateAllItems,
 	type UpdateItem,
@@ -39,6 +42,27 @@ export function createItemsResource(client: ApiClient) {
 				await client.request({
 					path: withQuery(itemsPath(listId), { page, pageSize }),
 					response: paginatedSchema(itemSchema),
+					signal,
+				}),
+			);
+		},
+
+		/**
+		 * The user's items across all their lists, grouped by list; the items
+		 * still to do unless another status is asked for.
+		 */
+		async listAll({
+			status,
+			page,
+			pageSize,
+			signal,
+		}: PageOptions & { status?: ItemStatus } = {}): Promise<
+			Page<ItemWithList>
+		> {
+			return toPage(
+				await client.request({
+					path: withQuery("/items", { status, page, pageSize }),
+					response: paginatedSchema(itemWithListSchema),
 					signal,
 				}),
 			);

@@ -77,6 +77,7 @@ All these routes require a session. Roles on a list: `viewer` reads, `editor` al
 | `GET /v1/lists/:listId` | `viewer` | One list |
 | `PATCH /v1/lists/:listId` `{ name }` | `editor` | Renames the list |
 | `DELETE /v1/lists/:listId` | `owner` | Deletes the list, its items and memberships |
+| `GET /v1/items?status=open\|checked\|all` | signed in | The user's items across all their lists (`open` by default), each with its `list` (`id`, `name`, `role`), grouped by list in the order of `GET /v1/lists`; up to 200 per page |
 | `GET /v1/lists/:listId/items` | `viewer` | Items in display order |
 | `POST /v1/lists/:listId/items` `{ label }` | `editor` | Adds an item at the end |
 | `POST /v1/lists/:listId/items/batch` `{ labels }` | `editor` | Adds up to 50 items at once (voice input) |

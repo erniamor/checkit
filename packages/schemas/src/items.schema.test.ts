@@ -4,6 +4,7 @@ import {
 	createItemsBatchSchema,
 	ITEM_LABEL_MAX_LENGTH,
 	ITEMS_BATCH_MAX_SIZE,
+	itemsFilterSchema,
 	updateAllItemsSchema,
 	updateItemSchema,
 } from "./items.schema";
@@ -111,5 +112,18 @@ describe("updateAllItemsSchema", () => {
 		expect(
 			updateAllItemsSchema.safeParse({ done: true, label: "Milk" }).success,
 		).toBe(false);
+	});
+});
+
+describe("itemsFilterSchema", () => {
+	it("shows the items to do by default", () => {
+		expect(itemsFilterSchema.parse({})).toEqual({ status: "open" });
+	});
+
+	it("accepts each status and rejects others", () => {
+		for (const status of ["open", "checked", "all"]) {
+			expect(itemsFilterSchema.parse({ status })).toEqual({ status });
+		}
+		expect(itemsFilterSchema.safeParse({ status: "done" }).success).toBe(false);
 	});
 });

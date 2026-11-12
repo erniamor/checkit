@@ -1,3 +1,4 @@
+import type { ItemStatus } from "@repo/schemas";
 import { queryOptions } from "@tanstack/react-query";
 import { getApi } from "@/lib/api";
 
@@ -9,6 +10,8 @@ export const listKeys = {
 	all: ["lists"] as const,
 	detail: (listId: string) => ["lists", listId] as const,
 	items: (listId: string) => ["lists", listId, "items"] as const,
+	/** The user's items across all their lists, under "lists" to be reloaded with them. */
+	allItems: (status: ItemStatus) => ["lists", "all-items", status] as const,
 	members: (listId: string) => ["lists", listId, "members"] as const,
 	invitations: (listId: string) => ["lists", listId, "invitations"] as const,
 	shareLinks: (listId: string) => ["lists", listId, "share-links"] as const,
@@ -35,5 +38,14 @@ export function itemsQueryOptions(listId: string) {
 		queryKey: listKeys.items(listId),
 		queryFn: ({ signal }) =>
 			getApi().items.list(listId, { pageSize: ITEMS_PAGE_SIZE, signal }),
+	});
+}
+
+/** The user's items across all their lists, filtered by status. */
+export function allItemsQueryOptions(status: ItemStatus) {
+	return queryOptions({
+		queryKey: listKeys.allItems(status),
+		queryFn: ({ signal }) =>
+			getApi().items.listAll({ status, pageSize: ITEMS_PAGE_SIZE, signal }),
 	});
 }

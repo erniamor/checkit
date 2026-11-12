@@ -10,6 +10,7 @@ import { handleError, handleNotFound } from "@/lib/error-handler";
 import { errorBody } from "@/lib/errors";
 import { healthRoutes } from "@/routes/health/health.routes";
 import { invitationsRoutes } from "@/routes/invitations/invitations.routes";
+import { myItemsRoutes } from "@/routes/items/items.routes";
 import { listsRoutes } from "@/routes/lists/lists.routes";
 import { meRoutes } from "@/routes/me/me.routes";
 import { shareLinksRoutes } from "@/routes/share-links/share-links.routes";
@@ -22,6 +23,7 @@ const v1 = new Hono()
 	.route("/health", healthRoutes)
 	.route("/me", meRoutes)
 	.route("/lists", listsRoutes)
+	.route("/items", myItemsRoutes)
 	.route("/invitations", invitationsRoutes)
 	.route("/share-links", shareLinksRoutes);
 

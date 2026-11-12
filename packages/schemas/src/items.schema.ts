@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { dateTimeSchema } from "./common";
+import { memberRoleSchema } from "./members.schema";
 
 export const ITEM_LABEL_MAX_LENGTH = 200;
 export const ITEMS_BATCH_MAX_SIZE = 50;
@@ -62,3 +63,24 @@ export const itemSchema = z.object({
 });
 
 export type Item = z.infer<typeof itemSchema>;
+
+/** Which items to show: still to do, checked, or both. */
+export const itemStatuses = ["open", "checked", "all"] as const;
+
+export const itemStatusSchema = z.enum(itemStatuses);
+
+export type ItemStatus = z.infer<typeof itemStatusSchema>;
+
+/** Filter of the user's items across all their lists; items to do by default. */
+export const itemsFilterSchema = z.object({
+	status: itemStatusSchema.default("open"),
+});
+
+export type ItemsFilter = z.infer<typeof itemsFilterSchema>;
+
+/** An item, with the list it belongs to and the user's role on that list. */
+export const itemWithListSchema = itemSchema.extend({
+	list: z.object({ id: z.uuid(), name: z.string(), role: memberRoleSchema }),
+});
+
+export type ItemWithList = z.infer<typeof itemWithListSchema>;

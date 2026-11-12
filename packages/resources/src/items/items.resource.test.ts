@@ -16,6 +16,21 @@ describe("items", () => {
 		expect(requests[0]?.url).toBe(`${itemsUrl}?pageSize=200`);
 	});
 
+	it("lists the user's items of every list, filtered by status", async () => {
+		const withList = {
+			...item,
+			list: { id: listId, name: "Groceries", role: "owner" },
+		};
+		const { api, requests } = fakeApi(200, paginated([withList]));
+
+		const page = await api.items.listAll({ status: "checked", pageSize: 200 });
+
+		expect(page.items).toEqual([withList]);
+		expect(requests[0]?.url).toBe(
+			"http://api.test/v1/items?status=checked&pageSize=200",
+		);
+	});
+
 	it("adds one item", async () => {
 		const { api, requests } = fakeApi(201, item);
 

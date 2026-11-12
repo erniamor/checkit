@@ -1,4 +1,4 @@
-import type { Item, List, Paginated } from "@repo/schemas";
+import type { Item, ItemWithList, List, Paginated } from "@repo/schemas";
 import { api, createList, joinList, json } from "@test/helpers/api";
 import { signIn } from "@test/helpers/auth";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -318,6 +318,67 @@ describe("DELETE /v1/lists/:listId/items/:itemId", () => {
 				})
 			).status,
 		).toBe(404);
+	});
+});
+
+describe("GET /v1/items", () => {
+	async function myItems(query = "", cookie = alice) {
+		return api(`/v1/items${query}`, { cookie });
+	}
+
+	async function myLabels(query = "", cookie = alice): Promise<string[]> {
+		const body = await json<Paginated<ItemWithList>>(
+			await myItems(query, cookie),
+		);
+		return body.data.map((item) => item.label);
+	}
+
+	it("lists the items to do of every list, grouped by list", async () => {
+		const milk = await addItem("Milk");
+		await addItem("Eggs");
+		await patchItem(milk.id, { done: true });
+		const bob = await signIn("bob@example.com");
+		const shared = await createList(bob, "Hardware");
+		await api(`/v1/lists/${shared.id}/items`, {
+			method: "POST",
+			cookie: bob,
+			body: { label: "Nails" },
+		});
+		await joinList(shared.id, "alice@example.com", "viewer");
+
+		const response = await myItems();
+
+		expect(response.status).toBe(200);
+		const body = await json<Paginated<ItemWithList>>(response);
+		expect(body.pagination).toEqual({ page: 1, pageSize: 100, total: 2 });
+		// The most recent list first, as on "My lists"
+		expect(
+			body.data.map((item) => [item.label, item.list.name, item.list.role]),
+		).toEqual([
+			["Nails", "Hardware", "viewer"],
+			["Eggs", list.name, "owner"],
+		]);
+	});
+
+	it("filters the checked items, or shows them all", async () => {
+		const milk = await addItem("Milk");
+		await addItem("Eggs");
+		await patchItem(milk.id, { done: true });
+
+		expect(await myLabels("?status=checked")).toEqual(["Milk"]);
+		expect(await myLabels("?status=all")).toEqual(["Milk", "Eggs"]);
+	});
+
+	it("hides the items of lists the user isn't a member of", async () => {
+		await addItem("Milk");
+		const bob = await signIn("bob@example.com");
+
+		expect(await myLabels("?status=all", bob)).toEqual([]);
+	});
+
+	it("rejects an unknown status, and a visitor", async () => {
+		expect((await myItems("?status=done")).status).toBe(422);
+		expect((await api("/v1/items")).status).toBe(401);
 	});
 });
 

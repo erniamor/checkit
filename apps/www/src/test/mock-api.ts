@@ -17,6 +17,8 @@ export interface ApiResponse {
 
 type Respond = (
 	request: ApiRequest,
+	/** The full URL, e.g. to read the query string. */
+	url: URL,
 ) => ApiResponse | undefined | Promise<ApiResponse | undefined>;
 
 /**
@@ -32,14 +34,15 @@ export function mockApi(respond: Respond): ApiRequest[] {
 		// Real-time streams are driven by the test through FakeEventSource.latest()
 		EventSource: FakeEventSource as unknown as typeof EventSource,
 		fetch: async (url, init) => {
+			const fullUrl = new URL(String(url));
 			const request: ApiRequest = {
 				method: init?.method ?? "GET",
-				path: new URL(String(url)).pathname.replace(/^\/v1/, ""),
+				path: fullUrl.pathname.replace(/^\/v1/, ""),
 				body:
 					typeof init?.body === "string" ? JSON.parse(init.body) : undefined,
 			};
 			requests.push(request);
-			const response = (await respond(request)) ?? {
+			const response = (await respond(request, fullUrl)) ?? {
 				status: 404,
 				body: { error: { code: "not_found", message: "Route not found" } },
 			};

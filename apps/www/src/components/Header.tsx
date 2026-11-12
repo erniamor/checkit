@@ -2,7 +2,7 @@ import type { Profile } from "@repo/schemas";
 import type { ThemeName } from "@repo/themes";
 import { cn } from "@repo/ui";
 import { Link } from "@tanstack/react-router";
-import { ListChecksIcon, LogInIcon } from "lucide-react";
+import { ListChecksIcon, ListTodoIcon, LogInIcon } from "lucide-react";
 import { headerButtonClass } from "@/components/header-styles";
 import { Logo } from "@/components/Logo";
 import { AppearanceMenu } from "@/features/appearance/AppearanceMenu";
@@ -37,6 +37,18 @@ export function Header({ appearance, theme, me }: HeaderProps) {
 							)}
 						>
 							<ListChecksIcon aria-hidden className="size-5" />
+						</Link>
+					)}
+					{me && (
+						<Link
+							to="/items"
+							aria-label={m.items_title()}
+							className={cn(
+								headerButtonClass,
+								"data-[status=active]:bg-inverse-foreground/10",
+							)}
+						>
+							<ListTodoIcon aria-hidden className="size-5" />
 						</Link>
 					)}
 					{/* Changing the language reloads the page in that language */}

@@ -1,12 +1,14 @@
 import type {
 	Item,
+	ItemStatus,
+	ItemWithList,
 	Paginated,
 	UpdateAllItems,
 	UpdateItem,
 } from "@repo/schemas";
-import { and, asc, count, eq, max, ne } from "drizzle-orm";
+import { and, asc, count, desc, eq, max, ne } from "drizzle-orm";
 import { db } from "@/db/client";
-import { items, lists } from "@/db/schema";
+import { items, listMembers, lists } from "@/db/schema";
 import { AppError } from "@/lib/errors";
 import { offsetOf, type PaginationQuery } from "@/lib/pagination";
 import { listEvents } from "@/realtime/list-events";
@@ -54,6 +56,58 @@ export async function listItems(
 
 	return {
 		data: rows.map(toItem),
+		pagination: { ...query, total: totalRow?.total ?? 0 },
+	};
+}
+
+function statusCondition(status: ItemStatus) {
+	switch (status) {
+		case "open":
+			return eq(items.done, false);
+		case "checked":
+			return eq(items.done, true);
+		case "all":
+			return undefined;
+	}
+}
+
+/**
+ * Items of every list the user is a member of, filtered by status. Grouped by
+ * list, in the order of "My lists" (most recent first), then in display order.
+ */
+export async function listItemsOfUser(
+	userId: string,
+	{ status, ...query }: PaginationQuery & { status: ItemStatus },
+): Promise<Paginated<ItemWithList>> {
+	const where = and(eq(listMembers.userId, userId), statusCondition(status));
+	const [rows, [totalRow]] = await Promise.all([
+		db
+			.select({
+				item: items,
+				list: { id: lists.id, name: lists.name, role: listMembers.role },
+			})
+			.from(items)
+			.innerJoin(listMembers, eq(listMembers.listId, items.listId))
+			.innerJoin(lists, eq(lists.id, items.listId))
+			.where(where)
+			.orderBy(
+				desc(lists.createdAt),
+				desc(lists.id),
+				asc(items.position),
+				asc(items.createdAt),
+				asc(items.id),
+			)
+			.limit(query.pageSize)
+			.offset(offsetOf(query)),
+		db
+			.select({ total: count() })
+			.from(items)
+			.innerJoin(listMembers, eq(listMembers.listId, items.listId))
+			.where(where),
+	]);
+
+	return {
+		data: rows.map((row) => ({ ...toItem(row.item), list: row.list })),
 		pagination: { ...query, total: totalRow?.total ?? 0 },
 	};
 }

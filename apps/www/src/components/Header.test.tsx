@@ -60,12 +60,18 @@ describe("Header", () => {
 		expect(
 			within(header).getByRole("link", { name: "My lists" }),
 		).toHaveAttribute("href", "/lists");
+		expect(
+			within(header).getByRole("link", { name: "All my items" }),
+		).toHaveAttribute("href", "/items");
 	});
 
 	it("doesn't link a visitor to the lists, reserved to signed-in users", async () => {
 		const header = await renderHeader();
 
 		expect(within(header).queryByRole("link", { name: "My lists" })).toBeNull();
+		expect(
+			within(header).queryByRole("link", { name: "All my items" }),
+		).toBeNull();
 	});
 
 	it("shows the logo linking to the home page", async () => {

@@ -1,6 +1,7 @@
 import {
 	createItemSchema,
 	createItemsBatchSchema,
+	itemsFilterSchema,
 	updateAllItemsSchema,
 	updateItemSchema,
 } from "@repo/schemas";
@@ -8,6 +9,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { paginationQuerySchema } from "@/lib/pagination";
 import { validate } from "@/lib/validator";
+import { type AuthVariables, requireAuth } from "@/middlewares/require-auth";
 import {
 	type ListAccessVariables,
 	requireListRole,
@@ -16,6 +18,7 @@ import {
 	addItems,
 	deleteItem,
 	listItems,
+	listItemsOfUser,
 	updateAllItems,
 	updateItem,
 } from "@/routes/items/items.service";
@@ -24,6 +27,8 @@ const itemsPagination = paginationQuerySchema({
 	defaultPageSize: 100,
 	maxPageSize: 200,
 });
+
+const myItemsQuery = itemsPagination.extend(itemsFilterSchema.shape);
 
 const itemParamSchema = z.object({ itemId: z.uuid() });
 
@@ -99,4 +104,11 @@ export const itemsRoutes = new Hono<{ Variables: ListAccessVariables }>()
 			);
 			return c.body(null, 204);
 		},
+	);
+
+// Mounted on /items: the user's items across all their lists
+export const myItemsRoutes = new Hono<{ Variables: AuthVariables }>()
+	.use(requireAuth)
+	.get("/", validate("query", myItemsQuery), async (c) =>
+		c.json(await listItemsOfUser(c.get("user").id, c.req.valid("query"))),
 	);
