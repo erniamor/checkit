@@ -13,7 +13,7 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 - Validation: Zod, through Hono's validator middleware (`@hono/zod-validator`)
 - Authentication: Better Auth, sessions in an HTTP-only cookie; passwordless email (magic link, one-time code) and Google (see "Authentication")
 - Real time: Server-Sent Events with Hono's `streamSSE`, one stream per list (see "Real time")
-- Dev: `tsx watch`; build: tsdown bundle to `dist/index.mjs`, which also compiles the internal `@repo/*` packages consumed as TypeScript source
+- Dev: `tsx watch`; build: tsdown bundle to `dist/index.mjs` (and `dist/db/migrate.mjs`, run before each deployment), which also compiles the internal `@repo/*` packages consumed as TypeScript source
 - TypeScript: extends `@repo/config-ts/node.json` (Node code without DOM)
 - Tests: Vitest, with Hono's `app.request()` for routes, against the Docker test database
 
@@ -56,6 +56,7 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 - Better Auth is mounted on `/v1/auth/*` and configured in `src/lib/auth.ts`. Password sign-in stays disabled; Google is enabled only when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set.
 - Its tables (`users`, `sessions`, `accounts`, `verifications`) are written by hand in `src/db/schema/` (plural names, `usePlural: true`, uuid ids). `auth.schema.test.ts` checks them against what Better Auth expects: after a Better Auth upgrade or a new plugin, run the tests and add the missing fields with a migration.
 - Protect a route with the `requireAuth` middleware, then read `c.get("user")`; never trust a user identifier sent by the client.
+- In production, `COOKIE_DOMAIN` shares the session cookie with the front end's subdomain (`crossSubDomainCookies`), so its server-side rendering sees the session.
 - Keep `advanced.disableOriginCheck: false`: Better Auth otherwise skips its callback URL and origin checks when `NODE_ENV` is `test`.
 - Emails go through `mailer`: sent with Resend when `RESEND_API_KEY` and `EMAIL_FROM` are set (always in production, the environment requires them), printed to the console otherwise. Their locale comes from the request's `Accept-Language` header.
 - A failed sending is logged without the email's content (it holds sign-in links and codes) and answered with a 503 `email_unavailable`. Tests never call Resend: `captureEmails()` replaces `mailer.send`.

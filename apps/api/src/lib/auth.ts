@@ -31,6 +31,16 @@ const googleProvider =
 			}
 		: {};
 
+/**
+ * Shares the session cookie with the front end when both are served on
+ * subdomains of `domain` (e.g. app.example.com and api.example.com), so the
+ * front end's server receives it too. Without a domain, the cookie stays on
+ * the API's host (development, where both run on localhost).
+ */
+export function crossSubDomainCookies(domain: string | undefined) {
+	return domain ? { crossSubDomainCookies: { enabled: true, domain } } : {};
+}
+
 // Passwordless sign-in: magic link, one-time code by email, and Google once configured.
 // Password sign-in (emailAndPassword) stays disabled.
 export const auth = betterAuth({
@@ -45,6 +55,7 @@ export const auth = betterAuth({
 		// Better Auth skips the callback URL and origin checks when NODE_ENV is "test":
 		// keep them on so the tests run with the production behavior
 		disableOriginCheck: false,
+		...crossSubDomainCookies(env.COOKIE_DOMAIN),
 	},
 	telemetry: { enabled: false },
 	socialProviders: googleProvider,

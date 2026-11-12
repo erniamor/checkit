@@ -49,7 +49,8 @@ pnpm --filter www dev   # http://localhost:3000
 | Script | Effect |
 | --- | --- |
 | `dev` | Development server on port 3000 |
-| `build` | Production build into `dist/` |
+| `build` | Production build: a standalone Node server in `.output/` (Nitro) |
+| `start` | Runs the production build (`PORT`, 3000 by default) |
 | `i18n` | Compiles the messages into `src/paraglide/` (also done by `dev`, `build` and the tests) |
 | `typecheck` | Compiles the messages, then checks the types |
 | `test` | Runs the tests (Vitest, jsdom) |
@@ -70,8 +71,8 @@ The language isn't part of the URL. It comes from the user's choice (a cookie se
 
 ## Appearance
 
-Light, dark or the system's, chosen in the header. The choice is stored in a cookie so the server renders the right appearance directly, with no flash on load.
+Light, dark or the system's, and one of the themes of `@repo/themes`, chosen in the header's appearance menu. Each choice is stored in a cookie so the server renders the right appearance directly, with no flash on load.
 
-## Not set up yet
+## Deployment
 
-- Running the production build on a Node server: TanStack Start needs a hosting adapter (Nitro for a Node server), to choose with the hosting (see [docs/hosting.md](../../docs/hosting.md)).
+Built by Nitro into a standalone Node server (`.output/server/index.mjs`), deployed on Railway: see [docs/deployment.md](../../docs/deployment.md). `VITE_API_URL` is read at build time.

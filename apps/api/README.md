@@ -29,6 +29,7 @@ Validated at startup by [`src/env.ts`](src/env.ts): the API refuses to start wit
 | `CORS_ORIGINS` | yes | Comma-separated front-end origins allowed to call the API (with cookies) |
 | `BETTER_AUTH_SECRET` | yes | At least 32 characters; signs sessions and tokens |
 | `RESEND_API_KEY`, `EMAIL_FROM` | in production | Send the emails with [Resend](https://resend.com); both or none. `EMAIL_FROM` is `Name <address>` or `address`, on a domain verified in Resend. Without them (development, tests), emails are printed to the console |
+| `COOKIE_DOMAIN` | in production | Parent domain of the API and the front end (e.g. `checkit.example.com` for `api.checkit.example.com` and `checkit.example.com`): the session cookie is shared with the front end's server. `API_URL` and `APP_URL` must be under it. Unset in development |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | no | Enable Google sign-in; both or none. Redirect URI: `<API_URL>/v1/auth/callback/google` |
 
 ## Scripts
@@ -40,6 +41,7 @@ Validated at startup by [`src/env.ts`](src/env.ts): the API refuses to start wit
 | `db:up` / `db:down` | Start / stop the local PostgreSQL |
 | `db:generate` | Generate a SQL migration from the Drizzle schema (`src/db/schema/`) into `drizzle/` |
 | `db:migrate` | Apply the migrations to the database of `.env` |
+| `db:migrate:built` | Same, from the build (`dist/db/migrate.mjs`): run before each production deployment, with the service's environment |
 | `test` | Run the tests against `checkit_test` (migrations applied first) |
 | `typecheck` | Check the types |
 
@@ -180,6 +182,8 @@ pnpm --filter api test
 The tests call the app in memory through `app.request()` and use the `checkit_test` database, emptied before each test. Helpers in `test/helpers/` sign a user in (`signIn()`), capture the emails sent (`captureEmails()`), call the API (`api()`), create a list and add a member (`createList()`, `joinList()`), and read a list's event stream (`openEventStream()`).
 
 ## Production notes
+
+- Deployed on Railway: see [docs/deployment.md](../../docs/deployment.md).
 
 - Emails are sent with Resend, required in production: the API refuses to start without `RESEND_API_KEY` and `EMAIL_FROM`, rather than print sign-in links and codes to the logs. See "Email sending".
 - Better Auth's rate limiting is active in production only, kept in memory: enough for a single instance.

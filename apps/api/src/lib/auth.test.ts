@@ -7,6 +7,7 @@ import {
 } from "@test/helpers/auth";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { app } from "@/app";
+import { crossSubDomainCookies } from "@/lib/auth";
 
 afterEach(() => {
 	vi.restoreAllMocks();
@@ -139,5 +140,17 @@ describe("password sign-in", () => {
 		});
 
 		expect(response.ok).toBe(false);
+	});
+});
+
+describe("crossSubDomainCookies", () => {
+	it("shares the session cookie under the given domain", () => {
+		expect(crossSubDomainCookies("checkit.example.com")).toEqual({
+			crossSubDomainCookies: { enabled: true, domain: "checkit.example.com" },
+		});
+	});
+
+	it("keeps the cookie on the API's host without a domain", () => {
+		expect(crossSubDomainCookies(undefined)).toEqual({});
 	});
 });

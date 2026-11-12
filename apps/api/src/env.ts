@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+function isWithinDomain(hostname: string, domain: string): boolean {
+	return hostname === domain || hostname.endsWith(`.${domain}`);
+}
+
 const envSchema = z
 	.object({
 		NODE_ENV: z
@@ -23,6 +27,15 @@ const envSchema = z
 			.regex(
 				/^(?:[^<>]+ <[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+>|[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+)$/,
 				'EMAIL_FROM must be "Name <address>" or "address"',
+			)
+			.optional(),
+		// Parent domain of the API and the front end in production (e.g. example.com
+		// for app.example.com and api.example.com): shares the session cookie
+		COOKIE_DOMAIN: z
+			.string()
+			.regex(
+				/^[a-z0-9-]+(\.[a-z0-9-]+)+$/,
+				"COOKIE_DOMAIN must be a domain name, e.g. example.com",
 			)
 			.optional(),
 		GOOGLE_CLIENT_ID: z.string().min(1).optional(),
@@ -53,6 +66,17 @@ const envSchema = z
 		{
 			message: "RESEND_API_KEY and EMAIL_FROM must be set together",
 			path: ["EMAIL_FROM"],
+		},
+	)
+	.refine(
+		(env) =>
+			env.COOKIE_DOMAIN === undefined ||
+			[env.API_URL, env.APP_URL].every((url) =>
+				isWithinDomain(new URL(url).hostname, env.COOKIE_DOMAIN ?? ""),
+			),
+		{
+			message: "API_URL and APP_URL must be served under COOKIE_DOMAIN",
+			path: ["COOKIE_DOMAIN"],
 		},
 	)
 	// Without it, sign-in links and codes could only end up in the logs

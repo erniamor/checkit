@@ -112,6 +112,21 @@ describe("parseEnv", () => {
 		},
 	);
 
+	it("accepts a cookie domain shared by the API and the front end", () => {
+		expect(
+			parseEnv({ ...validSource, COOKIE_DOMAIN: "checkit.example.com" }),
+		).toMatchObject({ COOKIE_DOMAIN: "checkit.example.com" });
+	});
+
+	it("rejects a cookie domain the API or the front end isn't served under", () => {
+		expect(() =>
+			parseEnv({ ...validSource, COOKIE_DOMAIN: "other.example.com" }),
+		).toThrow(/served under COOKIE_DOMAIN/);
+		expect(() =>
+			parseEnv({ ...validSource, COOKIE_DOMAIN: "https://example.com" }),
+		).toThrow(/COOKIE_DOMAIN/);
+	});
+
 	it("rejects an invalid CORS origin", () => {
 		expect(() =>
 			parseEnv({ ...validSource, CORS_ORIGINS: "not-a-url" }),

@@ -3,6 +3,7 @@ import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
+import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig(({ mode }) => ({
@@ -19,6 +20,8 @@ export default defineConfig(({ mode }) => ({
 		}),
 		// Not needed by the tests, which render components without a server
 		mode !== "test" && tanstackStart(),
+		// Builds a standalone Node server (.output/server/index.mjs) for production
+		mode !== "test" && nitro(),
 		viteReact(),
 		tailwindcss(),
 	],

@@ -1,6 +1,19 @@
 # Hosting options
 
-Status: recommendation, no decision yet.
+Status: decided (November 2026): **Railway**, region US East, for `www`, `api` and PostgreSQL. Setup: [deployment.md](deployment.md).
+
+## Decision
+
+- **Users:** for now the author's family and friends in Canada, maybe some users in France. A region in eastern North America is the closest to most of them; latency from France stays fine for a to-do app. Canada benefits from an EU adequacy decision, so hosting there or nearby is compatible with French users' GDPR rights. Data residency in the EU, assumed below when this document was written, is no longer a constraint.
+- **Railway (Hobby plan, about USD 5 a month):** one provider for the front end, the API and the database, nothing sleeps, managed PostgreSQL with volume backups, deployment from Git, custom domains with a CNAME at the DNS provider (OVH, which keeps the DNS of `romain.re`). The cheapest option without ops work.
+- **Rejected:**
+  - Render's free plan: services sleep after 15 minutes (about a minute to wake up), and its free PostgreSQL expires after 30 days.
+  - Oracle Cloud Always Free: free but self-managed, and idle instances may be reclaimed.
+  - Vercel or Cloudflare Workers for the API: functions don't hold long-lived SSE connections, and the in-memory event bus doesn't reach other instances; both would be fine for `www` alone, but add a second provider for little gain at this scale (Cloudflare would also need the DNS moved from OVH).
+  - AWS: free for 6 months only, then a managed PostgreSQL alone costs more than all of Railway, and the setup is heavy for this app.
+- **Voice input:** the server-side fallback will call an external transcription service, so it doesn't weigh on the hosting.
+
+The analysis below is the one the decision was made from.
 
 ## What needs hosting
 

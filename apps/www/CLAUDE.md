@@ -8,7 +8,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 
 ## App-specific stack
 
-- React + TanStack Start (file-based routing, loaders, server functions), on Vite 8, served on `http://localhost:3000` in development
+- React + TanStack Start (file-based routing, loaders, server functions), on Vite 8, built for Node by Nitro (`nitro/vite`), served on `http://localhost:3000` in development
 - Server state: TanStack Query, wired to the router with `@tanstack/react-router-ssr-query` (data loaded during server rendering is handed to the browser's cache)
 - Data: the Hono API (`apps/api`) through `@repo/resources`
 - Validation: Zod schemas from `@repo/schemas`, shared with the API
@@ -19,7 +19,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 ## Commands
 
 - Dev: `pnpm --filter www dev` (fails if port 3000 is taken, rather than taking the API's 3001; copy `.env.example` to `.env` first)
-- Build: `pnpm --filter www build` (output in `dist/`)
+- Build: `pnpm --filter www build` (a standalone Node server in `.output/`, built by Nitro); run it with `pnpm --filter www start`
 - Tests: `pnpm --filter www test`
 - Typecheck: `pnpm --filter www typecheck` (compiles the messages first, through the `i18n` script)
 

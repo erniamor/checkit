@@ -29,7 +29,7 @@ The site is multilingual by default: English (default locale), French and Spanis
 - Tests: Vitest
 - Lint + format: Biome (no ESLint or Prettier)
 - Package manager: pnpm only (never `npm` or `yarn`)
-- Hosting: not decided yet; options with pros and cons in `docs/hosting.md`
+- Hosting: Railway (US East), `www`, `api` and PostgreSQL; choice in `docs/hosting.md`, setup in `docs/deployment.md`
 - Node 24 and pnpm 10.34.9, pinned with Volta (`volta` field of the root `package.json`, requires `VOLTA_FEATURE_PNPM=1`), and enforced by `engines` + `engineStrict`. `.nvmrc` mirrors the Node major version.
 
 ## Monorepo structure
