@@ -3,10 +3,11 @@ import {
 	type InvitationPreview,
 	type List,
 	type Paginated,
+	type ReceivedInvitation,
 	type ShareableRole,
 	shareableRoleSchema,
 } from "@repo/schemas";
-import { and, asc, count, eq, gt, isNull } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
 import { invitations, listMembers, lists, users } from "@/db/schema";
 import { invitationEmail } from "@/emails/invitation";
@@ -257,9 +258,17 @@ export async function acceptInvitation(
 			"This invitation was sent to another email address",
 		);
 	}
+	return accept(invitation, user.id);
+}
+
+/** Makes the invited user a member, once the invitation has been checked as theirs. */
+async function accept(
+	invitation: InvitationRow,
+	userId: string,
+): Promise<List> {
 	if (invitation.acceptedAt) {
 		// Opening the link twice: the user is already a member
-		return getListOfUser(invitation.listId, user.id).catch(() => {
+		return getListOfUser(invitation.listId, userId).catch(() => {
 			throw invitationExpired();
 		});
 	}
@@ -271,7 +280,7 @@ export async function acceptInvitation(
 		const granted = await grantRole(
 			tx,
 			invitation.listId,
-			user.id,
+			userId,
 			shareableRoleSchema.parse(invitation.role),
 		);
 		await tx
@@ -280,6 +289,95 @@ export async function acceptInvitation(
 			.where(eq(invitations.id, invitation.id));
 		return granted;
 	});
-	await announceMembershipChange(invitation.listId, user.id, change);
-	return getListOfUser(invitation.listId, user.id);
+	await announceMembershipChange(invitation.listId, userId, change);
+	return getListOfUser(invitation.listId, userId);
+}
+
+/** The invitation, if it was sent to this user's email. */
+function sentTo(invitationId: string, email: string) {
+	return and(
+		eq(invitations.id, invitationId),
+		eq(invitations.email, email.toLowerCase()),
+	);
+}
+
+function receivedBy(email: string) {
+	return and(
+		eq(invitations.email, email.toLowerCase()),
+		isNull(invitations.acceptedAt),
+		gt(invitations.expiresAt, new Date()),
+	);
+}
+
+/** Pending invitations sent to the signed-in user's email, most recent first. */
+export async function listReceivedInvitations(
+	user: { email: string },
+	query: PaginationQuery,
+): Promise<Paginated<ReceivedInvitation>> {
+	const [rows, [totalRow]] = await Promise.all([
+		db
+			.select({
+				invitation: invitations,
+				listName: lists.name,
+				inviterName: users.name,
+			})
+			.from(invitations)
+			.innerJoin(lists, eq(lists.id, invitations.listId))
+			.leftJoin(users, eq(users.id, invitations.invitedById))
+			.where(receivedBy(user.email))
+			.orderBy(desc(invitations.createdAt), desc(invitations.id))
+			.limit(query.pageSize)
+			.offset(offsetOf(query)),
+		db
+			.select({ total: count() })
+			.from(invitations)
+			.where(receivedBy(user.email)),
+	]);
+
+	return {
+		data: rows.map(({ invitation, listName, inviterName }) => ({
+			id: invitation.id,
+			listId: invitation.listId,
+			listName,
+			role: shareableRoleSchema.parse(invitation.role),
+			invitedBy: publicName(inviterName),
+			expiresAt: invitation.expiresAt.toISOString(),
+			createdAt: invitation.createdAt.toISOString(),
+		})),
+		pagination: { ...query, total: totalRow?.total ?? 0 },
+	};
+}
+
+/**
+ * Accepts an invitation from the app, without the email's link. An
+ * invitation sent to someone else is answered as not found.
+ */
+export async function acceptReceivedInvitation(
+	invitationId: string,
+	user: { id: string; email: string },
+): Promise<List> {
+	const [invitation] = await db
+		.select()
+		.from(invitations)
+		.where(sentTo(invitationId, user.email));
+	if (!invitation) {
+		throw invitationNotFound();
+	}
+	return accept(invitation, user.id);
+}
+
+/** Declines a pending invitation: it's deleted, and its link stops working. */
+export async function declineInvitation(
+	invitationId: string,
+	user: { email: string },
+): Promise<void> {
+	const deleted = await db
+		.delete(invitations)
+		.where(
+			and(sentTo(invitationId, user.email), isNull(invitations.acceptedAt)),
+		)
+		.returning({ id: invitations.id });
+	if (deleted.length === 0) {
+		throw invitationNotFound();
+	}
 }

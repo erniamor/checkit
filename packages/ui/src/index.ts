@@ -26,6 +26,11 @@ export {
 } from "@repo/ui/components/ui/dropdown-menu";
 export { Input } from "@repo/ui/components/ui/input";
 export { Label } from "@repo/ui/components/ui/label";
+export {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@repo/ui/components/ui/popover";
 export { Toaster } from "@repo/ui/components/ui/sonner";
 export {
 	Tooltip,

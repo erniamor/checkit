@@ -95,7 +95,7 @@ Items are ordered by `position`, a floating-point number: to move an item, give 
 
 The owner shares a list in two ways, each granting `editor` or `viewer` (never `owner`):
 
-- **Invitation**: sent to an email address, valid for 7 days, and only accepted by a user signed in with that address. Inviting the same address again replaces the pending invitation. A list has at most 50 pending invitations. The email links to the front end, `<APP_URL>/invitations/<token>`, in the inviter's language.
+- **Invitation**: sent to an email address, valid for 7 days, and only accepted by a user signed in with that address, through the email's link or from the app (`/v1/me/invitations`); an invitation sent to someone else answers 404 there. Declining deletes it. Inviting the same address again replaces the pending invitation. A list has at most 50 pending invitations. The email links to the front end, `<APP_URL>/invitations/<token>`, in the inviter's language.
 - **Share link**: anyone with the link can join after signing in. One active link per role at most; it lasts until revoked, and creating a new one for the same role revokes the previous one. The front end builds the URL to share from the link's `token`.
 
 Joining never downgrades a member: an editor who opens a viewer link stays editor, a viewer who opens an editor link becomes editor.
@@ -107,6 +107,9 @@ Joining never downgrades a member: an editor who opens a viewer link stays edito
 | `DELETE /v1/lists/:listId/invitations/:invitationId` | `owner` | Cancels an invitation |
 | `GET /v1/invitations/:token` | no | Preview: list name, role, invited email, inviter's name (null if they have none) |
 | `POST /v1/invitations/:token/accept` | yes | Accepts the invitation; returns the list |
+| `GET /v1/me/invitations` | yes | Pending invitations sent to the user's email, most recent first: list name, role, inviter's name |
+| `POST /v1/me/invitations/:invitationId/accept` | yes | Accepts one of them from the app, without the link; returns the list |
+| `DELETE /v1/me/invitations/:invitationId` | yes | Declines one of them: the invitation is deleted, its link stops working |
 | `POST /v1/lists/:listId/share-links` `{ role }` | `owner` | Creates the share link for a role |
 | `GET /v1/lists/:listId/share-links` | `owner` | Active share links |
 | `DELETE /v1/lists/:listId/share-links/:linkId` | `owner` | Revokes a share link |

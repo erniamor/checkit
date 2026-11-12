@@ -4,6 +4,7 @@ import type {
 	List,
 	Member,
 	Paginated,
+	ReceivedInvitation,
 } from "@repo/schemas";
 import { api, createList, joinList, json, setName } from "@test/helpers/api";
 import { captureEmails, signIn } from "@test/helpers/auth";
@@ -275,5 +276,164 @@ describe("POST /v1/invitations/:token/accept", () => {
 		});
 
 		expect(response.status).toBe(401);
+	});
+});
+
+describe("GET /v1/me/invitations", () => {
+	it("lists the pending invitations sent to the user's email", async () => {
+		await setName("alice@example.com", "Alice");
+		await inviteAndGetToken("bob@example.com", "viewer");
+		await inviteAndGetToken("carol@example.com");
+
+		const response = await api("/v1/me/invitations", { cookie: bob });
+
+		expect(response.status).toBe(200);
+		const body = await json<Paginated<ReceivedInvitation>>(response);
+		expect(body.data).toEqual([
+			{
+				id: expect.any(String),
+				listId: list.id,
+				listName: "Groceries",
+				role: "viewer",
+				invitedBy: "Alice",
+				expiresAt: expect.any(String),
+				createdAt: expect.any(String),
+			},
+		]);
+		expect(body.pagination.total).toBe(1);
+	});
+
+	it("leaves out the accepted and expired invitations", async () => {
+		const token = await inviteAndGetToken("bob@example.com");
+		await api(`/v1/invitations/${token}/accept`, {
+			method: "POST",
+			cookie: bob,
+		});
+		const other = await createList(alice, "Hardware");
+		await api(`/v1/lists/${other.id}/invitations`, {
+			method: "POST",
+			cookie: alice,
+			body: { email: "bob@example.com", role: "editor" },
+		});
+		await db
+			.update(invitations)
+			.set({ expiresAt: new Date(Date.now() - 1000) })
+			.where(eq(invitations.listId, other.id));
+
+		const body = await json<Paginated<ReceivedInvitation>>(
+			await api("/v1/me/invitations", { cookie: bob }),
+		);
+
+		expect(body.data).toEqual([]);
+	});
+
+	it("requires a session", async () => {
+		expect((await api("/v1/me/invitations")).status).toBe(401);
+	});
+});
+
+describe("answering an invitation from the app", () => {
+	async function receivedId(cookie = bob): Promise<string> {
+		const body = await json<Paginated<ReceivedInvitation>>(
+			await api("/v1/me/invitations", { cookie }),
+		);
+		return body.data[0]?.id ?? "";
+	}
+
+	it("accepts it, making the user a member, and its link then opens the list", async () => {
+		const token = await inviteAndGetToken("bob@example.com", "viewer");
+
+		const response = await api(
+			`/v1/me/invitations/${await receivedId()}/accept`,
+			{
+				method: "POST",
+				cookie: bob,
+			},
+		);
+
+		expect(response.status).toBe(200);
+		expect(await json<List>(response)).toMatchObject({
+			id: list.id,
+			role: "viewer",
+		});
+		expect(await receivedId()).toBe("");
+		expect(
+			(
+				await api(`/v1/invitations/${token}/accept`, {
+					method: "POST",
+					cookie: bob,
+				})
+			).status,
+		).toBe(200);
+	});
+
+	it("declines it: it's deleted, and its link no longer works", async () => {
+		const token = await inviteAndGetToken("bob@example.com");
+		const id = await receivedId();
+
+		const response = await api(`/v1/me/invitations/${id}`, {
+			method: "DELETE",
+			cookie: bob,
+		});
+
+		expect(response.status).toBe(204);
+		expect(await receivedId()).toBe("");
+		expect((await api(`/v1/lists/${list.id}`, { cookie: bob })).status).toBe(
+			404,
+		);
+		expect((await api(`/v1/invitations/${token}`)).status).toBe(404);
+		const pending = await json<Paginated<Invitation>>(
+			await api(`/v1/lists/${list.id}/invitations`, { cookie: alice }),
+		);
+		expect(pending.data).toEqual([]);
+	});
+
+	it("answers 404 for an invitation sent to someone else", async () => {
+		await inviteAndGetToken("bob@example.com");
+		const id = await receivedId();
+		const carol = await signIn("carol@example.com");
+
+		for (const [method, path] of [
+			["POST", `/v1/me/invitations/${id}/accept`],
+			["DELETE", `/v1/me/invitations/${id}`],
+		] as const) {
+			const response = await api(path, { method, cookie: carol });
+			expect(response.status, `${method} ${path}`).toBe(404);
+		}
+		expect(await receivedId()).toBe(id);
+	});
+
+	it("refuses an expired invitation", async () => {
+		await inviteAndGetToken("bob@example.com");
+		const id = await receivedId();
+		await db
+			.update(invitations)
+			.set({ expiresAt: new Date(Date.now() - 1000) })
+			.where(eq(invitations.id, id));
+
+		const response = await api(`/v1/me/invitations/${id}/accept`, {
+			method: "POST",
+			cookie: bob,
+		});
+
+		expect(response.status).toBe(410);
+	});
+
+	it("rejects an invalid id, and requires a session", async () => {
+		expect(
+			(
+				await api("/v1/me/invitations/not-a-uuid/accept", {
+					method: "POST",
+					cookie: bob,
+				})
+			).status,
+		).toBe(422);
+		expect(
+			(
+				await api(`/v1/me/invitations/${generateToken()}`, {
+					method: "DELETE",
+				})
+			).status,
+		).toBe(401);
 	});
 });

@@ -71,7 +71,7 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 
 - Sharing only grants `editor` or `viewer` (`ShareableRole`), never `owner`. Every path that adds a member goes through `grantRole()`, which never downgrades an existing member.
 - Invitation tokens are stored hashed (`tokenHash`): the token only exists in the email. Share link tokens are stored as is, so the owner can copy the link again; both are 256-bit random tokens from `src/lib/tokens.ts`.
-- An invitation is only accepted by a user signed in with the invited email. The invitation email is sent inside the transaction that creates it: if sending fails, no invitation is left without its link.
+- An invitation is only accepted by a user signed in with the invited email. The invited user can also list, accept and decline their pending invitations from the app (`/me/invitations`, `receivedInvitationsRoutes`), by id: an invitation sent to another email answers 404 there. Declining deletes the invitation; both ways of accepting share `accept()`. The invitation email is sent inside the transaction that creates it: if sending fails, no invitation is left without its link.
 - Partial unique indexes enforce one pending invitation per list and email, and one active share link per list and role.
 - The previews (`GET /invitations/:token`, `GET /share-links/:token`) are public: they show other users through `publicName()` (name or null), never their email. `displayName()` (name, or email as fallback) is only for people the user chose to contact, such as the invitation email.
 - Expired invitations stay in the table; they are deleted when the same email is invited again. Plan a cleanup job if the table grows.

@@ -87,6 +87,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 - `/invitations/$token` and `/join/$token` are public: their loader loads the preview with `loadPreview()` (unknown token: 404; expired or revoked: `preview: null`). Joining always needs a click on "Join the list", never just opening the link.
 - A share link's URL is built by the front end: `<origin>/join/<token>` (`shareLinkUrl()`).
 - Invitations and share links are only loaded for the owner: the API refuses them to the others.
+- The header's bell (`InvitationsMenu`, a `Popover`) lists the invitations sent to the signed-in user, to accept or decline them without the email. They're checked on load, when the tab gets the focus again, and every minute (`receivedInvitationsQueryOptions`, key `["me", userId, "invitations"]`, per user so another account never sees them); there's no real-time stream for them.
 
 ## Icons and tooltips
 

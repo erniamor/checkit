@@ -8,6 +8,8 @@ import {
 	type List,
 	listSchema,
 	paginatedSchema,
+	type ReceivedInvitation,
+	receivedInvitationSchema,
 } from "@repo/schemas";
 import {
 	type Page,
@@ -20,7 +22,8 @@ import { type ApiClient, parseInput } from "../http/client";
 
 /**
  * Invitations by email. Managing them is reserved to the list's owner; the
- * invited person previews and accepts them through the token of their link.
+ * invited person previews and accepts them through the token of their link,
+ * or, once signed in, answers them from the app (`received`).
  */
 export function createInvitationsResource(client: ApiClient) {
 	const invitationsPath = (listId: string) =>
@@ -79,6 +82,38 @@ export function createInvitationsResource(client: ApiClient) {
 				method: "POST",
 				path: `/invitations/${segment(token)}/accept`,
 				response: listSchema,
+			});
+		},
+
+		/** Pending invitations sent to the signed-in user's email, most recent first. */
+		async received({
+			page,
+			pageSize,
+			signal,
+		}: PageOptions = {}): Promise<Page<ReceivedInvitation>> {
+			return toPage(
+				await client.request({
+					path: withQuery("/me/invitations", { page, pageSize }),
+					response: paginatedSchema(receivedInvitationSchema),
+					signal,
+				}),
+			);
+		},
+
+		/** Accepts a received invitation, without its link; returns the list. */
+		async acceptReceived(invitationId: string): Promise<List> {
+			return client.request({
+				method: "POST",
+				path: `/me/invitations/${segment(invitationId)}/accept`,
+				response: listSchema,
+			});
+		},
+
+		/** Declines a received invitation: it's deleted. */
+		async decline(invitationId: string): Promise<void> {
+			await client.request({
+				method: "DELETE",
+				path: `/me/invitations/${segment(invitationId)}`,
 			});
 		},
 	};

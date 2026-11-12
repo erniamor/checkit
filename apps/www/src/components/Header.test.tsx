@@ -48,9 +48,12 @@ describe("Header", () => {
 		await user.click(within(menu).getByRole("menuitem", { name: "Sign out" }));
 
 		await vi.waitFor(() =>
-			expect(requests).toEqual([
-				{ method: "POST", path: "/auth/sign-out", body: {} },
-			]),
+			// The header also checks the invitations received
+			expect(requests).toContainEqual({
+				method: "POST",
+				path: "/auth/sign-out",
+				body: {},
+			}),
 		);
 	});
 
@@ -63,6 +66,9 @@ describe("Header", () => {
 		expect(
 			within(header).getByRole("link", { name: "All my items" }),
 		).toHaveAttribute("href", "/items");
+		expect(
+			within(header).getByRole("button", { name: /^Invitations/ }),
+		).toBeVisible();
 	});
 
 	it("doesn't link a visitor to the lists, reserved to signed-in users", async () => {
@@ -71,6 +77,9 @@ describe("Header", () => {
 		expect(within(header).queryByRole("link", { name: "My lists" })).toBeNull();
 		expect(
 			within(header).queryByRole("link", { name: "All my items" }),
+		).toBeNull();
+		expect(
+			within(header).queryByRole("button", { name: /^Invitations/ }),
 		).toBeNull();
 	});
 

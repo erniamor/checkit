@@ -9,6 +9,7 @@ import { AppearanceMenu } from "@/features/appearance/AppearanceMenu";
 import type { Appearance } from "@/features/appearance/appearance";
 import { UserMenu } from "@/features/auth/UserMenu";
 import { LanguageMenu } from "@/features/i18n/LanguageMenu";
+import { InvitationsMenu } from "@/features/sharing/InvitationsMenu";
 import { m } from "@/paraglide/messages";
 import { getLocale, setLocale } from "@/paraglide/runtime";
 
@@ -51,6 +52,7 @@ export function Header({ appearance, theme, me }: HeaderProps) {
 							<ListTodoIcon aria-hidden className="size-5" />
 						</Link>
 					)}
+					{me && <InvitationsMenu userId={me.id} />}
 					{/* Changing the language reloads the page in that language */}
 					<LanguageMenu locale={getLocale()} onLocaleChange={setLocale} />
 					<AppearanceMenu initialAppearance={appearance} initialTheme={theme} />

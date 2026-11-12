@@ -125,6 +125,41 @@ describe("invitations", () => {
 		});
 	});
 
+	it("lists, accepts and declines the invitations received", async () => {
+		const received = {
+			id: invitation.id,
+			listId,
+			listName: "Groceries",
+			role: "viewer",
+			invitedBy: "Alice",
+			expiresAt: date,
+			createdAt: date,
+		};
+		const listApi = fakeApi(200, paginated([received]));
+		expect((await listApi.api.invitations.received()).items).toEqual([
+			received,
+		]);
+		expect(listApi.requests[0]?.url).toBe("http://api.test/v1/me/invitations");
+
+		const acceptApi = fakeApi(200, list);
+		expect(
+			await acceptApi.api.invitations.acceptReceived(invitation.id),
+		).toEqual(list);
+		await acceptApi.api.invitations.decline(invitation.id);
+		expect(calls(acceptApi.requests)).toEqual([
+			{
+				method: "POST",
+				url: `http://api.test/v1/me/invitations/${invitation.id}/accept`,
+				body: undefined,
+			},
+			{
+				method: "DELETE",
+				url: `http://api.test/v1/me/invitations/${invitation.id}`,
+				body: undefined,
+			},
+		]);
+	});
+
 	it("reports an expired invitation as a 410", async () => {
 		const { api } = fakeApi(410, {
 			error: { code: "invitation_expired", message: "Expired" },

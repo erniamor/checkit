@@ -12,8 +12,11 @@ import {
 } from "@/middlewares/require-list-role";
 import {
 	acceptInvitation,
+	acceptReceivedInvitation,
 	createInvitation,
+	declineInvitation,
 	listPendingInvitations,
+	listReceivedInvitations,
 	MAX_PENDING_INVITATIONS,
 	previewInvitation,
 	revokeInvitation,
@@ -80,4 +83,32 @@ export const invitationsRoutes = new Hono<{ Variables: AuthVariables }>()
 		validate("param", tokenParamSchema),
 		async (c) =>
 			c.json(await acceptInvitation(c.req.valid("param").token, c.get("user"))),
+	);
+
+// Mounted on /me/invitations, behind requireAuth: the invitations sent to the
+// signed-in user's email, answered from the app
+export const receivedInvitationsRoutes = new Hono<{
+	Variables: AuthVariables;
+}>()
+	.get("/", validate("query", invitationsPagination), async (c) =>
+		c.json(await listReceivedInvitations(c.get("user"), c.req.valid("query"))),
+	)
+	.post(
+		"/:invitationId/accept",
+		validate("param", invitationParamSchema),
+		async (c) =>
+			c.json(
+				await acceptReceivedInvitation(
+					c.req.valid("param").invitationId,
+					c.get("user"),
+				),
+			),
+	)
+	.delete(
+		"/:invitationId",
+		validate("param", invitationParamSchema),
+		async (c) => {
+			await declineInvitation(c.req.valid("param").invitationId, c.get("user"));
+			return c.body(null, 204);
+		},
 	);

@@ -37,3 +37,20 @@ export const invitationPreviewSchema = z.object({
 });
 
 export type InvitationPreview = z.infer<typeof invitationPreviewSchema>;
+
+/**
+ * A pending invitation, as seen by the invited user once signed in: accepted
+ * or declined from the app, without the email's link.
+ */
+export const receivedInvitationSchema = z.object({
+	id: z.uuid(),
+	listId: z.uuid(),
+	listName: z.string(),
+	role: shareableRoleSchema,
+	/** Name of the person who sent it, null if they have none or deleted their account. */
+	invitedBy: z.string().nullable(),
+	expiresAt: dateTimeSchema,
+	createdAt: dateTimeSchema,
+});
+
+export type ReceivedInvitation = z.infer<typeof receivedInvitationSchema>;
