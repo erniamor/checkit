@@ -50,6 +50,17 @@ describe("items", () => {
 		]);
 	});
 
+	it("checks every item, returning the changed ones without the envelope", async () => {
+		const { api, requests } = fakeApi(200, { data: [item] });
+
+		expect(await api.items.updateAll(listId, { done: true })).toEqual([item]);
+		expect(requests[0]).toMatchObject({
+			method: "PATCH",
+			url: itemsUrl,
+			body: { done: true },
+		});
+	});
+
 	it("rejects an empty change before sending", async () => {
 		const { api, fetch } = fakeApi(200, item);
 

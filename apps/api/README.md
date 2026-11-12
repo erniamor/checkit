@@ -80,6 +80,7 @@ All these routes require a session. Roles on a list: `viewer` reads, `editor` al
 | `GET /v1/lists/:listId/items` | `viewer` | Items in display order |
 | `POST /v1/lists/:listId/items` `{ label }` | `editor` | Adds an item at the end |
 | `POST /v1/lists/:listId/items/batch` `{ labels }` | `editor` | Adds up to 50 items at once (voice input) |
+| `PATCH /v1/lists/:listId/items` `{ done }` | `editor` | Checks or unchecks every item; returns `{ data }`, the items whose state changed |
 | `PATCH /v1/lists/:listId/items/:itemId` `{ label?, done?, position? }` | `editor` | Renames, checks / unchecks or moves an item |
 | `DELETE /v1/lists/:listId/items/:itemId` | `editor` | Deletes an item |
 | `GET /v1/lists/:listId/members` | `viewer` | Members with their role |
@@ -134,6 +135,7 @@ events.addEventListener("items.created", (message) => {
 | --- | --- | --- |
 | `items.created` | `items` | Items are added, one or several at once |
 | `item.updated` | `item` | An item is renamed, checked, unchecked or moved |
+| `items.updated` | `items` | Every item is checked or unchecked at once; only the items whose state changed |
 | `item.deleted` | `itemId` | An item is deleted |
 | `list.updated` | `name`, `updatedAt` | The list is renamed |
 | `list.deleted` | | The list is deleted; the server then ends every stream |

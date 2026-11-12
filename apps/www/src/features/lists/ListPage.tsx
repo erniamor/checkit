@@ -7,6 +7,7 @@ import { useState } from "react";
 import { FormAlert } from "@/components/FormAlert";
 import { WithTooltip } from "@/components/WithTooltip";
 import { AddItemForm } from "@/features/lists/AddItemForm";
+import { CheckAllButtons } from "@/features/lists/CheckAllButtons";
 import { DeleteListButton } from "@/features/lists/DeleteListButton";
 import { ItemsSection } from "@/features/lists/ItemsSection";
 import { ListTitle } from "@/features/lists/ListTitle";
@@ -96,6 +97,16 @@ export function ListPage({ listId }: ListPageProps) {
 				</p>
 			) : (
 				<div className="grid gap-6">
+					{editable && (
+						<CheckAllButtons
+							openCount={open.length}
+							checkedCount={checked.length}
+							onCheckAll={(done) => {
+								setError(undefined);
+								mutations.updateAllItems.mutate(done);
+							}}
+						/>
+					)}
 					<ItemsSection
 						items={open}
 						editable={editable}

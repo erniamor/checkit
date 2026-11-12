@@ -1,5 +1,10 @@
-import type { Item, Paginated, UpdateItem } from "@repo/schemas";
-import { and, asc, count, eq, max } from "drizzle-orm";
+import type {
+	Item,
+	Paginated,
+	UpdateAllItems,
+	UpdateItem,
+} from "@repo/schemas";
+import { and, asc, count, eq, max, ne } from "drizzle-orm";
 import { db } from "@/db/client";
 import { items, lists } from "@/db/schema";
 import { AppError } from "@/lib/errors";
@@ -134,6 +139,37 @@ export async function updateItem(
 	const item = toItem(row);
 	listEvents.publish({ type: "item.updated", listId, actorId: userId, item });
 	return item;
+}
+
+/**
+ * Checks or unchecks every item of the list. Only the items whose state
+ * changes are written and returned, in list order: the others keep who
+ * checked them, and when.
+ */
+export async function updateAllItems(
+	listId: string,
+	userId: string,
+	{ done }: UpdateAllItems,
+): Promise<Item[]> {
+	const rows = await db
+		.update(items)
+		.set({
+			done,
+			doneAt: done ? new Date() : null,
+			doneById: done ? userId : null,
+		})
+		.where(and(eq(items.listId, listId), ne(items.done, done)))
+		.returning();
+	const updated = rows.map(toItem).sort((a, b) => a.position - b.position);
+	if (updated.length > 0) {
+		listEvents.publish({
+			type: "items.updated",
+			listId,
+			actorId: userId,
+			items: updated,
+		});
+	}
+	return updated;
 }
 
 export async function deleteItem(

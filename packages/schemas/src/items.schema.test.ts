@@ -4,6 +4,7 @@ import {
 	createItemsBatchSchema,
 	ITEM_LABEL_MAX_LENGTH,
 	ITEMS_BATCH_MAX_SIZE,
+	updateAllItemsSchema,
 	updateItemSchema,
 } from "./items.schema";
 
@@ -93,6 +94,22 @@ describe("updateItemSchema", () => {
 	it("rejects fields that cannot be changed", () => {
 		expect(
 			updateItemSchema.safeParse({ done: true, listId: "other" }).success,
+		).toBe(false);
+	});
+});
+
+describe("updateAllItemsSchema", () => {
+	it("accepts checking or unchecking every item", () => {
+		expect(updateAllItemsSchema.parse({ done: true })).toEqual({ done: true });
+		expect(updateAllItemsSchema.parse({ done: false })).toEqual({
+			done: false,
+		});
+	});
+
+	it("rejects a missing state or another change", () => {
+		expect(updateAllItemsSchema.safeParse({}).success).toBe(false);
+		expect(
+			updateAllItemsSchema.safeParse({ done: true, label: "Milk" }).success,
 		).toBe(false);
 	});
 });

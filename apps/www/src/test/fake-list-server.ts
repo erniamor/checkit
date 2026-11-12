@@ -134,6 +134,16 @@ export function fakeListServer({
 			stored = [...stored, item];
 			return { status: 201, body: item };
 		}
+		if (method === "PATCH" && path === `/lists/${listId}/items`) {
+			const done = Boolean(input.done);
+			const changed = stored
+				.filter((item) => item.done !== done)
+				.map((item) => ({ ...item, done, doneAt: done ? date : null }));
+			stored = stored.map(
+				(item) => changed.find((other) => other.id === item.id) ?? item,
+			);
+			return { status: 200, body: { data: changed } };
+		}
 		if (itemPath && method === "PATCH") {
 			stored = stored.map((item) =>
 				item.id === itemPath[1]

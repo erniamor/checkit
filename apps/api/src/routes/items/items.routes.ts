@@ -1,6 +1,7 @@
 import {
 	createItemSchema,
 	createItemsBatchSchema,
+	updateAllItemsSchema,
 	updateItemSchema,
 } from "@repo/schemas";
 import { Hono } from "hono";
@@ -15,6 +16,7 @@ import {
 	addItems,
 	deleteItem,
 	listItems,
+	updateAllItems,
 	updateItem,
 } from "@/routes/items/items.service";
 
@@ -55,6 +57,19 @@ export const itemsRoutes = new Hono<{ Variables: ListAccessVariables }>()
 				c.req.valid("json").labels,
 			);
 			return c.json({ data: created }, 201);
+		},
+	)
+	.patch(
+		"/",
+		requireListRole("editor"),
+		validate("json", updateAllItemsSchema),
+		async (c) => {
+			const updated = await updateAllItems(
+				c.get("listId"),
+				c.get("user").id,
+				c.req.valid("json"),
+			);
+			return c.json({ data: updated });
 		},
 	)
 	.patch(

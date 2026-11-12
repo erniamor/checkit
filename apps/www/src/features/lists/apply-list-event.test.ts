@@ -68,6 +68,26 @@ describe("applyListEvent", () => {
 		expect(applied).toEqual({ outcome: { kind: "reload" } });
 	});
 
+	it("replaces the items checked or unchecked at once, keeping the others", () => {
+		const milk = item("a", "Milk");
+		const eggs = item("b", "Eggs");
+		const checkedMilk = { ...milk, done: true };
+
+		const applied = applyListEvent(
+			{
+				type: "items.updated",
+				listId,
+				actorId: other,
+				items: [checkedMilk],
+			},
+			me,
+			{ items: page([milk, eggs]), list },
+		);
+
+		expect(applied.outcome).toEqual({ kind: "patched" });
+		expect(applied.items?.items).toEqual([checkedMilk, eggs]);
+	});
+
 	it("only changes my role for an update of my own membership", () => {
 		const member = {
 			userId: other,

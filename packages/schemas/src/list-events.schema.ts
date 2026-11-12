@@ -23,6 +23,11 @@ export const listEventSchema = z.discriminatedUnion("type", [
 		items: z.array(itemSchema),
 	}),
 	z.object({ type: z.literal("item.updated"), ...eventBase, item: itemSchema }),
+	z.object({
+		type: z.literal("items.updated"),
+		...eventBase,
+		items: z.array(itemSchema),
+	}),
 	z.object({ type: z.literal("item.deleted"), ...eventBase, itemId: z.uuid() }),
 	z.object({
 		type: z.literal("list.updated"),

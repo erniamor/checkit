@@ -112,6 +112,36 @@ describe("GET /v1/lists/:listId/events", () => {
 		expect(event.actorId).toBe(await userIdOf("bob@example.com"));
 	});
 
+	it("pushes every checked item as one event, and nothing when none changes", async () => {
+		const milk = await addItem("Milk");
+		const eggs = await addItem("Eggs");
+		const stream = await listen(alice);
+
+		await api(`/v1/lists/${list.id}/items`, {
+			method: "PATCH",
+			cookie: bob,
+			body: { done: true },
+		});
+		const event = await stream.nextEvent();
+		expect(event).toMatchObject({
+			type: "items.updated",
+			actorId: await userIdOf("bob@example.com"),
+			items: [
+				{ id: milk.id, done: true },
+				{ id: eggs.id, done: true },
+			],
+		});
+
+		// Already all checked: nothing written, nothing pushed
+		await api(`/v1/lists/${list.id}/items`, {
+			method: "PATCH",
+			cookie: bob,
+			body: { done: true },
+		});
+		await addItem("Bread");
+		expect((await stream.nextEvent()).type).toBe("items.created");
+	});
+
 	it("pushes the list's new name", async () => {
 		const stream = await listen(bob);
 

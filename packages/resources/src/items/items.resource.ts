@@ -6,7 +6,9 @@ import {
 	type Item,
 	itemSchema,
 	paginatedSchema,
+	type UpdateAllItems,
 	type UpdateItem,
+	updateAllItemsSchema,
 	updateItemSchema,
 } from "@repo/schemas";
 import { z } from "zod";
@@ -19,7 +21,7 @@ import {
 } from "../api/page";
 import { type ApiClient, parseInput } from "../http/client";
 
-const batchResponseSchema = z.object({ data: z.array(itemSchema) });
+const itemsResponseSchema = z.object({ data: z.array(itemSchema) });
 
 /** The items of a list. */
 export function createItemsResource(client: ApiClient) {
@@ -58,7 +60,7 @@ export function createItemsResource(client: ApiClient) {
 				method: "POST",
 				path: `${itemsPath(listId)}/batch`,
 				body: parseInput(createItemsBatchSchema, input),
-				response: batchResponseSchema,
+				response: itemsResponseSchema,
 			});
 			return data;
 		},
@@ -75,6 +77,20 @@ export function createItemsResource(client: ApiClient) {
 				body: parseInput(updateItemSchema, changes),
 				response: itemSchema,
 			});
+		},
+
+		/**
+		 * Checks or unchecks every item of the list; returns the items whose
+		 * state changed.
+		 */
+		async updateAll(listId: string, changes: UpdateAllItems): Promise<Item[]> {
+			const { data } = await client.request({
+				method: "PATCH",
+				path: itemsPath(listId),
+				body: parseInput(updateAllItemsSchema, changes),
+				response: itemsResponseSchema,
+			});
+			return data;
 		},
 
 		async remove(listId: string, itemId: string): Promise<void> {

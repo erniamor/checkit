@@ -101,6 +101,13 @@ export function useListMutations(
 		...itemMutationOptions,
 	});
 
+	const updateAllItems = useMutation({
+		mutationFn: (done: boolean) => api.items.updateAll(listId, { done }),
+		onMutate: (done: boolean) =>
+			updateItems((items) => items.map((item) => applyChanges(item, { done }))),
+		...itemMutationOptions,
+	});
+
 	const deleteItem = useMutation({
 		mutationFn: (itemId: string) => api.items.remove(listId, itemId),
 		onMutate: (itemId: string) =>
@@ -132,5 +139,12 @@ export function useListMutations(
 		onError,
 	});
 
-	return { addItem, updateItem, deleteItem, renameList, deleteList };
+	return {
+		addItem,
+		updateItem,
+		updateAllItems,
+		deleteItem,
+		renameList,
+		deleteList,
+	};
 }

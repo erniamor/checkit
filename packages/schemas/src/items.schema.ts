@@ -43,6 +43,11 @@ export const updateItemSchema = z
 
 export type UpdateItem = z.infer<typeof updateItemSchema>;
 
+/** Checks or unchecks every item of a list at once. */
+export const updateAllItemsSchema = z.strictObject({ done: z.boolean() });
+
+export type UpdateAllItems = z.infer<typeof updateAllItemsSchema>;
+
 export const itemSchema = z.object({
 	id: z.uuid(),
 	listId: z.uuid(),

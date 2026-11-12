@@ -230,6 +230,75 @@ describe("PATCH /v1/lists/:listId/items/:itemId", () => {
 	});
 });
 
+describe("PATCH /v1/lists/:listId/items", () => {
+	async function patchAll(body: unknown, cookie = alice) {
+		return api(itemsPath(), { method: "PATCH", cookie, body });
+	}
+
+	it("checks every item, returning only the ones that changed", async () => {
+		const milk = await addItem("Milk");
+		const eggs = await addItem("Eggs");
+		const bread = await addItem("Bread");
+		const before = await json<Item>(await patchItem(eggs.id, { done: true }));
+		const bob = await joinList(list.id, "bob@example.com", "editor");
+
+		const response = await patchAll({ done: true }, bob);
+
+		expect(response.status).toBe(200);
+		const { data } = await json<{ data: Item[] }>(response);
+		expect(data.map((item) => item.id)).toEqual([milk.id, bread.id]);
+		expect(data[0]?.doneById).not.toBe(milk.createdById);
+		const all = await listed();
+		expect(all.every((item) => item.done)).toBe(true);
+		// The item already checked keeps who checked it, and when
+		expect(all.find((item) => item.id === eggs.id)).toMatchObject({
+			doneAt: before.doneAt,
+			doneById: before.doneById,
+		});
+	});
+
+	it("unchecks every item", async () => {
+		const milk = await addItem("Milk");
+		await addItem("Eggs");
+		await patchItem(milk.id, { done: true });
+
+		const response = await patchAll({ done: false });
+
+		const { data } = await json<{ data: Item[] }>(response);
+		expect(data).toEqual([
+			expect.objectContaining({
+				id: milk.id,
+				done: false,
+				doneAt: null,
+				doneById: null,
+			}),
+		]);
+		expect((await listed()).some((item) => item.done)).toBe(false);
+	});
+
+	it("leaves the items of other lists alone", async () => {
+		const other = await createList(alice, "Other");
+		await api(`/v1/lists/${other.id}/items`, {
+			method: "POST",
+			cookie: alice,
+			body: { label: "Elsewhere" },
+		});
+
+		await patchAll({ done: true });
+
+		const elsewhere = await json<Paginated<Item>>(
+			await api(`/v1/lists/${other.id}/items`, { cookie: alice }),
+		);
+		expect(elsewhere.data[0]?.done).toBe(false);
+	});
+
+	it("rejects a missing state", async () => {
+		const response = await patchAll({});
+
+		expect(response.status).toBe(422);
+	});
+});
+
 describe("DELETE /v1/lists/:listId/items/:itemId", () => {
 	it("deletes an item", async () => {
 		const milk = await addItem("Milk");
@@ -262,6 +331,7 @@ describe("access by role", () => {
 			["POST", itemsPath(), { label: "Eggs" }],
 			["POST", itemsPath("/batch"), { labels: ["Eggs"] }],
 			["PATCH", itemsPath(`/${milk.id}`), { done: true }],
+			["PATCH", itemsPath(), { done: true }],
 			["DELETE", itemsPath(`/${milk.id}`), undefined],
 		] as const) {
 			const response = await api(path, { method, cookie: bob, body });

@@ -83,6 +83,47 @@ describe("ListPage", () => {
 		);
 	});
 
+	it("checks every item at once, then unchecks them", async () => {
+		const { user, requests } = renderList(
+			fakeListServer({ items: ["Milk ✓", "Eggs", "Bread"] }),
+		);
+
+		await user.click(await screen.findByRole("button", { name: "Check all" }));
+
+		expect(displayedItems()).toEqual({
+			open: [],
+			checked: ["Milk", "Eggs", "Bread"],
+		});
+		expect(screen.getByRole("button", { name: "Check all" })).toBeDisabled();
+		await vi.waitFor(() =>
+			expect(requests).toContainEqual({
+				method: "PATCH",
+				path: `/lists/${listId}/items`,
+				body: { done: true },
+			}),
+		);
+
+		await user.click(screen.getByRole("button", { name: "Uncheck all" }));
+
+		expect(displayedItems()).toEqual({
+			open: ["Milk", "Eggs", "Bread"],
+			checked: [],
+		});
+		expect(screen.getByRole("button", { name: "Uncheck all" })).toBeDisabled();
+	});
+
+	it("undoes checking every item when the API refuses it", async () => {
+		const server = fakeListServer({ items: ["Milk", "Eggs"] });
+		const { user } = renderList(server);
+		await screen.findByRole("checkbox", { name: "Milk" });
+
+		server.failNext(500);
+		await user.click(screen.getByRole("button", { name: "Check all" }));
+
+		expect(await screen.findByRole("alert")).toBeVisible();
+		expect(displayedItems()).toEqual({ open: ["Milk", "Eggs"], checked: [] });
+	});
+
 	it("adds an item, keeping the field ready for the next one", async () => {
 		const server = fakeListServer();
 		const { user } = renderList(server);
@@ -192,6 +233,7 @@ describe("ListPage", () => {
 		expect(screen.getByRole("checkbox", { name: "Milk" })).toBeDisabled();
 		expect(screen.queryByLabelText("New item")).toBeNull();
 		expect(screen.queryByRole("button", { name: /Rename|Delete/ })).toBeNull();
+		expect(screen.queryByRole("button", { name: /Check all/ })).toBeNull();
 	});
 
 	it("shows icon buttons, named for screen readers and with a tooltip", async () => {

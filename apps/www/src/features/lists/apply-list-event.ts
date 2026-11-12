@@ -70,6 +70,19 @@ export function applyListEvent(
 					),
 				),
 			};
+		case "items.updated": {
+			if (!items) {
+				return { outcome: { kind: "ignored" } };
+			}
+			const updated = new Map(event.items.map((item) => [item.id, item]));
+			return {
+				outcome: { kind: "patched" },
+				items: withItems(
+					items,
+					items.items.map((item) => updated.get(item.id) ?? item),
+				),
+			};
+		}
 		case "item.deleted":
 			if (!items) {
 				return { outcome: { kind: "ignored" } };
