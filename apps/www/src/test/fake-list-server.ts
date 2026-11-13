@@ -7,6 +7,7 @@ import type {
 	ShareableRole,
 	ShareLink,
 } from "@repo/schemas";
+import { normalizeItemLabel } from "@repo/schemas";
 import type { ApiRequest, ApiResponse } from "@/test/mock-api";
 
 export const listId = "0b7e3f4a-1c2d-4e5f-8a9b-0c1d2e3f4a5b";
@@ -130,6 +131,19 @@ export function fakeListServer({
 			return { status: 204 };
 		}
 		if (method === "POST" && path === `/lists/${listId}/items`) {
+			const taken = stored.find(
+				(item) =>
+					normalizeItemLabel(item.label) ===
+					normalizeItemLabel(String(input.label)),
+			);
+			if (taken && !taken.done) {
+				return {
+					status: 409,
+					body: {
+						error: { code: "item_label_taken", message: "Taken" },
+					},
+				};
+			}
 			const item = makeItem(String(input.label), stored.length + 1);
 			stored = [...stored, item];
 			return { status: 201, body: item };

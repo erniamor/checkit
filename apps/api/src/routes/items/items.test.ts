@@ -1,4 +1,10 @@
-import type { Item, ItemWithList, List, Paginated } from "@repo/schemas";
+import type {
+	Item,
+	ItemsBatchResult,
+	ItemWithList,
+	List,
+	Paginated,
+} from "@repo/schemas";
 import { api, createList, joinList, json } from "@test/helpers/api";
 import { signIn } from "@test/helpers/auth";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -83,7 +89,111 @@ describe("POST /v1/lists/:listId/items", () => {
 	});
 });
 
+describe("duplicate labels", () => {
+	async function post(label: string, cookie = alice) {
+		return api(itemsPath(), { method: "POST", cookie, body: { label } });
+	}
+
+	it("refuses an item the list already has to do, case and spaces aside", async () => {
+		await addItem("Oat milk");
+
+		const response = await post("  oat   MILK ");
+
+		expect(response.status).toBe(409);
+		expect((await json<ErrorBody>(response)).error).toMatchObject({
+			code: "item_label_taken",
+			details: [{ field: "label", message: "item_label_taken" }],
+		});
+		expect(await labels()).toEqual(["Oat milk"]);
+	});
+
+	it("unchecks a checked item instead of adding it again", async () => {
+		const milk = await addItem("Milk");
+		await patchItem(milk.id, { done: true });
+
+		const response = await post("milk");
+
+		expect(response.status).toBe(200);
+		expect(await json<Item>(response)).toMatchObject({
+			id: milk.id,
+			label: "Milk",
+			done: false,
+			doneAt: null,
+		});
+		expect(await labels()).toEqual(["Milk"]);
+	});
+
+	it("tells accents apart, and other lists", async () => {
+		await addItem("Pâtes");
+		const other = await createList(alice, "Other");
+
+		expect((await post("Pates")).status).toBe(201);
+		expect(
+			(
+				await api(`/v1/lists/${other.id}/items`, {
+					method: "POST",
+					cookie: alice,
+					body: { label: "Pâtes" },
+				})
+			).status,
+		).toBe(201);
+	});
+
+	it("refuses renaming an item with another item's label", async () => {
+		await addItem("Milk");
+		const eggs = await addItem("Eggs");
+
+		const response = await patchItem(eggs.id, { label: "MILK" });
+
+		expect(response.status).toBe(409);
+		expect(await labels()).toEqual(["Milk", "Eggs"]);
+	});
+
+	it("lets an item keep its label, with another case", async () => {
+		const milk = await addItem("milk");
+
+		const response = await patchItem(milk.id, { label: "Milk" });
+
+		expect(response.status).toBe(200);
+		expect((await json<Item>(response)).label).toBe("Milk");
+	});
+
+	it("adds the same label only once, even at the same time", async () => {
+		const bob = await joinList(list.id, "bob@example.com", "editor");
+
+		const statuses = await Promise.all([
+			post("Bread"),
+			post("bread", bob),
+			post("BREAD"),
+		]).then((responses) => responses.map((response) => response.status));
+
+		expect(statuses.sort()).toEqual([201, 409, 409]);
+		expect(await labels()).toEqual(["Bread"]);
+	});
+});
+
 describe("POST /v1/lists/:listId/items/batch", () => {
+	it("skips duplicates and unchecks checked items, saying which", async () => {
+		await addItem("Eggs");
+		const milk = await addItem("Milk");
+		await patchItem(milk.id, { done: true });
+
+		const response = await api(itemsPath("/batch"), {
+			method: "POST",
+			cookie: alice,
+			body: { labels: ["Bread", "eggs", "milk", "bread", "Butter"] },
+		});
+
+		expect(response.status).toBe(201);
+		const body = await json<ItemsBatchResult>(response);
+		expect(body.data.map((item) => item.label)).toEqual(["Bread", "Butter"]);
+		expect(body.restored).toEqual([
+			expect.objectContaining({ id: milk.id, done: false }),
+		]);
+		expect(body.skipped).toEqual(["eggs", "bread"]);
+		expect(await labels()).toEqual(["Eggs", "Milk", "Bread", "Butter"]);
+	});
+
 	it("adds several items in order, after the existing ones", async () => {
 		await addItem("Coffee");
 

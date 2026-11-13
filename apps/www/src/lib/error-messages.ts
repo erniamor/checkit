@@ -1,4 +1,10 @@
-import { NetworkError, RateLimitError, ValidationError } from "@repo/resources";
+import {
+	ApiError,
+	NetworkError,
+	RateLimitError,
+	ValidationError,
+} from "@repo/resources";
+import { ITEM_LABEL_TAKEN } from "@repo/schemas";
 import { m } from "@/paraglide/messages";
 
 // Error codes from @repo/schemas and the API, translated for the user
@@ -14,6 +20,7 @@ const messagesByCode: Record<string, () => string> = {
 	list_name_too_long: m.error_list_name_too_long,
 	item_label_required: m.error_item_label_required,
 	item_label_too_long: m.error_item_label_too_long,
+	[ITEM_LABEL_TAKEN]: m.error_item_label_taken_any,
 	already_member: m.error_already_member,
 	too_many_invitations: m.error_too_many_invitations,
 };
@@ -74,6 +81,10 @@ export function saveErrorMessage(error: unknown): string {
 	}
 	if (error instanceof RateLimitError) {
 		return m.error_too_many_requests();
+	}
+	// The list changed meanwhile: another member gave an item this label
+	if (error instanceof ApiError && error.code === ITEM_LABEL_TAKEN) {
+		return m.error_item_label_taken_any();
 	}
 	return m.error_save_failed();
 }

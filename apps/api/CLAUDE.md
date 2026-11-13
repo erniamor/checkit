@@ -66,6 +66,7 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 - Access to a list depends on the user's role in `list_members`: `viewer` reads, `editor` also changes the items and renames the list, `owner` also deletes the list and manages its sharing and members. The owner is the member with the `owner` role; `lists` has no owner column, and the owner's membership can't be changed, removed or left.
 - Every route under `/lists/:listId` goes through `requireListRole(minimum)`, which sets `c.get("listId")` and `c.get("role")`. A user who isn't a member gets a 404 (`list_not_found`), never a 403, so the list's existence isn't revealed.
 - Items are ordered by `position`, a floating-point number: new items go after the last one, and moving an item means giving it a position between its new neighbors.
+- Two items of a list never have the same label, compared with `normalizeItemLabel()` of `@repo/schemas` (case and extra spaces aside, accents kept). Adding a checked item's label unchecks it; an item to do's label is refused (409), or skipped in a batch. The check runs in the transaction that locks the list's row (`lockList()`), so concurrent additions or renames can't both pass. Duplicates created before this rule are left as they are.
 
 ## Sharing
 

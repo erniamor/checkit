@@ -11,6 +11,8 @@ interface ItemsSectionProps {
 	editable: boolean;
 	onUpdate: (itemId: string, changes: UpdateItem) => void;
 	onDelete: (itemId: string) => void;
+	/** Error message if another item of the list already has this label. */
+	labelError: (itemId: string, label: string) => string | undefined;
 }
 
 export function ItemsSection({
@@ -19,6 +21,7 @@ export function ItemsSection({
 	editable,
 	onUpdate,
 	onDelete,
+	labelError,
 }: ItemsSectionProps) {
 	const titleId = useId();
 
@@ -36,7 +39,12 @@ export function ItemsSection({
 				</h2>
 			)}
 			{editable ? (
-				<SortableItems items={items} onUpdate={onUpdate} onDelete={onDelete} />
+				<SortableItems
+					items={items}
+					onUpdate={onUpdate}
+					onDelete={onDelete}
+					labelError={labelError}
+				/>
 			) : (
 				<ul className="divide-y divide-border">
 					{items.map((item) => (

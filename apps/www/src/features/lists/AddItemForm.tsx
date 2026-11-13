@@ -6,7 +6,8 @@ import { validateField } from "@/lib/validate-field";
 import { m } from "@/paraglide/messages";
 
 interface AddItemFormProps {
-	onAdd: (label: string) => void;
+	/** Returns an error message to show, or nothing when the item is added. */
+	onAdd: (label: string) => string | undefined;
 }
 
 /** Adds an item; the field empties and keeps the focus to add the next one. */
@@ -28,9 +29,11 @@ export function AddItemForm({ onAdd }: AddItemFormProps) {
 					setError(result.error);
 					return;
 				}
-				setError(undefined);
-				onAdd(result.value);
-				form.reset();
+				const refusal = onAdd(result.value);
+				setError(refusal);
+				if (!refusal) {
+					form.reset();
+				}
 			}}
 		>
 			<div className="flex-1">

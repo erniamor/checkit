@@ -79,10 +79,10 @@ All these routes require a session. Roles on a list: `viewer` reads, `editor` al
 | `DELETE /v1/lists/:listId` | `owner` | Deletes the list, its items and memberships |
 | `GET /v1/items?status=open\|checked\|all` | signed in | The user's items across all their lists (`open` by default), each with its `list` (`id`, `name`, `role`), grouped by list in the order of `GET /v1/lists`; up to 200 per page |
 | `GET /v1/lists/:listId/items` | `viewer` | Items in display order |
-| `POST /v1/lists/:listId/items` `{ label }` | `editor` | Adds an item at the end |
-| `POST /v1/lists/:listId/items/batch` `{ labels }` | `editor` | Adds up to 50 items at once (voice input) |
+| `POST /v1/lists/:listId/items` `{ label }` | `editor` | Adds an item at the end (201). A checked item with the same label is unchecked and returned instead (200); one among the items to do is refused (409 `item_label_taken`) |
+| `POST /v1/lists/:listId/items/batch` `{ labels }` | `editor` | Adds up to 50 items at once (voice input). Returns `{ data, restored, skipped }`: the items added, the checked ones unchecked because their label came again, and the labels left out (already to do, or repeated) |
 | `PATCH /v1/lists/:listId/items` `{ done }` | `editor` | Checks or unchecks every item; returns `{ data }`, the items whose state changed |
-| `PATCH /v1/lists/:listId/items/:itemId` `{ label?, done?, position? }` | `editor` | Renames, checks / unchecks or moves an item |
+| `PATCH /v1/lists/:listId/items/:itemId` `{ label?, done?, position? }` | `editor` | Renames, checks / unchecks or moves an item; a label another item has is refused (409 `item_label_taken`) |
 | `DELETE /v1/lists/:listId/items/:itemId` | `editor` | Deletes an item |
 | `GET /v1/lists/:listId/members` | `viewer` | Members with their role |
 | `PATCH /v1/lists/:listId/members/:userId` `{ role }` | `owner` | Changes a member's role (`editor` or `viewer`) |
@@ -160,6 +160,7 @@ Every error has the same shape:
 | 403 | `forbidden` | The user's role on the list is too low, or a cross-site form was rejected (CSRF) |
 | 403 | `invitation_email_mismatch` | The invitation was sent to another email than the signed-in user's |
 | 404 | `not_found`, `list_not_found`, `item_not_found`, `member_not_found`, `invitation_not_found`, `share_link_not_found` | Unknown route or resource; a list the user isn't a member of is reported as not found |
+| 409 | `item_label_taken` | Adding or renaming an item with the label of another item to do of the list (case and extra spaces aside, `normalizeItemLabel()` of `@repo/schemas`) |
 | 409 | `already_member` | Inviting someone who is already a member |
 | 409 | `owner_role_locked`, `owner_cannot_leave` | Changing or removing the owner's membership, or the owner leaving |
 | 410 | `invitation_expired`, `share_link_revoked` | The invitation expired or was already used; the share link was revoked |

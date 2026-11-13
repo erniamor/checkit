@@ -142,6 +142,23 @@ describe("GET /v1/lists/:listId/events", () => {
 		expect((await stream.nextEvent()).type).toBe("items.created");
 	});
 
+	it("pushes a checked item unchecked by adding its label again", async () => {
+		const milk = await addItem("Milk");
+		await api(`/v1/lists/${list.id}/items/${milk.id}`, {
+			method: "PATCH",
+			cookie: alice,
+			body: { done: true },
+		});
+		const stream = await listen(bob);
+
+		await addItem("milk");
+
+		expect(await stream.nextEvent()).toMatchObject({
+			type: "items.updated",
+			items: [{ id: milk.id, done: false }],
+		});
+	});
+
 	it("pushes the list's new name", async () => {
 		const stream = await listen(bob);
 

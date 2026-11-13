@@ -17,6 +17,8 @@ export interface ItemRowProps {
 	editable: boolean;
 	onUpdate: (changes: UpdateItem) => void;
 	onDelete: () => void;
+	/** Error message if another item already has this label, checked on rename. */
+	labelError?: (label: string) => string | undefined;
 	/** Handle to move the item, when the items can be reordered. */
 	dragHandle?: ReactNode;
 	/** Props of the row's element, set by the reordering. */
@@ -30,6 +32,7 @@ export function ItemRow({
 	onDelete,
 	dragHandle,
 	rowProps,
+	labelError,
 }: ItemRowProps) {
 	const [editing, setEditing] = useState(false);
 	const labelId = useId();
@@ -45,6 +48,10 @@ export function ItemRow({
 						const result = validateField(itemLabelSchema, value);
 						if (!result.ok) {
 							return result.error;
+						}
+						const taken = labelError?.(result.value);
+						if (taken) {
+							return taken;
 						}
 						if (result.value !== item.label) {
 							onUpdate({ label: result.value });

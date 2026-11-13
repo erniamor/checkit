@@ -7,6 +7,7 @@ import {
 	type ItemStatus,
 	type ItemWithList,
 	itemSchema,
+	itemsBatchResultSchema,
 	itemWithListSchema,
 	paginatedSchema,
 	type UpdateAllItems,
@@ -68,7 +69,11 @@ export function createItemsResource(client: ApiClient) {
 			);
 		},
 
-		/** Adds an item at the end of the list. */
+		/**
+		 * Adds an item at the end of the list; a checked item with the same
+		 * label is unchecked and returned instead. A label among the items to do
+		 * is refused (409, `item_label_taken`).
+		 */
 		async add(listId: string, input: CreateItem): Promise<Item> {
 			return client.request({
 				method: "POST",
@@ -78,15 +83,22 @@ export function createItemsResource(client: ApiClient) {
 			});
 		},
 
-		/** Adds several items at once, in order (e.g. from a voice input). */
-		async addMany(listId: string, input: CreateItemsBatch): Promise<Item[]> {
-			const { data } = await client.request({
+		/**
+		 * Adds several items at once, in order (e.g. from a voice input). Labels
+		 * the list already has aren't duplicated: checked items are unchecked
+		 * (`restored`), the others left out (`skipped`).
+		 */
+		async addMany(
+			listId: string,
+			input: CreateItemsBatch,
+		): Promise<{ created: Item[]; restored: Item[]; skipped: string[] }> {
+			const { data, restored, skipped } = await client.request({
 				method: "POST",
 				path: `${itemsPath(listId)}/batch`,
 				body: parseInput(createItemsBatchSchema, input),
-				response: itemsResponseSchema,
+				response: itemsBatchResultSchema,
 			});
-			return data;
+			return { created: data, restored, skipped };
 		},
 
 		/** Renames, checks or unchecks, or moves an item. */

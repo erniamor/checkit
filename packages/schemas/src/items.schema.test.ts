@@ -5,6 +5,7 @@ import {
 	ITEM_LABEL_MAX_LENGTH,
 	ITEMS_BATCH_MAX_SIZE,
 	itemsFilterSchema,
+	normalizeItemLabel,
 	updateAllItemsSchema,
 	updateItemSchema,
 } from "./items.schema";
@@ -125,5 +126,21 @@ describe("itemsFilterSchema", () => {
 			expect(itemsFilterSchema.parse({ status })).toEqual({ status });
 		}
 		expect(itemsFilterSchema.safeParse({ status: "done" }).success).toBe(false);
+	});
+});
+
+describe("normalizeItemLabel", () => {
+	it("ignores case and extra spaces", () => {
+		expect(normalizeItemLabel("  Lait   demi-ÉCRÉMÉ ")).toBe(
+			normalizeItemLabel("lait demi-écrémé"),
+		);
+	});
+
+	it("keeps accents apart", () => {
+		expect(normalizeItemLabel("pâtes")).not.toBe(normalizeItemLabel("pates"));
+	});
+
+	it("treats composed and decomposed accents alike", () => {
+		expect(normalizeItemLabel("cafe\u0301")).toBe(normalizeItemLabel("café"));
 	});
 });

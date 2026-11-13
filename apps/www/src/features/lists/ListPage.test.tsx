@@ -1,3 +1,4 @@
+import { Toaster } from "@repo/ui";
 import { act, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
@@ -171,6 +172,81 @@ describe("ListPage", () => {
 		).toBeVisible();
 		expect(field).toHaveValue("");
 		await vi.waitFor(() => expect(server.labels()).toEqual(["Coffee"]));
+	});
+
+	it("refuses an item the list already has to do, without sending it", async () => {
+		const { user, requests } = renderList(
+			fakeListServer({ items: ["Oat milk"] }),
+		);
+		const field = await screen.findByLabelText("New item");
+
+		await user.type(field, "oat MILK{Enter}");
+
+		expect(
+			screen.getByText("“Oat milk” is already in the list."),
+		).toBeVisible();
+		expect(field).toHaveValue("oat MILK");
+		expect(requests.filter((request) => request.method === "POST")).toEqual([]);
+	});
+
+	it("unchecks a checked item added again, and says so", async () => {
+		const server = fakeListServer({ items: ["Milk ✓", "Eggs"] });
+		const requests = mockApi(server.respond);
+		renderWithRouter(
+			<>
+				<ListPage listId={listId} />
+				<Toaster />
+			</>,
+		);
+		const user = userEvent.setup();
+
+		await user.type(await screen.findByLabelText("New item"), "milk{Enter}");
+
+		expect(
+			await screen.findByText("“Milk” was checked: it's back on the list."),
+		).toBeVisible();
+		expect(displayedItems()).toEqual({ open: ["Milk", "Eggs"], checked: [] });
+		expect(requests).toContainEqual({
+			method: "PATCH",
+			path: `/lists/${listId}/items/00000000-0000-4000-8000-000000000001`,
+			body: { done: false },
+		});
+		expect(server.labels()).toEqual(["Milk", "Eggs"]);
+	});
+
+	it("takes the item back when another member added it meanwhile", async () => {
+		const server = fakeListServer({ items: ["Eggs"] });
+		const { user } = renderList(server);
+		const field = await screen.findByLabelText("New item");
+		// Added on another device; this page doesn't know it yet
+		server.other.addItem("Milk");
+
+		await user.type(field, "milk{Enter}");
+
+		expect(await screen.findByRole("alert")).toHaveTextContent(
+			"This item is already in the list.",
+		);
+		await vi.waitFor(() =>
+			expect(displayedItems().open).toEqual(["Eggs", "Milk"]),
+		);
+	});
+
+	it("refuses renaming an item with another item's label", async () => {
+		const { user, requests } = renderList(
+			fakeListServer({ items: ["Milk", "Eggs"] }),
+		);
+
+		await user.click(
+			await screen.findByRole("button", { name: "Rename “Eggs”" }),
+		);
+		const field = screen.getByLabelText("Rename “Eggs”");
+		await user.clear(field);
+		await user.type(field, "MILK{Enter}");
+
+		expect(screen.getByText("“Milk” is already in the list.")).toBeVisible();
+		expect(requests.filter((request) => request.method === "PATCH")).toEqual(
+			[],
+		);
 	});
 
 	it("doesn't add an empty item", async () => {

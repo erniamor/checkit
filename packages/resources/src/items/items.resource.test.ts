@@ -42,12 +42,16 @@ describe("items", () => {
 		});
 	});
 
-	it("adds several items, returned without the envelope", async () => {
-		const { api, requests } = fakeApi(201, { data: [item, item] });
+	it("adds several items, saying which were unchecked or left out", async () => {
+		const { api, requests } = fakeApi(201, {
+			data: [item],
+			restored: [item],
+			skipped: ["eggs"],
+		});
 
 		expect(
-			await api.items.addMany(listId, { labels: ["Milk", "Eggs"] }),
-		).toEqual([item, item]);
+			await api.items.addMany(listId, { labels: ["Milk", "Eggs", "eggs"] }),
+		).toEqual({ created: [item], restored: [item], skipped: ["eggs"] });
 		expect(requests[0]?.url).toBe(`${itemsUrl}/batch`);
 	});
 

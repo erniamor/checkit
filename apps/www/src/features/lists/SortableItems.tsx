@@ -27,6 +27,7 @@ interface SortableItemsProps {
 	items: Item[];
 	onUpdate: (itemId: string, changes: UpdateItem) => void;
 	onDelete: (itemId: string) => void;
+	labelError: (itemId: string, label: string) => string | undefined;
 }
 
 /** Items the user can reorder; each move saves the item's new position. */
@@ -34,6 +35,7 @@ export function SortableItems({
 	items,
 	onUpdate,
 	onDelete,
+	labelError,
 }: SortableItemsProps) {
 	// Stable between the server and the browser, for the screen reader texts' ids
 	const id = useId();
@@ -81,6 +83,7 @@ export function SortableItems({
 							editable
 							onUpdate={(changes) => onUpdate(item.id, changes)}
 							onDelete={() => onDelete(item.id)}
+							labelError={(label) => labelError(item.id, label)}
 						/>
 					))}
 				</ul>

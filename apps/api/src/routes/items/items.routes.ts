@@ -45,10 +45,15 @@ export const itemsRoutes = new Hono<{ Variables: ListAccessVariables }>()
 		requireListRole("editor"),
 		validate("json", createItemSchema),
 		async (c) => {
-			const [item] = await addItems(c.get("listId"), c.get("user").id, [
-				c.req.valid("json").label,
-			]);
-			return c.json(item, 201);
+			const { created, restored } = await addItems(
+				c.get("listId"),
+				c.get("user").id,
+				[c.req.valid("json").label],
+				{ whenTaken: "fail" },
+			);
+			const [item] = created;
+			// A checked item with this label is unchecked rather than duplicated
+			return item ? c.json(item, 201) : c.json(restored[0], 200);
 		},
 	)
 	.post(
@@ -56,12 +61,13 @@ export const itemsRoutes = new Hono<{ Variables: ListAccessVariables }>()
 		requireListRole("editor"),
 		validate("json", createItemsBatchSchema),
 		async (c) => {
-			const created = await addItems(
+			const { created, restored, skipped } = await addItems(
 				c.get("listId"),
 				c.get("user").id,
 				c.req.valid("json").labels,
+				{ whenTaken: "skip" },
 			);
-			return c.json({ data: created }, 201);
+			return c.json({ data: created, restored, skipped }, 201);
 		},
 	)
 	.patch(

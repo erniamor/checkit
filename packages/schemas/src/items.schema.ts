@@ -13,6 +13,17 @@ export const itemLabelSchema = z
 	.min(1, "item_label_required")
 	.max(ITEM_LABEL_MAX_LENGTH, "item_label_too_long");
 
+/**
+ * The form of a label that tells duplicates apart: two items of a list can't
+ * have the same. Case and extra spaces don't count; accents do.
+ */
+export function normalizeItemLabel(label: string): string {
+	return label.normalize("NFC").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+/** Error code of a label already used by another item of the list. */
+export const ITEM_LABEL_TAKEN = "item_label_taken";
+
 export const createItemSchema = z.strictObject({ label: itemLabelSchema });
 
 export type CreateItem = z.infer<typeof createItemSchema>;
@@ -63,6 +74,19 @@ export const itemSchema = z.object({
 });
 
 export type Item = z.infer<typeof itemSchema>;
+
+/**
+ * Response of a batch addition: the items added (`data`); the checked items
+ * whose label came again, unchecked instead (`restored`); the labels left out,
+ * already among the items to do or repeated in the batch (`skipped`).
+ */
+export const itemsBatchResultSchema = z.object({
+	data: z.array(itemSchema),
+	restored: z.array(itemSchema),
+	skipped: z.array(z.string()),
+});
+
+export type ItemsBatchResult = z.infer<typeof itemsBatchResultSchema>;
 
 /** Which items to show: still to do, checked, or both. */
 export const itemStatuses = ["open", "checked", "all"] as const;

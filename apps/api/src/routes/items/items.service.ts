@@ -1,13 +1,15 @@
-import type {
-	Item,
-	ItemStatus,
-	ItemWithList,
-	Paginated,
-	UpdateAllItems,
-	UpdateItem,
+import {
+	ITEM_LABEL_TAKEN,
+	type Item,
+	type ItemStatus,
+	type ItemWithList,
+	normalizeItemLabel,
+	type Paginated,
+	type UpdateAllItems,
+	type UpdateItem,
 } from "@repo/schemas";
-import { and, asc, count, desc, eq, max, ne } from "drizzle-orm";
-import { db } from "@/db/client";
+import { and, asc, count, desc, eq, inArray, ne } from "drizzle-orm";
+import { db, type Transaction } from "@/db/client";
 import { items, listMembers, lists } from "@/db/schema";
 import { AppError } from "@/lib/errors";
 import { offsetOf, type PaginationQuery } from "@/lib/pagination";
@@ -112,46 +114,127 @@ export async function listItemsOfUser(
 	};
 }
 
-/** Appends items at the end of the list, in the given order. */
+function labelTaken() {
+	return new AppError(
+		409,
+		ITEM_LABEL_TAKEN,
+		"Another item of the list already has this label",
+		[{ field: "label", message: ITEM_LABEL_TAKEN }],
+	);
+}
+
+/**
+ * Locks the list's row until the end of the transaction: concurrent changes
+ * to the same list wait for each other, so they can't both take the same
+ * position or the same label.
+ */
+async function lockList(tx: Transaction, listId: string) {
+	await tx
+		.select({ id: lists.id })
+		.from(lists)
+		.where(eq(lists.id, listId))
+		.for("update");
+}
+
+export interface ItemsAddition {
+	created: Item[];
+	/** Checked items whose label came again: unchecked instead of duplicated. */
+	restored: Item[];
+	/** Labels left out: already among the items to do, or repeated. */
+	skipped: string[];
+}
+
+/**
+ * Appends items at the end of the list, in the given order. A label the list
+ * already has (case and extra spaces aside) is never duplicated: a checked
+ * item is unchecked instead, an item to do is left as is and its label
+ * skipped, or refused with `whenTaken: "fail"`.
+ */
 export async function addItems(
 	listId: string,
 	userId: string,
 	labels: string[],
-): Promise<Item[]> {
-	const created = await db.transaction(async (tx) => {
-		// Locks the list row: concurrent additions to the same list wait for
-		// each other, so they don't get the same positions
-		await tx
-			.select({ id: lists.id })
-			.from(lists)
-			.where(eq(lists.id, listId))
-			.for("update");
-		const [last] = await tx
-			.select({ position: max(items.position) })
+	{ whenTaken }: { whenTaken: "fail" | "skip" },
+): Promise<ItemsAddition> {
+	const addition = await db.transaction(async (tx) => {
+		await lockList(tx, listId);
+		const existing = await tx
+			.select()
 			.from(items)
 			.where(eq(items.listId, listId));
-		const start = (last?.position ?? 0) + 1;
+		const byLabel = new Map(
+			existing.map((row) => [normalizeItemLabel(row.label), row]),
+		);
 
-		const rows = await tx
-			.insert(items)
-			.values(
-				labels.map((label, index) => ({
-					listId,
-					label,
-					position: start + index,
-					createdById: userId,
-				})),
-			)
-			.returning();
-		return rows.map(toItem).sort((a, b) => a.position - b.position);
+		const toCreate: string[] = [];
+		const toRestore: string[] = [];
+		const skipped: string[] = [];
+		const seen = new Set<string>();
+		for (const label of labels) {
+			const key = normalizeItemLabel(label);
+			const found = byLabel.get(key);
+			if (seen.has(key)) {
+				skipped.push(label);
+			} else if (!found) {
+				toCreate.push(label);
+			} else if (found.done) {
+				toRestore.push(found.id);
+			} else if (whenTaken === "fail") {
+				throw labelTaken();
+			} else {
+				skipped.push(label);
+			}
+			seen.add(key);
+		}
+
+		const start = Math.max(0, ...existing.map((row) => row.position)) + 1;
+		const created =
+			toCreate.length === 0
+				? []
+				: await tx
+						.insert(items)
+						.values(
+							toCreate.map((label, index) => ({
+								listId,
+								label,
+								position: start + index,
+								createdById: userId,
+							})),
+						)
+						.returning();
+		const restored =
+			toRestore.length === 0
+				? []
+				: await tx
+						.update(items)
+						.set({ done: false, doneAt: null, doneById: null })
+						.where(and(eq(items.listId, listId), inArray(items.id, toRestore)))
+						.returning();
+		const byPosition = (a: Item, b: Item) => a.position - b.position;
+		return {
+			created: created.map(toItem).sort(byPosition),
+			restored: restored.map(toItem).sort(byPosition),
+			skipped,
+		};
 	});
-	listEvents.publish({
-		type: "items.created",
-		listId,
-		actorId: userId,
-		items: created,
-	});
-	return created;
+
+	if (addition.created.length > 0) {
+		listEvents.publish({
+			type: "items.created",
+			listId,
+			actorId: userId,
+			items: addition.created,
+		});
+	}
+	if (addition.restored.length > 0) {
+		listEvents.publish({
+			type: "items.updated",
+			listId,
+			actorId: userId,
+			items: addition.restored,
+		});
+	}
+	return addition;
 }
 
 export async function updateItem(
@@ -182,11 +265,25 @@ export async function updateItem(
 		return toItem(current);
 	}
 
-	const [row] = await db
-		.update(items)
-		.set(values)
-		.where(inList(listId, itemId))
-		.returning();
+	const row = await db.transaction(async (tx) => {
+		if (changes.label !== undefined) {
+			await lockList(tx, listId);
+			const key = normalizeItemLabel(changes.label);
+			const others = await tx
+				.select({ label: items.label })
+				.from(items)
+				.where(and(eq(items.listId, listId), ne(items.id, itemId)));
+			if (others.some((other) => normalizeItemLabel(other.label) === key)) {
+				throw labelTaken();
+			}
+		}
+		const [updated] = await tx
+			.update(items)
+			.set(values)
+			.where(inList(listId, itemId))
+			.returning();
+		return updated;
+	});
 	if (!row) {
 		throw itemNotFound();
 	}

@@ -1,5 +1,5 @@
 import type { UpdateItem } from "@repo/schemas";
-import { buttonVariants } from "@repo/ui";
+import { buttonVariants, toast } from "@repo/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { UsersIcon } from "lucide-react";
@@ -9,6 +9,10 @@ import { WithTooltip } from "@/components/WithTooltip";
 import { AddItemForm } from "@/features/lists/AddItemForm";
 import { CheckAllButtons } from "@/features/lists/CheckAllButtons";
 import { DeleteListButton } from "@/features/lists/DeleteListButton";
+import {
+	itemWithLabel,
+	resolveAddition,
+} from "@/features/lists/duplicate-label";
 import { ItemsSection } from "@/features/lists/ItemsSection";
 import { ListTitle } from "@/features/lists/ListTitle";
 import { canEdit, isOwner } from "@/features/lists/permissions";
@@ -40,6 +44,29 @@ export function ListPage({ listId }: ListPageProps) {
 	const deleteItem = (itemId: string) => {
 		setError(undefined);
 		mutations.deleteItem.mutate(itemId);
+	};
+	const labelError = (itemId: string, label: string) => {
+		const other = itemWithLabel(page.items, label, itemId);
+		return other ? m.error_item_label_taken({ label: other.label }) : undefined;
+	};
+	// A label the list has is never added twice: see resolveAddition()
+	const addItem = (label: string) => {
+		setError(undefined);
+		const addition = resolveAddition(page.items, label);
+		switch (addition.kind) {
+			case "taken":
+				return m.error_item_label_taken({ label: addition.item.label });
+			case "restore":
+				mutations.updateItem.mutate({
+					itemId: addition.item.id,
+					changes: { done: false },
+				});
+				toast.success(m.toast_item_restored({ label: addition.item.label }));
+				return undefined;
+			case "add":
+				mutations.addItem.mutate(label);
+				return undefined;
+		}
 	};
 
 	return (
@@ -83,14 +110,7 @@ export function ListPage({ listId }: ListPageProps) {
 				<p className="text-muted-foreground text-sm">{m.list_read_only()}</p>
 			)}
 			<FormAlert message={error} />
-			{editable && (
-				<AddItemForm
-					onAdd={(label) => {
-						setError(undefined);
-						mutations.addItem.mutate(label);
-					}}
-				/>
-			)}
+			{editable && <AddItemForm onAdd={addItem} />}
 			{page.items.length === 0 ? (
 				<p className="text-muted-foreground">
 					{editable ? m.items_empty_editor() : m.items_empty()}
@@ -112,6 +132,7 @@ export function ListPage({ listId }: ListPageProps) {
 						editable={editable}
 						onUpdate={updateItem}
 						onDelete={deleteItem}
+						labelError={labelError}
 					/>
 					<ItemsSection
 						title={m.checked_section()}
@@ -119,6 +140,7 @@ export function ListPage({ listId }: ListPageProps) {
 						editable={editable}
 						onUpdate={updateItem}
 						onDelete={deleteItem}
+						labelError={labelError}
 					/>
 				</div>
 			)}
