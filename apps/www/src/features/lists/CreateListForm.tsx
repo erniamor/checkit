@@ -1,5 +1,6 @@
 import { listKindSchema } from "@repo/schemas";
-import { Button } from "@repo/ui";
+import { Button, buttonVariants } from "@repo/ui";
+import { Link } from "@tanstack/react-router";
 import { FormAlert } from "@/components/FormAlert";
 import { TextField } from "@/components/TextField";
 import { ListKindField } from "@/features/lists/ListKindField";
@@ -7,6 +8,7 @@ import { useCreateList } from "@/features/lists/use-create-list";
 import { formErrors } from "@/lib/error-messages";
 import { m } from "@/paraglide/messages";
 
+/** Creates a list, then opens it (`NewListPage`). */
 export function CreateListForm() {
 	const createList = useCreateList();
 	const errors = createList.error
@@ -16,7 +18,7 @@ export function CreateListForm() {
 	return (
 		<form
 			noValidate
-			className="grid gap-2"
+			className="grid gap-4"
 			onSubmit={(event) => {
 				event.preventDefault();
 				const form = new FormData(event.currentTarget);
@@ -26,22 +28,23 @@ export function CreateListForm() {
 				});
 			}}
 		>
-			<div className="flex items-start gap-2">
-				<div className="flex-1">
-					<TextField
-						label={m.create_list_label()}
-						name="name"
-						placeholder={m.create_list_placeholder()}
-						autoComplete="off"
-						error={errors.fields.name}
-					/>
-				</div>
-				<Button type="submit" className="mt-6" disabled={createList.isPending}>
+			<TextField
+				label={m.list_name_label()}
+				name="name"
+				placeholder={m.create_list_placeholder()}
+				autoComplete="off"
+				error={errors.fields.name}
+			/>
+			<ListKindField name="kind" />
+			<FormAlert message={errors.form} />
+			<div className="flex flex-wrap justify-end gap-2">
+				<Link to="/lists" className={buttonVariants({ variant: "outline" })}>
+					{m.cancel_button()}
+				</Link>
+				<Button type="submit" disabled={createList.isPending}>
 					{m.create_list_button()}
 				</Button>
 			</div>
-			<ListKindField name="kind" />
-			<FormAlert message={errors.form} />
 		</form>
 	);
 }

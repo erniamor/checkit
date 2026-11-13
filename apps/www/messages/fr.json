@@ -229,5 +229,6 @@
 	"list_kind_tasks": "Tâches",
 	"add_task_label": "Nouvelle tâche",
 	"voice_dialog_text_task": "Dites une tâche, puis vérifiez-la avant qu'elle soit ajoutée.",
-	"voice_listening_hint_task": "Par exemple : « réparer la porte du garage ». Puis appuyez sur Terminé."
+	"voice_listening_hint_task": "Par exemple : « réparer la porte du garage ». Puis appuyez sur Terminé.",
+	"create_list_text": "Donnez-lui un nom et choisissez son type."
 }

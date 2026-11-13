@@ -1,5 +1,7 @@
+import { buttonVariants } from "@repo/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { CreateListForm } from "@/features/lists/CreateListForm";
+import { Link } from "@tanstack/react-router";
+import { PlusIcon } from "lucide-react";
 import { ListCard } from "@/features/lists/ListCard";
 import { listsQueryOptions } from "@/features/lists/queries";
 import { InstallCard } from "@/features/pwa/InstallCard";
@@ -11,9 +13,16 @@ export function ListsPage() {
 
 	return (
 		<section className="mx-auto grid max-w-2xl gap-6 px-4 py-8">
-			<h1 className="font-heading font-semibold text-2xl">{m.lists_title()}</h1>
+			<header className="flex flex-wrap items-center justify-between gap-2">
+				<h1 className="font-heading font-semibold text-2xl">
+					{m.lists_title()}
+				</h1>
+				<Link to="/lists/new" className={buttonVariants()}>
+					<PlusIcon aria-hidden className="size-4" />
+					{m.create_list_label()}
+				</Link>
+			</header>
 			<InstallCard />
-			<CreateListForm />
 			{page.items.length === 0 ? (
 				<p className="text-muted-foreground">{m.lists_empty()}</p>
 			) : (

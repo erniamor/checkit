@@ -1,6 +1,5 @@
 import type { List } from "@repo/schemas";
-import { screen, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ListsPage } from "@/features/lists/ListsPage";
 import { setTestLocale } from "@/test/locale";
@@ -81,42 +80,13 @@ describe("ListsPage", () => {
 		).toBeVisible();
 	});
 
-	it("creates a list and opens it", async () => {
-		const requests = serve([]);
-		const user = userEvent.setup();
-		const { router } = renderWithRouter(<ListsPage />);
-
-		await user.type(await screen.findByLabelText("New list"), "Weekend");
-		await user.click(screen.getByRole("button", { name: "Create" }));
-
-		await vi.waitFor(() =>
-			expect(router.state.location.pathname).toBe(
-				"/lists/7c6d5e4f-3a2b-4c1d-9e8f-7a6b5c4d3e2f",
-			),
-		);
-		expect(requests).toContainEqual({
-			method: "POST",
-			path: "/lists",
-			body: { name: "Weekend", kind: "purchases" },
-		});
-	});
-
-	it("creates a list of tasks", async () => {
-		const requests = serve([]);
-		const user = userEvent.setup();
+	it("links to the page that creates a list", async () => {
+		serve([]);
 		renderWithRouter(<ListsPage />);
 
-		await user.type(await screen.findByLabelText("New list"), "Home");
-		await user.click(screen.getByRole("radio", { name: "Tasks" }));
-		await user.click(screen.getByRole("button", { name: "Create" }));
-
-		await vi.waitFor(() =>
-			expect(requests).toContainEqual({
-				method: "POST",
-				path: "/lists",
-				body: { name: "Home", kind: "tasks" },
-			}),
-		);
+		expect(
+			await screen.findByRole("link", { name: "New list" }),
+		).toHaveAttribute("href", "/lists/new");
 	});
 
 	it("shows each list's kind", async () => {
@@ -138,22 +108,5 @@ describe("ListsPage", () => {
 		expect(
 			screen.getByRole("link", { name: "Tasks Home 0 of 0 checked" }),
 		).toBeVisible();
-	});
-
-	it("shows an invalid name next to the field", async () => {
-		const requests = serve([]);
-		const user = userEvent.setup();
-		renderWithRouter(<ListsPage />);
-
-		await user.click(await screen.findByRole("button", { name: "Create" }));
-
-		const field = screen.getByLabelText("New list");
-		expect(field).toBeInvalid();
-		expect(
-			within(field.parentElement as HTMLElement).getByText(
-				"Enter a name for the list.",
-			),
-		).toBeVisible();
-		expect(requests.filter((request) => request.method === "POST")).toEqual([]);
 	});
 });

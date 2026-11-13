@@ -4,7 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { listKeys } from "@/features/lists/queries";
 import { getApi } from "@/lib/api";
 
-/** Creates a list, then opens it. */
+/** Creates a list, then opens it in place of the creation page. */
 export function useCreateList() {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
@@ -17,7 +17,12 @@ export function useCreateList() {
 				queryKey: listKeys.all,
 				exact: true,
 			});
-			await navigate({ to: "/lists/$listId", params: { listId: list.id } });
+			// Back from the new list goes to "My lists", not to the filled form
+			await navigate({
+				to: "/lists/$listId",
+				params: { listId: list.id },
+				replace: true,
+			});
 		},
 	});
 }

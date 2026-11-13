@@ -229,5 +229,6 @@
 	"list_kind_tasks": "Tasks",
 	"add_task_label": "New task",
 	"voice_dialog_text_task": "Say one task, then check it before it's added.",
-	"voice_listening_hint_task": "For example: “fix the garage door”. Then press Done."
+	"voice_listening_hint_task": "For example: “fix the garage door”. Then press Done.",
+	"create_list_text": "Give it a name and choose its kind."
 }
