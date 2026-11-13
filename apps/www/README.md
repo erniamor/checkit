@@ -2,7 +2,7 @@
 
 Checkit's web app: the screens where users sign in, manage their lists, share them and add items by voice. Built with React and TanStack Start, TanStack Query, Paraglide JS for translations, Tailwind CSS and the components of [`@repo/ui`](../../packages/ui).
 
-**In progress.** For now: a header (logo, then menus for the language, the appearance and the account: profile and sign-out), sign-in by magic link or code, the name asked at the first sign-in, the lists and their items, updated in real time with the other members' changes, sharing (members, invitations, share links), a home page for visitors, and the 404 and error pages. Voice input comes next.
+**In progress.** For now: a header (logo, then menus for the language, the appearance and the account: profile and sign-out), sign-in by magic link or code, the name asked at the first sign-in, the lists and their items, updated in real time with the other members' changes, sharing (members, invitations, share links), voice input in the browser, a home page for visitors, and the 404 and error pages. Server-side transcription, for browsers without speech recognition, comes next.
 
 ## Screens
 
@@ -17,7 +17,7 @@ Checkit's web app: the screens where users sign in, manage their lists, share th
 | `/join/:token` | A share link: what it offers, then join or sign in |
 | `/items` | All my items: the items of every list, grouped by list, filtered (to do, checked, all) |
 | `/offline` | Shown by the service worker when a page can't load without a connection |
-| `/lists/:listId` | A list: add, check, rename, reorder (drag by the handle, or the keyboard) and delete items (after a confirmation); rename the list; delete it (owner, after a confirmation). Read only for a viewer. Checked items are shown below the others. The other members' changes show up live; if the list is deleted or the user loses access, they're sent back to `/lists` with a toast |
+| `/lists/:listId` | A list: add (typed, or several at once by voice), check, rename, reorder (drag by the handle, or the keyboard) and delete items (after a confirmation); rename the list; delete it (owner, after a confirmation). Read only for a viewer. Checked items are shown below the others. The other members' changes show up live; if the list is deleted or the user loses access, they're sent back to `/lists` with a toast |
 
 The app calls the API through [`@repo/resources`](../../packages/resources): it needs the API running (see [apps/api/README.md](../api/README.md)).
 
@@ -77,6 +77,13 @@ The language isn't part of the URL. It comes from the user's choice (a cookie se
 ## Appearance
 
 Light, dark or the system's, and one of the themes of `@repo/themes`, chosen in the header's appearance menu. Each choice is stored in a cookie so the server renders the right appearance directly, with no flash on load.
+
+## Voice input
+
+On a list, editors can say several items at once ("milk, eggs and bread") with the microphone button next to the add field. The text shows while it's heard; the items found in it (`splitSpokenItems()`: split on commas and "and", "et", "y"..., articles dropped) are then reviewed, corrected or removed, and added together.
+
+- Recognition is the browser's Web Speech API, in the app's language (the browser's regional variant when it has one, such as `fr-CA`). Chrome and Edge send the audio to Google, Safari to Apple: the app never receives it.
+- Firefox has no speech recognition: the microphone isn't shown there. A server-side transcription will take over behind the same interface (`SpeechInput`).
 
 ## Installable app (PWA)
 

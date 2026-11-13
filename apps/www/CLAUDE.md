@@ -27,12 +27,12 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 ## Structure
 
 - `src/routes/`: TanStack routes; one file per route, thin (loader + page component). `__root.tsx` renders the HTML document, the header and the appearance, and loads the signed-in user. `_authenticated.tsx` is the layout of the pages reserved to signed-in users (`_authenticated/*`).
-- `src/features/<feature>/`: components, hooks and logic specific to a feature (`appearance` (mode), `theme`, `items` (the page of all the user's items, `/items`), `pwa` (installing the app, the offline page, the manifest), `auth` (with `UserMenu`, the header's account menu), `profile` (`NameForm`, shared by `/welcome` and `/profile`), `lists`, `sharing`, `i18n`, `home`)
+- `src/features/<feature>/`: components, hooks and logic specific to a feature (`appearance` (mode), `theme`, `items` (the page of all the user's items, `/items`), `pwa` (installing the app, the offline page, the manifest), `auth` (with `UserMenu`, the header's account menu), `profile` (`NameForm`, shared by `/welcome` and `/profile`), `lists`, `sharing`, `voice` (adding items by voice), `i18n`, `home`)
 - `src/components/`: generic components specific to this app (`Header`, `Logo`, `header-styles.ts` (`headerButtonClass`, for buttons on the header's band), `SelectField` (`tone`: `inverse` or `default`), `TextField`, `InlineEditForm`, `ConfirmButton` (an action confirmed in a dialog, as text or as an icon), `IconButton` (icon only, with an `aria-label` and a tooltip), `WithTooltip`, `FormAlert`, `Loading`, `NotFound`, `ErrorView`; shared components go in `packages/ui`)
 - `src/server/`: server-only code (`env.ts`: the server's API URL)
 - `src/lib/`: utilities specific to the app (`api.ts`: the API client; `error-messages.ts`: error codes to messages; `redirect.ts`: the safe `redirect` search parameter; `cookies.ts`)
 - `src/env.ts`: public environment variables (`VITE_*`), validated with Zod
-- `src/test/`: test helpers (`setTestLocale()`, `renderWithRouter()`, `renderWithQueryClient()`, `mockApi()` (its `respond` also gets the full URL, to read the query string), `fakeListServer()`: an in-memory API for one list, with `other.*` for another member's changes, `FakeEventSource`: drives the real-time stream, `mockSystemAppearance()`)
+- `src/test/`: test helpers (`setTestLocale()`, `renderWithRouter()`, `renderWithQueryClient()`, `mockApi()` (its `respond` also gets the full URL, to read the query string), `fakeListServer()`: an in-memory API for one list, with `other.*` for another member's changes, `FakeEventSource`: drives the real-time stream, `FakeSpeechRecognition` and `installSpeechRecognition()`: the browser's speech recognition, `mockSystemAppearance()`)
 - `src/router.tsx`: creates the router and the `QueryClient`
 - `src/server.ts`: server entry; runs Paraglide's middleware around TanStack Start's handler
 - `src/styles.css`: Tailwind, the themes and `@repo/ui`'s styles
@@ -83,8 +83,17 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 - Item changes and the list's renaming are optimistic (`use-list-mutations.ts`): the cache is updated at once, rolled back if the API refuses, then reloaded. Validate the input with its schema (`validateField()`) before an optimistic change, so an invalid value never shows.
 - The actions shown follow the role (`permissions.ts`); the API enforces it anyway.
 - A label the list already has is checked before adding or renaming (`duplicate-label.ts`, the API's rule): an item to do is refused under the field, a checked one is unchecked instead, with a toast. If the API still refuses (another member added it meanwhile), the change is rolled back with the page's alert.
+- Several items are added at once by `addItems` (the batch route): optimistic like `addItem`, by the same rule per label (`resolveAddition()`), and the API's answer (`created`, `restored`, `skipped`) is summed up in a toast (`additionSummary()`).
 - Editors reorder the items by a handle (`SortableItems`, `SortableItemRow`), within their section (to do, checked): moving between sections is checking. A move only sends the item's new `position`, halfway between its new neighbors (`movedPosition()`, pure and tested), through the optimistic `updateItem`. The screen reader texts are messages (`item-announcements.ts`), never dnd-kit's English defaults.
 - One page of data: 100 lists, 200 items per list (`LISTS_PAGE_SIZE`, `ITEMS_PAGE_SIZE`). Add a "load more" before raising them.
+
+## Voice input
+
+- `features/voice/`: the microphone button next to the add field (`VoiceInput`, editors only), a dialog that listens (`ListeningPanel`), then lists the items found for review (`SpokenItemsReview`), checked with the API's schemas (`checkSpokenItems()`) before `addItems`.
+- Every way of recognizing speech implements `SpeechInput` (`speech-input.ts`); `getSpeechInput()` picks one. Today only `webSpeechInput()` (the browser's `SpeechRecognition` or `webkitSpeechRecognition`): continuous, stopped after 4 seconds of silence. The server-side transcription will be the second implementation.
+- `useVoiceInput()` holds the state (idle, listening, heard, error); `supported` is false on the server and during hydration, so the button only renders in the browser. Closing the dialog or leaving the page aborts the microphone.
+- `splitSpokenItems()` (pure, tested per locale) turns the sentence into labels; `recognitionLanguage()` picks the recognition language (`fr-CA` when the browser has it). Add a locale's connectors and articles there with the locale.
+- In tests, `installSpeechRecognition()` gives the browser a `FakeSpeechRecognition` (`src/test/`), driven with `hear()`, `fail()` and `stop()`.
 
 ## Real time
 

@@ -2,6 +2,7 @@ import type { Page } from "@repo/resources";
 import type { Item, List, UpdateItem } from "@repo/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { resolveAddition } from "@/features/lists/duplicate-label";
 import { listKeys } from "@/features/lists/queries";
 import { getApi } from "@/lib/api";
 
@@ -20,6 +21,24 @@ function pendingItem(listId: string, label: string, items: Item[]): Item {
 		createdAt: now,
 		updatedAt: now,
 	};
+}
+
+/** The items once `labels` are added, by the API's rule (`resolveAddition()`). */
+function withLabels(listId: string, items: Item[], labels: string[]): Item[] {
+	let current = items;
+	for (const label of labels) {
+		const addition = resolveAddition(current, label);
+		if (addition.kind === "add") {
+			current = [...current, pendingItem(listId, label, current)];
+		} else if (addition.kind === "restore") {
+			current = current.map((item) =>
+				item.id === addition.item.id
+					? applyChanges(item, { done: false })
+					: item,
+			);
+		}
+	}
+	return current;
 }
 
 function applyChanges(item: Item, changes: UpdateItem): Item {
@@ -84,6 +103,13 @@ export function useListMutations(
 		...itemMutationOptions,
 	});
 
+	const addItems = useMutation({
+		mutationFn: (labels: string[]) => api.items.addMany(listId, { labels }),
+		onMutate: (labels: string[]) =>
+			updateItems((items) => withLabels(listId, items, labels)),
+		...itemMutationOptions,
+	});
+
 	const updateItem = useMutation({
 		mutationFn: ({
 			itemId,
@@ -141,6 +167,7 @@ export function useListMutations(
 
 	return {
 		addItem,
+		addItems,
 		updateItem,
 		updateAllItems,
 		deleteItem,

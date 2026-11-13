@@ -19,6 +19,8 @@ import { canEdit, isOwner } from "@/features/lists/permissions";
 import { itemsQueryOptions, listQueryOptions } from "@/features/lists/queries";
 import { splitItems } from "@/features/lists/split-items";
 import { useListMutations } from "@/features/lists/use-list-mutations";
+import { additionSummary } from "@/features/voice/addition-summary";
+import { VoiceInput } from "@/features/voice/VoiceInput";
 import { saveErrorMessage } from "@/lib/error-messages";
 import { m } from "@/paraglide/messages";
 
@@ -69,6 +71,14 @@ export function ListPage({ listId }: ListPageProps) {
 		}
 	};
 
+	// Spoken items: the API skips or unchecks the labels the list already has
+	const addItems = (labels: string[]) => {
+		setError(undefined);
+		mutations.addItems.mutate(labels, {
+			onSuccess: (addition) => toast.success(additionSummary(addition)),
+		});
+	};
+
 	return (
 		<section className="mx-auto grid max-w-2xl gap-6 px-4 py-8">
 			<Link
@@ -110,7 +120,14 @@ export function ListPage({ listId }: ListPageProps) {
 				<p className="text-muted-foreground text-sm">{m.list_read_only()}</p>
 			)}
 			<FormAlert message={error} />
-			{editable && <AddItemForm onAdd={addItem} />}
+			{editable && (
+				<div className="flex items-start gap-2">
+					<div className="flex-1">
+						<AddItemForm onAdd={addItem} />
+					</div>
+					<VoiceInput items={page.items} onAdd={addItems} className="mt-6" />
+				</div>
+			)}
 			{page.items.length === 0 ? (
 				<p className="text-muted-foreground">
 					{editable ? m.items_empty_editor() : m.items_empty()}

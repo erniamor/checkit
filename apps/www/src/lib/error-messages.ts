@@ -21,6 +21,8 @@ const messagesByCode: Record<string, () => string> = {
 	item_label_required: m.error_item_label_required,
 	item_label_too_long: m.error_item_label_too_long,
 	[ITEM_LABEL_TAKEN]: m.error_item_label_taken_any,
+	items_required: m.error_items_required,
+	too_many_items: m.error_too_many_items,
 	already_member: m.error_already_member,
 	too_many_invitations: m.error_too_many_invitations,
 };

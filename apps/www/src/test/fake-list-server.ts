@@ -148,6 +148,9 @@ export function fakeListServer({
 			stored = [...stored, item];
 			return { status: 201, body: item };
 		}
+		if (method === "POST" && path === `/lists/${listId}/items/batch`) {
+			return { status: 201, body: addLabels(input.labels as string[]) };
+		}
 		if (method === "PATCH" && path === `/lists/${listId}/items`) {
 			const done = Boolean(input.done);
 			const changed = stored
@@ -184,6 +187,33 @@ export function fakeListServer({
 			return { status: 204 };
 		}
 		return undefined;
+	}
+
+	// The API's rule: a checked label is unchecked, a repeated one skipped
+	function addLabels(labels: string[]) {
+		const data: Item[] = [];
+		const restored: Item[] = [];
+		const skipped: string[] = [];
+		const seen = new Set<string>();
+		for (const label of labels) {
+			const key = normalizeItemLabel(label);
+			const found = stored.find(
+				(item) => normalizeItemLabel(item.label) === key,
+			);
+			if (seen.has(key) || (found && !found.done)) {
+				skipped.push(label);
+			} else if (found) {
+				const item = { ...found, done: false, doneAt: null, doneById: null };
+				stored = stored.map((other) => (other.id === item.id ? item : other));
+				restored.push(item);
+			} else {
+				const item = makeItem(label, stored.length + 1);
+				stored = [...stored, item];
+				data.push(item);
+			}
+			seen.add(key);
+		}
+		return { data, restored, skipped };
 	}
 
 	function respondSharing(
