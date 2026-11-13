@@ -286,16 +286,34 @@ describe("ListPage", () => {
 		expect(screen.getByRole("checkbox", { name: "Milk" })).toBeVisible();
 	});
 
-	it("deletes an item", async () => {
+	it("deletes an item after a confirmation", async () => {
 		const server = fakeListServer({ items: ["Milk", "Eggs"] });
 		const { user } = renderList(server);
 
 		await user.click(
 			await screen.findByRole("button", { name: "Delete “Milk”" }),
 		);
+		const dialog = screen.getByRole("alertdialog", { name: "Delete “Milk”?" });
+		expect(dialog).toHaveTextContent("It will be deleted for every member");
+		await user.click(within(dialog).getByRole("button", { name: "Delete" }));
 
 		expect(screen.queryByRole("checkbox", { name: "Milk" })).toBeNull();
 		await vi.waitFor(() => expect(server.labels()).toEqual(["Eggs"]));
+	});
+
+	it("keeps an item when its deletion is cancelled", async () => {
+		const { user, requests } = renderList(fakeListServer({ items: ["Milk"] }));
+
+		await user.click(
+			await screen.findByRole("button", { name: "Delete “Milk”" }),
+		);
+		await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+		expect(screen.queryByRole("alertdialog")).toBeNull();
+		expect(screen.getByRole("checkbox", { name: "Milk" })).toBeVisible();
+		expect(requests.filter((request) => request.method === "DELETE")).toEqual(
+			[],
+		);
 	});
 
 	it("renames the list", async () => {

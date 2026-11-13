@@ -1,6 +1,6 @@
 import { type Item, itemLabelSchema, type UpdateItem } from "@repo/schemas";
 import { Checkbox, cn } from "@repo/ui";
-import { PencilIcon, Trash2Icon } from "lucide-react";
+import { PencilIcon } from "lucide-react";
 import {
 	type ComponentPropsWithRef,
 	type ReactNode,
@@ -9,6 +9,7 @@ import {
 } from "react";
 import { IconButton } from "@/components/IconButton";
 import { InlineEditForm } from "@/components/InlineEditForm";
+import { DeleteItemButton } from "@/features/lists/DeleteItemButton";
 import { validateField } from "@/lib/validate-field";
 import { m } from "@/paraglide/messages";
 
@@ -97,12 +98,7 @@ export function ItemRow({
 						tooltip={m.rename_button()}
 						onClick={() => setEditing(true)}
 					/>
-					<IconButton
-						icon={Trash2Icon}
-						label={m.delete_item({ label: item.label })}
-						tooltip={m.delete_list_confirm()}
-						onClick={onDelete}
-					/>
+					<DeleteItemButton label={item.label} onConfirm={onDelete} />
 				</div>
 			)}
 		</li>

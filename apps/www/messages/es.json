@@ -73,6 +73,8 @@
 	"rename_button": "Renombrar",
 	"rename_item": "Renombrar «{label}»",
 	"delete_item": "Eliminar «{label}»",
+	"delete_item_title": "¿Eliminar «{label}»?",
+	"delete_item_text": "Se eliminará para todos los miembros de la lista. No se puede deshacer.",
 	"move_item": "Mover «{label}»",
 	"move_button": "Mover",
 	"dnd_role_description": "elemento movible",
