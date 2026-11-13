@@ -13,6 +13,7 @@ function list(overrides: Partial<List>): List {
 	return {
 		id: "0b7e3f4a-1c2d-4e5f-8a9b-0c1d2e3f4a5b",
 		name: "Groceries",
+		kind: "purchases",
 		role: "owner",
 		itemCount: 0,
 		doneCount: 0,
@@ -96,8 +97,47 @@ describe("ListsPage", () => {
 		expect(requests).toContainEqual({
 			method: "POST",
 			path: "/lists",
-			body: { name: "Weekend" },
+			body: { name: "Weekend", kind: "purchases" },
 		});
+	});
+
+	it("creates a list of tasks", async () => {
+		const requests = serve([]);
+		const user = userEvent.setup();
+		renderWithRouter(<ListsPage />);
+
+		await user.type(await screen.findByLabelText("New list"), "Home");
+		await user.click(screen.getByRole("radio", { name: "Tasks" }));
+		await user.click(screen.getByRole("button", { name: "Create" }));
+
+		await vi.waitFor(() =>
+			expect(requests).toContainEqual({
+				method: "POST",
+				path: "/lists",
+				body: { name: "Home", kind: "tasks" },
+			}),
+		);
+	});
+
+	it("shows each list's kind", async () => {
+		serve([
+			list({ name: "Groceries" }),
+			list({
+				id: "7c6d5e4f-3a2b-4c1d-9e8f-7a6b5c4d3e2f",
+				name: "Home",
+				kind: "tasks",
+			}),
+		]);
+		renderWithRouter(<ListsPage />);
+
+		expect(
+			await screen.findByRole("link", {
+				name: "Purchases Groceries 0 of 0 checked",
+			}),
+		).toBeVisible();
+		expect(
+			screen.getByRole("link", { name: "Tasks Home 0 of 0 checked" }),
+		).toBeVisible();
 	});
 
 	it("shows an invalid name next to the field", async () => {

@@ -35,11 +35,26 @@ describe("POST /v1/lists", () => {
 		expect(await response.json()).toEqual({
 			id: expect.any(String),
 			name: "Groceries",
+			kind: "purchases",
 			role: "owner",
 			itemCount: 0,
 			doneCount: 0,
 			createdAt: expect.any(String),
 			updatedAt: expect.any(String),
+		});
+	});
+
+	it("creates a list of tasks", async () => {
+		const response = await api("/v1/lists", {
+			method: "POST",
+			cookie: alice,
+			body: { name: "Home", kind: "tasks" },
+		});
+
+		expect(response.status).toBe(201);
+		expect(await response.json()).toMatchObject({
+			name: "Home",
+			kind: "tasks",
 		});
 	});
 
@@ -191,6 +206,44 @@ describe("PATCH /v1/lists/:listId", () => {
 			name: "Weekend groceries",
 			role: "editor",
 		});
+	});
+
+	it("lets an editor change the list's kind, and keeps its name", async () => {
+		const list = await createList(alice);
+		const bob = await joinList(list.id, "bob@example.com", "editor");
+
+		const response = await api(`/v1/lists/${list.id}`, {
+			method: "PATCH",
+			cookie: bob,
+			body: { kind: "tasks" },
+		});
+
+		expect(response.status).toBe(200);
+		expect(await response.json()).toMatchObject({
+			name: "Groceries",
+			kind: "tasks",
+		});
+	});
+
+	it("refuses a change that changes nothing, or an unknown kind", async () => {
+		const list = await createList(alice);
+
+		const empty = await api(`/v1/lists/${list.id}`, {
+			method: "PATCH",
+			cookie: alice,
+			body: {},
+		});
+		const unknown = await api(`/v1/lists/${list.id}`, {
+			method: "PATCH",
+			cookie: alice,
+			body: { kind: "chores" },
+		});
+
+		expect(empty.status).toBe(422);
+		expect((await json<ErrorBody>(empty)).error.details).toEqual([
+			{ field: "", message: "nothing_to_update" },
+		]);
+		expect(unknown.status).toBe(422);
 	});
 
 	it("forbids a viewer to rename the list", async () => {

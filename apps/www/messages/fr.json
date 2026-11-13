@@ -53,7 +53,7 @@
 	"list_shared": "Partagée avec vous",
 	"list_read_only": "Lecture seule",
 	"back_to_lists": "Toutes les listes",
-	"add_item_label": "Nouvel élément",
+	"add_item_label": "Nouvel achat",
 	"add_item_button": "Ajouter",
 	"items_empty": "Cette liste est vide.",
 	"items_empty_editor": "Cette liste est vide. Ajoutez votre premier élément.",
@@ -223,5 +223,11 @@
 	"voice_error_failed": "La reconnaissance vocale s'est interrompue. Réessayez.",
 	"voice_transcribing": "Transcription…",
 	"voice_error_unavailable": "La saisie vocale n'est pas disponible dans ce navigateur. Saisissez les éléments au clavier.",
-	"voice_error_too_many": "La saisie vocale a beaucoup servi dans la dernière heure. Réessayez plus tard, ou saisissez les éléments au clavier."
+	"voice_error_too_many": "La saisie vocale a beaucoup servi dans la dernière heure. Réessayez plus tard, ou saisissez les éléments au clavier.",
+	"list_kind_label": "Type de liste",
+	"list_kind_purchases": "Achats",
+	"list_kind_tasks": "Tâches",
+	"add_task_label": "Nouvelle tâche",
+	"voice_dialog_text_task": "Dites une tâche, puis vérifiez-la avant qu'elle soit ajoutée.",
+	"voice_listening_hint_task": "Par exemple : « réparer la porte du garage ». Puis appuyez sur Terminé."
 }

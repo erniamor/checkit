@@ -19,7 +19,7 @@ describe("items", () => {
 	it("lists the user's items of every list, filtered by status", async () => {
 		const withList = {
 			...item,
-			list: { id: listId, name: "Groceries", role: "owner" },
+			list: { id: listId, name: "Groceries", kind: "purchases", role: "owner" },
 		};
 		const { api, requests } = fakeApi(200, paginated([withList]));
 

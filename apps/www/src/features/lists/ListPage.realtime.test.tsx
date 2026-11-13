@@ -97,6 +97,23 @@ describe("ListPage in real time", () => {
 		);
 	});
 
+	it("follows another member's change of kind", async () => {
+		const server = fakeListServer();
+		const { stream } = await renderLive(server);
+		await screen.findByLabelText("New item");
+
+		server.other.changeKind("tasks");
+		emit(stream, {
+			type: "list.updated",
+			actorId: otherUserId,
+			name: "Groceries",
+			kind: "tasks",
+			updatedAt: "2026-11-10T09:00:00.000Z",
+		});
+
+		expect(await screen.findByLabelText("New task")).toBeVisible();
+	});
+
 	it("shows the list's new name", async () => {
 		const server = fakeListServer();
 		const { stream } = await renderLive(server);
@@ -106,6 +123,7 @@ describe("ListPage in real time", () => {
 			type: "list.updated",
 			actorId: otherUserId,
 			name: "Weekend",
+			kind: "purchases",
 			updatedAt: "2026-11-10T09:00:00.000Z",
 		});
 

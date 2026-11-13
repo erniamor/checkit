@@ -1,4 +1,4 @@
-import type { Item } from "@repo/schemas";
+import type { Item, ListKind } from "@repo/schemas";
 import {
 	Dialog,
 	DialogContent,
@@ -10,7 +10,7 @@ import { MicIcon } from "lucide-react";
 import { IconButton } from "@/components/IconButton";
 import { ListeningPanel } from "@/features/voice/ListeningPanel";
 import { SpokenItemsReview } from "@/features/voice/SpokenItemsReview";
-import { splitSpokenItems } from "@/features/voice/split-spoken-items";
+import { spokenLabels } from "@/features/voice/split-spoken-items";
 import { TranscribingPanel } from "@/features/voice/TranscribingPanel";
 import { useVoiceInput } from "@/features/voice/use-voice-input";
 import { VoiceErrorPanel } from "@/features/voice/VoiceErrorPanel";
@@ -18,6 +18,8 @@ import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 
 interface VoiceInputProps {
+	/** Purchases are split into several items; a task stays one. */
+	kind: ListKind;
 	/** The list's items, to say which spoken ones it already has. */
 	items: readonly Item[];
 	onAdd: (labels: string[]) => void;
@@ -28,7 +30,7 @@ interface VoiceInputProps {
  * A microphone button: the user says several items, checks them, then adds
  * them. Not rendered where the browser can't recognize speech.
  */
-export function VoiceInput({ items, onAdd, className }: VoiceInputProps) {
+export function VoiceInput({ kind, items, onAdd, className }: VoiceInputProps) {
 	const voice = useVoiceInput();
 	const { state } = voice;
 
@@ -56,10 +58,22 @@ export function VoiceInput({ items, onAdd, className }: VoiceInputProps) {
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>{m.voice_dialog_title()}</DialogTitle>
-						<DialogDescription>{m.voice_dialog_text()}</DialogDescription>
+						<DialogDescription>
+							{kind === "tasks"
+								? m.voice_dialog_text_task()
+								: m.voice_dialog_text()}
+						</DialogDescription>
 					</DialogHeader>
 					{state.status === "listening" && (
-						<ListeningPanel text={state.text} onStop={voice.stop} />
+						<ListeningPanel
+							text={state.text}
+							hint={
+								kind === "tasks"
+									? m.voice_listening_hint_task()
+									: m.voice_listening_hint()
+							}
+							onStop={voice.stop}
+						/>
 					)}
 					{state.status === "transcribing" && <TranscribingPanel />}
 					{state.status === "error" && (
@@ -68,7 +82,7 @@ export function VoiceInput({ items, onAdd, className }: VoiceInputProps) {
 					{state.status === "heard" && (
 						<SpokenItemsReview
 							text={state.text}
-							labels={splitSpokenItems(state.text, getLocale())}
+							labels={spokenLabels(state.text, kind, getLocale())}
 							items={items}
 							onRetry={voice.start}
 							onAdd={(labels) => {

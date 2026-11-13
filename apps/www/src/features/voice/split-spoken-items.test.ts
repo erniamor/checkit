@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { splitSpokenItems } from "@/features/voice/split-spoken-items";
+import {
+	splitSpokenItems,
+	spokenLabels,
+	spokenTask,
+} from "@/features/voice/split-spoken-items";
 
 describe("splitSpokenItems", () => {
 	it("splits a French sentence and drops the articles", () => {
@@ -40,5 +44,29 @@ describe("splitSpokenItems", () => {
 
 	it("keeps an item made of an article alone", () => {
 		expect(splitSpokenItems("la", "fr")).toEqual(["La"]);
+	});
+});
+
+describe("spokenTask", () => {
+	it("keeps the sentence as one task, articles and connectors included", () => {
+		expect(
+			spokenTask("  réparer la  porte du garage et tondre la pelouse. ", "fr"),
+		).toEqual(["Réparer la porte du garage et tondre la pelouse"]);
+	});
+
+	it("gives nothing for silence", () => {
+		expect(spokenTask(" . ", "en")).toEqual([]);
+	});
+});
+
+describe("spokenLabels", () => {
+	it("splits purchases, but not a task", () => {
+		expect(spokenLabels("milk and eggs", "purchases", "en")).toEqual([
+			"Milk",
+			"Eggs",
+		]);
+		expect(spokenLabels("milk and eggs", "tasks", "en")).toEqual([
+			"Milk and eggs",
+		]);
 	});
 });

@@ -78,6 +78,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 
 ## Lists
 
+- A list is of a kind (`list.kind`): `purchases` or `tasks`, chosen when creating it (`ListKindField`, radio buttons) and changed by editors and the owner in the list's header (`ListKindSelect`, through the optimistic `updateList`). `list-kinds.ts` holds each kind's icon and label; `ListKindIcon` shows it (cards, `/items`, the header for viewers) with its name for screen readers. The add field's label follows it ("New item", "New task").
 - Query options and keys are in `features/lists/queries.ts` (`listKeys`): `["lists"]`, `["lists", listId]`, `["lists", listId, "items"]`, and `["lists", "all-items", status]` for the page of all items. Invalidating `["lists"]` reloads everything about the lists.
 - `/items` shows the items of all the user's lists, grouped by list, filtered by the `status` search parameter (`open` by default, `checked`, `all`). Items can only be checked or unchecked there (if the role allows it); the rest is done in the list. It has no real-time stream: it reloads when the user comes back to it.
 - Item changes and the list's renaming are optimistic (`use-list-mutations.ts`): the cache is updated at once, rolled back if the API refuses, then reloaded. Validate the input with its schema (`validateField()`) before an optimistic change, so an invalid value never shows.
@@ -95,7 +96,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
   - `recordedSpeechInput()`: records with `MediaRecorder` (30 seconds at most, 32 kbit/s) until the user stops, then `transcriptions.create` of the API (state `transcribing`); used where the browser has no recognition;
   - `withFallback()`: switches from the first to the second when the browser's service can't be reached before anything is heard (Brave), unless offline.
 - `useVoiceInput()` holds the state (idle, listening, heard, error); `supported` is false on the server and during hydration, so the button only renders in the browser. Closing the dialog or leaving the page aborts the microphone.
-- `splitSpokenItems()` (pure, tested per locale) turns the sentence into labels; `recognitionLanguage()` picks the recognition language (`fr-CA` when the browser has it). Add a locale's connectors and articles there with the locale.
+- `spokenLabels()` turns what was said into labels by the list's kind: `splitSpokenItems()` (pure, tested per locale) splits purchases into several items; `spokenTask()` keeps a task as one item, as said (trimmed, without its final period, capitalized). The dialog's texts follow the kind too; `recognitionLanguage()` picks the recognition language (`fr-CA` when the browser has it). Add a locale's connectors and articles there with the locale.
 - In tests, `installSpeechRecognition()` gives the browser a `FakeSpeechRecognition` (`src/test/`), driven with `hear()`, `fail()` and `stop()`; `installMediaRecorder()` gives it a microphone and a `FakeMediaRecorder` (`say()`). jsdom has neither, so by default the microphone button isn't shown.
 
 ## Real time

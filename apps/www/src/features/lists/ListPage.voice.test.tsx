@@ -115,6 +115,30 @@ describe("ListPage: voice input", () => {
 		expect(screen.getByRole("checkbox", { name: "Butter" })).not.toBeChecked();
 	});
 
+	it("keeps a spoken task as one item, as said", async () => {
+		installSpeechRecognition();
+		const { user, requests } = renderList(fakeListServer({ kind: "tasks" }));
+
+		const recognition = await speak(
+			user,
+			"réparer la porte du garage et changer l'ampoule.",
+		);
+		act(() => recognition.stop());
+
+		expect(screen.getByLabelText("Item 1")).toHaveValue(
+			"Réparer la porte du garage et changer l'ampoule",
+		);
+		expect(screen.queryByLabelText("Item 2")).toBeNull();
+		await user.click(screen.getByRole("button", { name: "Add to the list" }));
+		await vi.waitFor(() =>
+			expect(requests).toContainEqual({
+				method: "POST",
+				path: `/lists/${listId}/items/batch`,
+				body: { labels: ["Réparer la porte du garage et changer l'ampoule"] },
+			}),
+		);
+	});
+
 	it("says which spoken items the list already has", async () => {
 		installSpeechRecognition();
 		const { user } = renderList(fakeListServer({ items: ["Jam"] }));

@@ -14,7 +14,7 @@ function item(id: string, listId: string): ItemWithList {
 		createdById: null,
 		createdAt: "",
 		updatedAt: "",
-		list: { id: listId, name: listId, role: "owner" },
+		list: { id: listId, name: listId, kind: "purchases", role: "owner" },
 	};
 }
 

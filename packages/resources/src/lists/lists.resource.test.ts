@@ -39,11 +39,12 @@ describe("lists", () => {
 		await expect(api.lists.get(listId)).rejects.toBeInstanceOf(NotFoundError);
 	});
 
-	it("creates, renames and deletes a list", async () => {
+	it("creates, renames, changes the kind of and deletes a list", async () => {
 		const { api, requests } = fakeApi(200, list);
 
 		await api.lists.create({ name: " Groceries " });
-		await api.lists.rename(listId, { name: "Weekend" });
+		await api.lists.update(listId, { name: "Weekend" });
+		await api.lists.update(listId, { kind: "tasks" });
 		await api.lists.remove(listId);
 
 		expect(
@@ -60,11 +61,25 @@ describe("lists", () => {
 				body: { name: "Weekend" },
 			},
 			{
+				method: "PATCH",
+				url: `http://api.test/v1/lists/${listId}`,
+				body: { kind: "tasks" },
+			},
+			{
 				method: "DELETE",
 				url: `http://api.test/v1/lists/${listId}`,
 				body: undefined,
 			},
 		]);
+	});
+
+	it("rejects an update that changes nothing before sending", async () => {
+		const { api, fetch } = fakeApi(200, list);
+
+		await expect(api.lists.update(listId, {})).rejects.toBeInstanceOf(
+			ValidationError,
+		);
+		expect(fetch).not.toHaveBeenCalled();
 	});
 
 	it("rejects a blank name before sending", async () => {

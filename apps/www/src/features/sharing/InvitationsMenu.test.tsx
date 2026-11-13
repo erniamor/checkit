@@ -61,6 +61,7 @@ function serveInvitations(
 			body: {
 				id: invitation.listId,
 				name: invitation.listName,
+				kind: "purchases",
 				role: invitation.role,
 				itemCount: 0,
 				doneCount: 0,

@@ -11,13 +11,13 @@ Checkit's web app: the screens where users sign in, manage their lists, share th
 | `/` | Presentation for visitors; signed-in users go to `/lists` |
 | `/sign-in`, `/welcome` | Sign-in, then the name at the first sign-in |
 | `/profile` | The user's email, and their name to change |
-| `/lists` | My lists: each with its progress and whether it's shared with me; creates a list |
+| `/lists` | My lists: each with its kind (purchases or tasks), its progress and whether it's shared with me; creates a list of either kind |
 | `/lists/:listId/members` | Members and sharing: the members and their role; for the owner, changing roles, removing members, inviting by email and the share links; for the others, leaving the list |
 | `/invitations/:token` | The link of an invitation email: what the invitation offers, then join (with the invited email), sign in, or sign out to switch accounts |
 | `/join/:token` | A share link: what it offers, then join or sign in |
 | `/items` | All my items: the items of every list, grouped by list, filtered (to do, checked, all) |
 | `/offline` | Shown by the service worker when a page can't load without a connection |
-| `/lists/:listId` | A list: add (typed, or several at once by voice), check, rename, reorder (drag by the handle, or the keyboard) and delete items (after a confirmation); rename the list; delete it (owner, after a confirmation). Read only for a viewer. Checked items are shown below the others. The other members' changes show up live; if the list is deleted or the user loses access, they're sent back to `/lists` with a toast |
+| `/lists/:listId` | A list: add (typed, or by voice: several purchases or one task at once), check, rename, reorder (drag by the handle, or the keyboard) and delete items (after a confirmation); rename the list or change its kind; delete it (owner, after a confirmation). Read only for a viewer. Checked items are shown below the others. The other members' changes show up live; if the list is deleted or the user loses access, they're sent back to `/lists` with a toast |
 
 The app calls the API through [`@repo/resources`](../../packages/resources): it needs the API running (see [apps/api/README.md](../api/README.md)).
 
@@ -80,7 +80,10 @@ Light, dark or the system's, and one of the themes of `@repo/themes`, chosen in 
 
 ## Voice input
 
-On a list, editors can say several items at once ("milk, eggs and bread") with the microphone button next to the add field. The text shows while it's heard; the items found in it (`splitSpokenItems()`: split on commas and "and", "et", "y"..., articles dropped) are then reviewed, corrected or removed, and added together.
+On a list, editors add items by voice with the microphone button next to the add field. The text shows while it's heard, then the items found in it are reviewed, corrected or removed, and added together:
+
+- on a list of **purchases**, several items at once ("milk, eggs and bread": split on commas and "and", "et", "y"..., articles dropped, `splitSpokenItems()`);
+- on a list of **tasks**, one item, as said ("fix the garage door and change the bulb" stays one task, `spokenTask()`).
 
 - Recognition is the browser's Web Speech API, in the app's language (the browser's regional variant when it has one, such as `fr-CA`). Chrome and Edge send the audio to Google, Safari to Apple: the app never receives it.
 - Where the browser has no speech recognition (Firefox), or can't reach its service (Brave), the microphone is recorded (`MediaRecorder`, 30 seconds at most) and transcribed by the API (`POST /v1/transcriptions`, Mistral). Nothing shows while the user speaks: they press "Done", then the items are reviewed the same way. Without `MISTRAL_API_KEY` on the API, those browsers show that voice input isn't available.

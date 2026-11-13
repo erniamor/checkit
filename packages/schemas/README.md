@@ -22,7 +22,7 @@ Add it to a project with `"@repo/schemas": "workspace:*"`. It is consumed as Typ
 | Common | `dateTimeSchema`, `emailSchema`, `paginationSchema` / `Pagination`, `paginatedSchema(item)` / `Paginated<T>`, `apiErrorBodySchema` / `ApiErrorBody` (the API's error responses), `validationIssueSchema` / `ValidationIssue` | |
 | Sign-in | `sendMagicLinkSchema` / `SendMagicLink`, `sendSignInCodeSchema` / `SendSignInCode`, `signInWithCodeSchema` / `SignInWithCode` | `SIGN_IN_CODE_LENGTH` (6) |
 | Profile | `profileSchema` / `Profile`, `updateProfileSchema` / `UpdateProfile`, `profileNameSchema` | `PROFILE_NAME_MAX_LENGTH` (60) |
-| Lists | `createListSchema` / `CreateList`, `updateListSchema` / `UpdateList`, `listSchema` / `List` | `LIST_NAME_MAX_LENGTH` (100) |
+| Lists | `listKinds`, `listKindSchema` / `ListKind` (`purchases`, `tasks`), `createListSchema` / `CreateList`, `updateListSchema` / `UpdateList` (`name` and/or `kind`), `listSchema` / `List` | `LIST_NAME_MAX_LENGTH` (100) |
 | Items | `createItemSchema` / `CreateItem`, `createItemsBatchSchema` / `CreateItemsBatch`, `updateItemSchema` / `UpdateItem`, `itemSchema` / `Item` | `ITEM_LABEL_MAX_LENGTH` (200), `ITEMS_BATCH_MAX_SIZE` (50) |
 | Members | `memberRoleSchema` / `MemberRole`, `memberRoles`, `shareableRoleSchema` / `ShareableRole`, `memberSchema` / `Member`, `updateMemberSchema` / `UpdateMember` | |
 | Invitations | `createInvitationSchema` / `CreateInvitation`, `invitationSchema` / `Invitation`, `invitationPreviewSchema` / `InvitationPreview` | |
@@ -44,7 +44,7 @@ Validation messages are codes, not sentences: the front ends translate them in e
 | `item_label_too_long` | The item label is over `ITEM_LABEL_MAX_LENGTH` characters |
 | `items_required` | A batch contains no item |
 | `too_many_items` | A batch contains more than `ITEMS_BATCH_MAX_SIZE` items |
-| `nothing_to_update` | An item update changes no field |
+| `nothing_to_update` | An item or list update changes no field |
 | `email_invalid` | The email isn't a valid address (sign-in, invitation) |
 | `code_invalid` | The sign-in code isn't `SIGN_IN_CODE_LENGTH` digits |
 | `name_required` | The user's name is empty or blank |

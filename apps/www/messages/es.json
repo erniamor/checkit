@@ -53,7 +53,7 @@
 	"list_shared": "Compartida contigo",
 	"list_read_only": "Solo lectura",
 	"back_to_lists": "Todas las listas",
-	"add_item_label": "Nuevo elemento",
+	"add_item_label": "Nueva compra",
 	"add_item_button": "Añadir",
 	"items_empty": "Esta lista está vacía.",
 	"items_empty_editor": "Esta lista está vacía. Añade tu primer elemento.",
@@ -223,5 +223,11 @@
 	"voice_error_failed": "El reconocimiento de voz se detuvo de forma inesperada. Vuelve a intentarlo.",
 	"voice_transcribing": "Transcribiendo…",
 	"voice_error_unavailable": "La entrada de voz no está disponible en este navegador. Escribe los elementos.",
-	"voice_error_too_many": "La entrada de voz se ha usado mucho en la última hora. Vuelve a intentarlo más tarde o escribe los elementos."
+	"voice_error_too_many": "La entrada de voz se ha usado mucho en la última hora. Vuelve a intentarlo más tarde o escribe los elementos.",
+	"list_kind_label": "Tipo de lista",
+	"list_kind_purchases": "Compras",
+	"list_kind_tasks": "Tareas",
+	"add_task_label": "Nueva tarea",
+	"voice_dialog_text_task": "Di una tarea y revísala antes de que se añada.",
+	"voice_listening_hint_task": "Por ejemplo: «arreglar la puerta del garaje». Luego pulsa Listo."
 }

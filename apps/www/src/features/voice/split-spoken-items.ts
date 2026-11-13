@@ -1,4 +1,4 @@
-import { normalizeItemLabel } from "@repo/schemas";
+import { type ListKind, normalizeItemLabel } from "@repo/schemas";
 import type { Locale } from "@/paraglide/runtime";
 
 // Words between items, as whole words: "milk and eggs", "lait puis œufs"
@@ -47,4 +47,26 @@ export function splitSpokenItems(text: string, locale: Locale): string[] {
 			seen.add(key);
 			return true;
 		});
+}
+
+/** A spoken task, as said: "réparer la porte." gives ["Réparer la porte"]. */
+export function spokenTask(text: string, locale: Locale): string[] {
+	const label = text
+		.replace(/\s+/g, " ")
+		.trim()
+		.replace(/[.\s]+$/u, "");
+	return label === ""
+		? []
+		: [label.charAt(0).toLocaleUpperCase(locale) + label.slice(1)];
+}
+
+/** The items to add from what was said, by the list's kind. */
+export function spokenLabels(
+	text: string,
+	kind: ListKind,
+	locale: Locale,
+): string[] {
+	return kind === "tasks"
+		? spokenTask(text, locale)
+		: splitSpokenItems(text, locale);
 }

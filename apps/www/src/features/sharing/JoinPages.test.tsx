@@ -15,6 +15,7 @@ const date = "2026-11-10T08:00:00.000Z";
 const list = {
 	id: listId,
 	name: "Groceries",
+	kind: "purchases",
 	role: "editor",
 	itemCount: 0,
 	doneCount: 0,

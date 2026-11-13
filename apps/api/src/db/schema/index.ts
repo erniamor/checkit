@@ -3,7 +3,7 @@ export { accounts } from "@/db/schema/accounts";
 export { invitations } from "@/db/schema/invitations";
 export { items } from "@/db/schema/items";
 export { listMembers, memberRole } from "@/db/schema/list-members";
-export { lists } from "@/db/schema/lists";
+export { listKind, lists } from "@/db/schema/lists";
 export { sessions } from "@/db/schema/sessions";
 export { shareLinks } from "@/db/schema/share-links";
 export { users } from "@/db/schema/users";

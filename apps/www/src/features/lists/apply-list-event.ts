@@ -100,7 +100,12 @@ export function applyListEvent(
 			}
 			return {
 				outcome: { kind: "patched" },
-				list: { ...list, name: event.name, updatedAt: event.updatedAt },
+				list: {
+					...list,
+					name: event.name,
+					kind: event.kind,
+					updatedAt: event.updatedAt,
+				},
 			};
 		case "list.deleted":
 			// When I delete it, the deletion itself already leaves the page

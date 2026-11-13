@@ -223,5 +223,11 @@
 	"voice_error_failed": "Voice recognition stopped unexpectedly. Try again.",
 	"voice_transcribing": "Transcribing…",
 	"voice_error_unavailable": "Voice input isn't available in this browser. Type the items instead.",
-	"voice_error_too_many": "Voice input was used a lot in the last hour. Try again later, or type the items."
+	"voice_error_too_many": "Voice input was used a lot in the last hour. Try again later, or type the items.",
+	"list_kind_label": "Kind of list",
+	"list_kind_purchases": "Purchases",
+	"list_kind_tasks": "Tasks",
+	"add_task_label": "New task",
+	"voice_dialog_text_task": "Say one task, then check it before it's added.",
+	"voice_listening_hint_task": "For example: “fix the garage door”. Then press Done."
 }

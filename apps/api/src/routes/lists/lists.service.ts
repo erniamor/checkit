@@ -1,4 +1,4 @@
-import type { CreateList, List, Paginated } from "@repo/schemas";
+import type { CreateList, List, Paginated, UpdateList } from "@repo/schemas";
 import { and, count, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { items, listMembers, lists } from "@/db/schema";
@@ -9,6 +9,7 @@ import { listEvents } from "@/realtime/list-events";
 const listColumns = {
 	id: lists.id,
 	name: lists.name,
+	kind: lists.kind,
 	role: listMembers.role,
 	itemCount:
 		sql<number>`(select count(*) from ${items} where ${items.listId} = ${lists.id})`.mapWith(
@@ -98,18 +99,20 @@ export async function createList(
 	});
 }
 
-export async function renameList(
+/** Renames the list and/or changes its kind. */
+export async function updateList(
 	listId: string,
 	userId: string,
-	name: string,
+	input: UpdateList,
 ): Promise<List> {
-	await db.update(lists).set({ name }).where(eq(lists.id, listId));
+	await db.update(lists).set(input).where(eq(lists.id, listId));
 	const list = await getListOfUser(listId, userId);
 	listEvents.publish({
 		type: "list.updated",
 		listId,
 		actorId: userId,
 		name: list.name,
+		kind: list.kind,
 		updatedAt: list.updatedAt,
 	});
 	return list;

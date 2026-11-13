@@ -15,7 +15,7 @@ import {
 	deleteList,
 	getListOfUser,
 	listListsOfUser,
-	renameList,
+	updateList,
 } from "@/routes/lists/lists.service";
 import { membersRoutes } from "@/routes/members/members.routes";
 import { listShareLinksRoutes } from "@/routes/share-links/share-links.routes";
@@ -42,10 +42,10 @@ export const listsRoutes = new Hono<{ Variables: ListAccessVariables }>()
 		validate("json", updateListSchema),
 		async (c) =>
 			c.json(
-				await renameList(
+				await updateList(
 					c.get("listId"),
 					c.get("user").id,
-					c.req.valid("json").name,
+					c.req.valid("json"),
 				),
 			),
 	)

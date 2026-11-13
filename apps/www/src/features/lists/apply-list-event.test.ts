@@ -29,6 +29,7 @@ function page(items: Item[]): Page<Item> {
 const list: List = {
 	id: listId,
 	name: "Groceries",
+	kind: "purchases",
 	role: "editor",
 	itemCount: 0,
 	doneCount: 0,

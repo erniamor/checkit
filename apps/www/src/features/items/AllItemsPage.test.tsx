@@ -1,4 +1,4 @@
-import type { ItemStatus, ItemWithList, MemberRole } from "@repo/schemas";
+import type { ItemStatus, ItemWithList } from "@repo/schemas";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
@@ -13,9 +13,9 @@ vi.mock("@/lib/api", () => ({ getApi: vi.fn() }));
 const date = "2026-11-10T08:00:00.000Z";
 const groceries = "0b7e3f4a-1c2d-4e5f-8a9b-0c1d2e3f4a5b";
 const hardware = "7c6d5e4f-3a2b-4c1d-9e8f-7a6b5c4d3e2f";
-const lists: Record<string, { name: string; role: MemberRole }> = {
-	[groceries]: { name: "Groceries", role: "owner" },
-	[hardware]: { name: "Hardware", role: "viewer" },
+const lists: Record<string, Omit<ItemWithList["list"], "id">> = {
+	[groceries]: { name: "Groceries", kind: "purchases", role: "owner" },
+	[hardware]: { name: "Hardware", kind: "tasks", role: "viewer" },
 };
 
 function makeItem(
@@ -35,7 +35,10 @@ function makeItem(
 		createdById: null,
 		createdAt: date,
 		updatedAt: date,
-		list: { id: listId, ...(lists[listId] ?? { name: "", role: "owner" }) },
+		list: {
+			id: listId,
+			...(lists[listId] ?? { name: "", kind: "purchases", role: "owner" }),
+		},
 	};
 }
 

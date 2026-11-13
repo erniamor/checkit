@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createListSchema, LIST_NAME_MAX_LENGTH } from "./lists.schema";
+import {
+	createListSchema,
+	LIST_NAME_MAX_LENGTH,
+	updateListSchema,
+} from "./lists.schema";
 
 function errorsOf(input: unknown) {
 	const result = createListSchema.safeParse(input);
@@ -38,5 +42,34 @@ describe("createListSchema", () => {
 		expect(
 			createListSchema.safeParse({ name: "Groceries", ownerId: "x" }).success,
 		).toBe(false);
+	});
+});
+
+describe("list kinds", () => {
+	it("creates a list of either kind, purchases when omitted", () => {
+		expect(createListSchema.parse({ name: "Home", kind: "tasks" })).toEqual({
+			name: "Home",
+			kind: "tasks",
+		});
+		expect(createListSchema.parse({ name: "Groceries" }).kind).toBeUndefined();
+		expect(
+			createListSchema.safeParse({ name: "Home", kind: "chores" }).success,
+		).toBe(false);
+	});
+});
+
+describe("updateListSchema", () => {
+	it("changes the name, the kind or both", () => {
+		expect(updateListSchema.parse({ name: " Weekend " })).toEqual({
+			name: "Weekend",
+		});
+		expect(updateListSchema.parse({ kind: "purchases" })).toEqual({
+			kind: "purchases",
+		});
+	});
+
+	it("refuses an update that changes nothing", () => {
+		const result = updateListSchema.safeParse({});
+		expect(result.error?.issues[0]?.message).toBe("nothing_to_update");
 	});
 });

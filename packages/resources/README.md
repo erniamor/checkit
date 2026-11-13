@@ -30,7 +30,7 @@ During server rendering, pass the incoming request's cookie in `headers` instead
 | --- | --- |
 | `auth` | `sendMagicLink({ email, callbackURL })`, `sendSignInCode({ email })`, `signInWithCode({ email, code })`, `signOut()` |
 | `me` | `get()`, `update({ name })` |
-| `lists` | `list({ page?, pageSize? })`, `get(listId)`, `create({ name })`, `rename(listId, { name })`, `remove(listId)`, `subscribe(listId, handlers)` |
+| `lists` | `list({ page?, pageSize? })`, `get(listId)`, `create({ name, kind? })`, `update(listId, { name?, kind? })`, `remove(listId)`, `subscribe(listId, handlers)` |
 | `members` | `list(listId)`, `updateRole(listId, userId, { role })`, `remove(listId, userId)`, `leave(listId)` |
 | `invitations` | `list(listId)`, `create(listId, { email, role })`, `revoke(listId, invitationId)`, `preview(token)`, `accept(token)`, and for the signed-in user's own invitations `received()`, `acceptReceived(invitationId)`, `decline(invitationId)` |
 | `shareLinks` | `list(listId)`, `create(listId, { role })`, `revoke(listId, linkId)`, `preview(token)`, `join(token)` |

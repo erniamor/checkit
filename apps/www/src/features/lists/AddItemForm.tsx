@@ -6,12 +6,14 @@ import { validateField } from "@/lib/validate-field";
 import { m } from "@/paraglide/messages";
 
 interface AddItemFormProps {
+	/** The field's label, which follows the list's kind. */
+	label: string;
 	/** Returns an error message to show, or nothing when the item is added. */
 	onAdd: (label: string) => string | undefined;
 }
 
 /** Adds an item; the field empties and keeps the focus to add the next one. */
-export function AddItemForm({ onAdd }: AddItemFormProps) {
+export function AddItemForm({ label, onAdd }: AddItemFormProps) {
 	const [error, setError] = useState<string>();
 
 	return (
@@ -38,7 +40,7 @@ export function AddItemForm({ onAdd }: AddItemFormProps) {
 		>
 			<div className="flex-1">
 				<TextField
-					label={m.add_item_label()}
+					label={label}
 					name="label"
 					autoComplete="off"
 					error={error}

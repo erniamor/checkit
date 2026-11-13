@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { dateTimeSchema } from "./common";
+import { listKindSchema } from "./lists.schema";
 import { memberRoleSchema } from "./members.schema";
 
 export const ITEM_LABEL_MAX_LENGTH = 200;
@@ -104,7 +105,12 @@ export type ItemsFilter = z.infer<typeof itemsFilterSchema>;
 
 /** An item, with the list it belongs to and the user's role on that list. */
 export const itemWithListSchema = itemSchema.extend({
-	list: z.object({ id: z.uuid(), name: z.string(), role: memberRoleSchema }),
+	list: z.object({
+		id: z.uuid(),
+		name: z.string(),
+		kind: listKindSchema,
+		role: memberRoleSchema,
+	}),
 });
 
 export type ItemWithList = z.infer<typeof itemWithListSchema>;

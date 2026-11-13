@@ -2,6 +2,7 @@ import type {
 	Invitation,
 	Item,
 	List,
+	ListKind,
 	Member,
 	MemberRole,
 	ShareableRole,
@@ -20,6 +21,7 @@ const date = "2026-11-10T08:00:00.000Z";
 
 interface FakeListServerOptions {
 	role?: MemberRole;
+	kind?: ListKind;
 	/** Labels of the items; a label ending with " ✓" is checked. */
 	items?: string[];
 	/** Other lists returned by GET /lists. */
@@ -62,10 +64,12 @@ function paginated<T>(data: T[]) {
  */
 export function fakeListServer({
 	role = "owner",
+	kind: initialKind = "purchases",
 	items = [],
 	otherLists = [],
 }: FakeListServerOptions = {}) {
 	let name = "Groceries";
+	let kind = initialKind;
 	let myRole = role;
 	let stored = items.map((label, index) => makeItem(label, index + 1));
 	let failure: number | undefined;
@@ -87,6 +91,7 @@ export function fakeListServer({
 	const list = (): List => ({
 		id: listId,
 		name,
+		kind,
 		role: myRole,
 		itemCount: stored.length,
 		doneCount: stored.filter((item) => item.done).length,
@@ -124,7 +129,8 @@ export function fakeListServer({
 			return { status: 200, body: paginated(stored) };
 		}
 		if (method === "PATCH" && path === `/lists/${listId}`) {
-			name = String(input.name);
+			name = input.name === undefined ? name : String(input.name);
+			kind = input.kind === undefined ? kind : (input.kind as ListKind);
 			return { status: 200, body: list() };
 		}
 		if (method === "DELETE" && path === `/lists/${listId}`) {
@@ -342,6 +348,9 @@ export function fakeListServer({
 			},
 			renameList(newName: string): void {
 				name = newName;
+			},
+			changeKind(newKind: ListKind): void {
+				kind = newKind;
 			},
 			/** The owner changes the signed-in user's role. */
 			changeMyRole(newRole: MemberRole): void {

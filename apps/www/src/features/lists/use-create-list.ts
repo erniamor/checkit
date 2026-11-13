@@ -1,3 +1,4 @@
+import type { CreateList } from "@repo/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { listKeys } from "@/features/lists/queries";
@@ -9,7 +10,7 @@ export function useCreateList() {
 	const navigate = useNavigate();
 
 	return useMutation({
-		mutationFn: (name: string) => getApi().lists.create({ name }),
+		mutationFn: (input: CreateList) => getApi().lists.create(input),
 		onSuccess: async (list) => {
 			queryClient.setQueryData(listKeys.detail(list.id), list);
 			await queryClient.invalidateQueries({

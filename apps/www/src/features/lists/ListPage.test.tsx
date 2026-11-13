@@ -331,6 +331,25 @@ describe("ListPage", () => {
 		).toBeVisible();
 	});
 
+	it("changes the list's kind, and the add field with it", async () => {
+		const { user, requests } = renderList(fakeListServer());
+
+		expect(await screen.findByLabelText("New item")).toBeVisible();
+		await user.selectOptions(
+			screen.getByRole("combobox", { name: "Kind of list" }),
+			"Tasks",
+		);
+
+		expect(await screen.findByLabelText("New task")).toBeVisible();
+		await vi.waitFor(() =>
+			expect(requests).toContainEqual({
+				method: "PATCH",
+				path: `/lists/${listId}`,
+				body: { kind: "tasks" },
+			}),
+		);
+	});
+
 	it("deletes the list after a confirmation, then goes back to the lists", async () => {
 		const { user, requests, router } = renderList(fakeListServer());
 
@@ -358,6 +377,8 @@ describe("ListPage", () => {
 		expect(await screen.findByText("Read only")).toBeVisible();
 		expect(screen.getByRole("checkbox", { name: "Milk" })).toBeDisabled();
 		expect(screen.queryByLabelText("New item")).toBeNull();
+		expect(screen.getByText("Purchases")).toBeInTheDocument();
+		expect(screen.queryByRole("combobox", { name: "Kind of list" })).toBeNull();
 		expect(screen.queryByRole("button", { name: /Rename|Delete/ })).toBeNull();
 		expect(screen.queryByRole("button", { name: /Check all/ })).toBeNull();
 		expect(screen.queryByRole("button", { name: /Move/ })).toBeNull();

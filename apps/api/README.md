@@ -69,16 +69,16 @@ Codes and links are valid for 10 minutes. Emails are in English, French or Spani
 
 ### Lists
 
-All these routes require a session. Roles on a list: `viewer` reads, `editor` also changes the items and renames the list, `owner` also deletes it and manages its sharing.
+All these routes require a session. A list is of one kind (`kind`): `purchases` (the default) or `tasks`; the front end splits spoken purchases into several items, and keeps a spoken task as one. Roles on a list: `viewer` reads, `editor` also changes the items, renames the list and changes its kind, `owner` also deletes it and manages its sharing.
 
 | Route | Minimum role | Effect |
 | --- | --- | --- |
 | `GET /v1/lists` | member | The user's lists, newest first, with their role and item counts |
-| `POST /v1/lists` `{ name }` | signed in | Creates a list owned by the user |
+| `POST /v1/lists` `{ name, kind? }` | signed in | Creates a list owned by the user (`purchases` when `kind` is omitted) |
 | `GET /v1/lists/:listId` | `viewer` | One list |
-| `PATCH /v1/lists/:listId` `{ name }` | `editor` | Renames the list |
+| `PATCH /v1/lists/:listId` `{ name?, kind? }` | `editor` | Renames the list and/or changes its kind |
 | `DELETE /v1/lists/:listId` | `owner` | Deletes the list, its items and memberships |
-| `GET /v1/items?status=open\|checked\|all` | signed in | The user's items across all their lists (`open` by default), each with its `list` (`id`, `name`, `role`), grouped by list in the order of `GET /v1/lists`; up to 200 per page |
+| `GET /v1/items?status=open\|checked\|all` | signed in | The user's items across all their lists (`open` by default), each with its `list` (`id`, `name`, `kind`, `role`), grouped by list in the order of `GET /v1/lists`; up to 200 per page |
 | `GET /v1/lists/:listId/items` | `viewer` | Items in display order |
 | `POST /v1/lists/:listId/items` `{ label }` | `editor` | Adds an item at the end (201). A checked item with the same label is unchecked and returned instead (200); one among the items to do is refused (409 `item_label_taken`) |
 | `POST /v1/lists/:listId/items/batch` `{ labels }` | `editor` | Adds up to 50 items at once (voice input). Returns `{ data, restored, skipped }`: the items added, the checked ones unchecked because their label came again, and the labels left out (already to do, or repeated) |
@@ -142,7 +142,7 @@ events.addEventListener("items.created", (message) => {
 | `item.updated` | `item` | An item is renamed, checked, unchecked or moved |
 | `items.updated` | `items` | Every item is checked or unchecked at once; only the items whose state changed |
 | `item.deleted` | `itemId` | An item is deleted |
-| `list.updated` | `name`, `updatedAt` | The list is renamed |
+| `list.updated` | `name`, `kind`, `updatedAt` | The list is renamed or changes kind |
 | `list.deleted` | | The list is deleted; the server then ends every stream |
 | `member.added` / `member.updated` | `member` | Someone joins (invitation, share link), or a role changes |
 | `member.removed` | `userId` | A member is removed or leaves; the server ends that member's stream |

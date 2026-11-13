@@ -168,7 +168,8 @@ describe("duplicate labels", () => {
 		]).then((responses) => responses.map((response) => response.status));
 
 		expect(statuses.sort()).toEqual([201, 409, 409]);
-		expect(await labels()).toEqual(["Bread"]);
+		// Whichever request got the lock first
+		expect(await labels()).toEqual([expect.stringMatching(/^bread$/i)]);
 	});
 });
 

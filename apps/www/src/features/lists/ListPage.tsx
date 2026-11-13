@@ -14,6 +14,8 @@ import {
 	resolveAddition,
 } from "@/features/lists/duplicate-label";
 import { ItemsSection } from "@/features/lists/ItemsSection";
+import { ListKindIcon } from "@/features/lists/ListKindIcon";
+import { ListKindSelect } from "@/features/lists/ListKindSelect";
 import { ListTitle } from "@/features/lists/ListTitle";
 import { canEdit, isOwner } from "@/features/lists/permissions";
 import { itemsQueryOptions, listQueryOptions } from "@/features/lists/queries";
@@ -93,10 +95,23 @@ export function ListPage({ listId }: ListPageProps) {
 					editable={editable}
 					onRename={(name) => {
 						setError(undefined);
-						mutations.renameList.mutate(name);
+						mutations.updateList.mutate({ name });
 					}}
 				/>
 				<div className="flex flex-wrap items-center gap-1">
+					{editable ? (
+						<ListKindSelect
+							kind={list.kind}
+							onChange={(kind) => {
+								setError(undefined);
+								mutations.updateList.mutate({ kind });
+							}}
+						/>
+					) : (
+						<span className="flex items-center px-2">
+							<ListKindIcon kind={list.kind} />
+						</span>
+					)}
 					<WithTooltip label={m.members_link()}>
 						<Link
 							to="/lists/$listId/members"
@@ -123,9 +138,19 @@ export function ListPage({ listId }: ListPageProps) {
 			{editable && (
 				<div className="flex items-start gap-2">
 					<div className="flex-1">
-						<AddItemForm onAdd={addItem} />
+						<AddItemForm
+							label={
+								list.kind === "tasks" ? m.add_task_label() : m.add_item_label()
+							}
+							onAdd={addItem}
+						/>
 					</div>
-					<VoiceInput items={page.items} onAdd={addItems} className="mt-6" />
+					<VoiceInput
+						kind={list.kind}
+						items={page.items}
+						onAdd={addItems}
+						className="mt-6"
+					/>
 				</div>
 			)}
 			{page.items.length === 0 ? (

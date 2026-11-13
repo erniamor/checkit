@@ -171,6 +171,23 @@ describe("GET /v1/lists/:listId/events", () => {
 		expect(await stream.nextEvent()).toMatchObject({
 			type: "list.updated",
 			name: "Weekend groceries",
+			kind: "purchases",
+		});
+	});
+
+	it("pushes the list's new kind", async () => {
+		const stream = await listen(bob);
+
+		await api(`/v1/lists/${list.id}`, {
+			method: "PATCH",
+			cookie: alice,
+			body: { kind: "tasks" },
+		});
+
+		expect(await stream.nextEvent()).toMatchObject({
+			type: "list.updated",
+			name: list.name,
+			kind: "tasks",
 		});
 	});
 

@@ -1,5 +1,5 @@
 import type { Page } from "@repo/resources";
-import type { Item, List, UpdateItem } from "@repo/schemas";
+import type { Item, List, UpdateItem, UpdateList } from "@repo/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { resolveAddition } from "@/features/lists/duplicate-label";
@@ -141,13 +141,13 @@ export function useListMutations(
 		...itemMutationOptions,
 	});
 
-	const renameList = useMutation({
-		mutationFn: (name: string) => api.lists.rename(listId, { name }),
-		onMutate: async (name: string) => {
+	const updateList = useMutation({
+		mutationFn: (changes: UpdateList) => api.lists.update(listId, changes),
+		onMutate: async (changes: UpdateList) => {
 			await queryClient.cancelQueries({ queryKey: listKey, exact: true });
 			const previous = queryClient.getQueryData<List>(listKey);
 			if (previous) {
-				queryClient.setQueryData<List>(listKey, { ...previous, name });
+				queryClient.setQueryData<List>(listKey, { ...previous, ...changes });
 			}
 			return { rollback: () => queryClient.setQueryData(listKey, previous) };
 		},
@@ -171,7 +171,7 @@ export function useListMutations(
 		updateItem,
 		updateAllItems,
 		deleteItem,
-		renameList,
+		updateList,
 		deleteList,
 	};
 }

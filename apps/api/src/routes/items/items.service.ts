@@ -86,7 +86,12 @@ export async function listItemsOfUser(
 		db
 			.select({
 				item: items,
-				list: { id: lists.id, name: lists.name, role: listMembers.role },
+				list: {
+					id: lists.id,
+					name: lists.name,
+					kind: lists.kind,
+					role: listMembers.role,
+				},
 			})
 			.from(items)
 			.innerJoin(listMembers, eq(listMembers.listId, items.listId))

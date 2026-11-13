@@ -55,7 +55,8 @@ export function createListsResource(client: ApiClient) {
 			});
 		},
 
-		async rename(listId: string, input: UpdateList): Promise<List> {
+		/** Renames the list and/or changes its kind. */
+		async update(listId: string, input: UpdateList): Promise<List> {
 			return client.request({
 				method: "PATCH",
 				path: `/lists/${segment(listId)}`,

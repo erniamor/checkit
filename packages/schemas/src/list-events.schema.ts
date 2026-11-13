@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { dateTimeSchema } from "./common";
 import { itemSchema } from "./items.schema";
+import { listKindSchema } from "./lists.schema";
 import { memberSchema } from "./members.schema";
 
 /** SSE event sent first on every connection: the stream is listening. */
@@ -33,6 +34,7 @@ export const listEventSchema = z.discriminatedUnion("type", [
 		type: z.literal("list.updated"),
 		...eventBase,
 		name: z.string(),
+		kind: listKindSchema,
 		updatedAt: dateTimeSchema,
 	}),
 	z.object({ type: z.literal("list.deleted"), ...eventBase }),

@@ -6,6 +6,7 @@ const date = "2026-11-10T08:00:00.000Z";
 export const list = {
 	id: listId,
 	name: "Groceries",
+	kind: "purchases",
 	role: "owner",
 	itemCount: 2,
 	doneCount: 1,

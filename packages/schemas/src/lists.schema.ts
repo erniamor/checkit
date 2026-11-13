@@ -12,17 +12,37 @@ export const listNameSchema = z
 	.min(1, "list_name_required")
 	.max(LIST_NAME_MAX_LENGTH, "list_name_too_long");
 
-export const createListSchema = z.strictObject({ name: listNameSchema });
+/** Purchases are said several at once; tasks one at a time. */
+export const listKinds = ["purchases", "tasks"] as const;
+
+export const listKindSchema = z.enum(listKinds);
+
+export type ListKind = z.infer<typeof listKindSchema>;
+
+export const createListSchema = z.strictObject({
+	name: listNameSchema,
+	/** "purchases" when omitted. */
+	kind: listKindSchema.optional(),
+});
 
 export type CreateList = z.infer<typeof createListSchema>;
 
-export const updateListSchema = z.strictObject({ name: listNameSchema });
+export const updateListSchema = z
+	.strictObject({
+		name: listNameSchema.optional(),
+		kind: listKindSchema.optional(),
+	})
+	.refine(
+		(input) => input.name !== undefined || input.kind !== undefined,
+		"nothing_to_update",
+	);
 
 export type UpdateList = z.infer<typeof updateListSchema>;
 
 export const listSchema = z.object({
 	id: z.uuid(),
 	name: z.string(),
+	kind: listKindSchema,
 	/** Role of the current user on the list. */
 	role: memberRoleSchema,
 	itemCount: z.number().int().min(0),
