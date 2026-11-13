@@ -71,6 +71,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 
 - Every call goes through `getApi()` (`src/lib/api.ts`), the resources of `@repo/resources`. In the browser it calls the API directly with the session cookie (`credentials: "include"`); during server rendering it forwards the incoming request's cookie. Both send the app's language as `Accept-Language`.
 - The signed-in user is the `me` query (`features/auth/me-query.ts`): `null` for a visitor. The root route loads it and puts it in the route context (`context.me`), used by the header and the routes' checks.
+- If the API can't be reached, the root's `beforeLoad` fails and its context stays empty: the document (`RootDocument`) then reads the appearance and the theme from their cookies itself and shows a visitor's header, around `ErrorView`, which says the app can't be reached (`NetworkError`). Never make the document depend on the API.
 - After signing in, out or changing the profile, call `useSessionChange()` (`refresh` or `clear`): it updates the `me` query, re-runs the routes' checks and navigates.
 - A page reserved to signed-in users goes under `src/routes/_authenticated/`. A signed-in user without a name is sent to `/welcome` first (root route).
 - A `redirect` search parameter is always parsed with `redirectSearchSchema`: only internal paths are kept, so a link can't send users to another site.

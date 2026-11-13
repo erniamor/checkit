@@ -1,3 +1,5 @@
+import type { Profile } from "@repo/schemas";
+import type { ThemeName } from "@repo/themes";
 import { Toaster, TooltipProvider } from "@repo/ui";
 import type { QueryClient } from "@tanstack/react-query";
 import {
@@ -9,6 +11,7 @@ import {
 import { type ReactNode, useEffect } from "react";
 import { Header } from "@/components/Header";
 import {
+	type Appearance,
 	serverHtmlClass,
 	systemAppearanceScript,
 } from "@/features/appearance/appearance";
@@ -29,6 +32,13 @@ if (typeof window !== "undefined") {
 
 interface RouterContext {
 	queryClient: QueryClient;
+}
+
+/** What the document needs from the root's context. */
+interface ShellContext {
+	appearance: Appearance;
+	theme: ThemeName;
+	me: Profile | null;
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
@@ -58,7 +68,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootDocument({ children }: { children: ReactNode }) {
-	const { appearance, theme, me } = Route.useRouteContext();
+	// Empty when beforeLoad failed (the API can't be reached): the document
+	// still renders, around the error page
+	const context: Partial<ShellContext> = Route.useRouteContext();
+	const appearance = context.appearance ?? getAppearance();
+	const theme = context.theme ?? getTheme();
+	const me = context.me ?? null;
 
 	// Syncs with the browser: installable app, offline page
 	useEffect(() => {
