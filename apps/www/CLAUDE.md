@@ -32,7 +32,7 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 - `src/server/`: server-only code (`env.ts`: the server's API URL)
 - `src/lib/`: utilities specific to the app (`api.ts`: the API client; `error-messages.ts`: error codes to messages; `redirect.ts`: the safe `redirect` search parameter; `cookies.ts`)
 - `src/env.ts`: public environment variables (`VITE_*`), validated with Zod
-- `src/test/`: test helpers (`setTestLocale()`, `renderWithRouter()`, `renderWithQueryClient()`, `mockApi()` (its `respond` also gets the full URL, to read the query string), `fakeListServer()`: an in-memory API for one list, with `other.*` for another member's changes, `FakeEventSource`: drives the real-time stream, `FakeSpeechRecognition` and `installSpeechRecognition()`: the browser's speech recognition, `mockSystemAppearance()`)
+- `src/test/`: test helpers (`setTestLocale()`, `renderWithRouter()`, `renderWithQueryClient()`, `mockApi()` (its `respond` also gets the full URL, to read the query string), `fakeListServer()`: an in-memory API for one list, with `other.*` for another member's changes, `FakeEventSource`: drives the real-time stream, `FakeSpeechRecognition` and `installSpeechRecognition()`: the browser's speech recognition, `FakeMediaRecorder` and `installMediaRecorder()`: the microphone, `mockSystemAppearance()`)
 - `src/router.tsx`: creates the router and the `QueryClient`
 - `src/server.ts`: server entry; runs Paraglide's middleware around TanStack Start's handler
 - `src/styles.css`: Tailwind, the themes and `@repo/ui`'s styles
@@ -90,10 +90,13 @@ Checkit's web app, for the people who keep shared to-do lists: sign-in, lists an
 ## Voice input
 
 - `features/voice/`: the microphone button next to the add field (`VoiceInput`, editors only), a dialog that listens (`ListeningPanel`), then lists the items found for review (`SpokenItemsReview`), checked with the API's schemas (`checkSpokenItems()`) before `addItems`.
-- Every way of recognizing speech implements `SpeechInput` (`speech-input.ts`); `getSpeechInput()` picks one. Today only `webSpeechInput()` (the browser's `SpeechRecognition` or `webkitSpeechRecognition`): continuous, stopped after 4 seconds of silence. The server-side transcription will be the second implementation.
+- Every way of recognizing speech implements `SpeechInput` (`speech-input.ts`); `getSpeechInput()` picks one:
+  - `webSpeechInput()`: the browser's `SpeechRecognition` or `webkitSpeechRecognition`, continuous, stopped after 4 seconds of silence, with the text as it's heard;
+  - `recordedSpeechInput()`: records with `MediaRecorder` (30 seconds at most, 32 kbit/s) until the user stops, then `transcriptions.create` of the API (state `transcribing`); used where the browser has no recognition;
+  - `withFallback()`: switches from the first to the second when the browser's service can't be reached before anything is heard (Brave), unless offline.
 - `useVoiceInput()` holds the state (idle, listening, heard, error); `supported` is false on the server and during hydration, so the button only renders in the browser. Closing the dialog or leaving the page aborts the microphone.
 - `splitSpokenItems()` (pure, tested per locale) turns the sentence into labels; `recognitionLanguage()` picks the recognition language (`fr-CA` when the browser has it). Add a locale's connectors and articles there with the locale.
-- In tests, `installSpeechRecognition()` gives the browser a `FakeSpeechRecognition` (`src/test/`), driven with `hear()`, `fail()` and `stop()`.
+- In tests, `installSpeechRecognition()` gives the browser a `FakeSpeechRecognition` (`src/test/`), driven with `hear()`, `fail()` and `stop()`; `installMediaRecorder()` gives it a microphone and a `FakeMediaRecorder` (`say()`). jsdom has neither, so by default the microphone button isn't shown.
 
 ## Real time
 

@@ -11,6 +11,7 @@ import { IconButton } from "@/components/IconButton";
 import { ListeningPanel } from "@/features/voice/ListeningPanel";
 import { SpokenItemsReview } from "@/features/voice/SpokenItemsReview";
 import { splitSpokenItems } from "@/features/voice/split-spoken-items";
+import { TranscribingPanel } from "@/features/voice/TranscribingPanel";
 import { useVoiceInput } from "@/features/voice/use-voice-input";
 import { VoiceErrorPanel } from "@/features/voice/VoiceErrorPanel";
 import { m } from "@/paraglide/messages";
@@ -60,6 +61,7 @@ export function VoiceInput({ items, onAdd, className }: VoiceInputProps) {
 					{state.status === "listening" && (
 						<ListeningPanel text={state.text} onStop={voice.stop} />
 					)}
+					{state.status === "transcribing" && <TranscribingPanel />}
 					{state.status === "error" && (
 						<VoiceErrorPanel error={state.error} onRetry={voice.start} />
 					)}

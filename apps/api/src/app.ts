@@ -14,7 +14,9 @@ import { myItemsRoutes } from "@/routes/items/items.routes";
 import { listsRoutes } from "@/routes/lists/lists.routes";
 import { meRoutes } from "@/routes/me/me.routes";
 import { shareLinksRoutes } from "@/routes/share-links/share-links.routes";
+import { transcriptionsRoutes } from "@/routes/transcriptions/transcriptions.routes";
 
+// Also bounds the voice recordings (POST /v1/transcriptions)
 const MAX_BODY_SIZE = 1024 * 1024;
 
 const v1 = new Hono()
@@ -25,7 +27,8 @@ const v1 = new Hono()
 	.route("/lists", listsRoutes)
 	.route("/items", myItemsRoutes)
 	.route("/invitations", invitationsRoutes)
-	.route("/share-links", shareLinksRoutes);
+	.route("/share-links", shareLinksRoutes)
+	.route("/transcriptions", transcriptionsRoutes);
 
 export const app = new Hono();
 

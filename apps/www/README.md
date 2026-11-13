@@ -2,7 +2,7 @@
 
 Checkit's web app: the screens where users sign in, manage their lists, share them and add items by voice. Built with React and TanStack Start, TanStack Query, Paraglide JS for translations, Tailwind CSS and the components of [`@repo/ui`](../../packages/ui).
 
-**In progress.** For now: a header (logo, then menus for the language, the appearance and the account: profile and sign-out), sign-in by magic link or code, the name asked at the first sign-in, the lists and their items, updated in real time with the other members' changes, sharing (members, invitations, share links), voice input in the browser, a home page for visitors, and the 404 and error pages. Server-side transcription, for browsers without speech recognition, comes next.
+**In progress.** For now: a header (logo, then menus for the language, the appearance and the account: profile and sign-out), sign-in by magic link or code, the name asked at the first sign-in, the lists and their items, updated in real time with the other members' changes, sharing (members, invitations, share links), voice input (the browser's recognition, or the API's transcription), a home page for visitors, and the 404 and error pages.
 
 ## Screens
 
@@ -83,7 +83,7 @@ Light, dark or the system's, and one of the themes of `@repo/themes`, chosen in 
 On a list, editors can say several items at once ("milk, eggs and bread") with the microphone button next to the add field. The text shows while it's heard; the items found in it (`splitSpokenItems()`: split on commas and "and", "et", "y"..., articles dropped) are then reviewed, corrected or removed, and added together.
 
 - Recognition is the browser's Web Speech API, in the app's language (the browser's regional variant when it has one, such as `fr-CA`). Chrome and Edge send the audio to Google, Safari to Apple: the app never receives it.
-- Firefox has no speech recognition: the microphone isn't shown there. A server-side transcription will take over behind the same interface (`SpeechInput`).
+- Where the browser has no speech recognition (Firefox), or can't reach its service (Brave), the microphone is recorded (`MediaRecorder`, 30 seconds at most) and transcribed by the API (`POST /v1/transcriptions`, Mistral). Nothing shows while the user speaks: they press "Done", then the items are reviewed the same way. Without `MISTRAL_API_KEY` on the API, those browsers show that voice input isn't available.
 
 ## Installable app (PWA)
 

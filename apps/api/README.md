@@ -28,6 +28,7 @@ Validated at startup by [`src/env.ts`](src/env.ts): the API refuses to start wit
 | `DATABASE_URL` | yes | PostgreSQL connection URL |
 | `CORS_ORIGINS` | yes | Comma-separated front-end origins allowed to call the API (with cookies) |
 | `BETTER_AUTH_SECRET` | yes | At least 32 characters; signs sessions and tokens |
+| `MISTRAL_API_KEY` | no | Transcribes voice input for browsers without speech recognition, with [Mistral](https://console.mistral.ai). Without it, `POST /v1/transcriptions` answers 503 and voice input only works where the browser recognizes speech itself |
 | `RESEND_API_KEY`, `EMAIL_FROM` | in production | Send the emails with [Resend](https://resend.com); both or none. `EMAIL_FROM` is `Name <address>` or `address`, on a domain verified in Resend. Without them (development, tests), emails are printed to the console |
 | `COOKIE_DOMAIN` | in production | Parent domain of the API and the front end (e.g. `checkit.example.com` for `api.checkit.example.com` and `checkit.example.com`): the session cookie is shared with the front end's server. `API_URL` and `APP_URL` must be under it. Unset in development |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | no | Enable Google sign-in; both or none. Redirect URI: `<API_URL>/v1/auth/callback/google` |
@@ -146,6 +147,13 @@ events.addEventListener("items.created", (message) => {
 | `member.added` / `member.updated` | `member` | Someone joins (invitation, share link), or a role changes |
 | `member.removed` | `userId` | A member is removed or leaves; the server ends that member's stream |
 
+### Voice transcription
+
+`POST /v1/transcriptions?language=<en|fr|es>` (signed in) transcribes a voice recording, for the browsers that can't recognize speech themselves (Firefox). The body is the recording itself, with its audio `Content-Type` (`audio/webm`, `audio/ogg`, `audio/mp4`...), at most 1 MB (the front end records 30 seconds at most). It answers `{ "text": "..." }`, maybe empty.
+
+- The recording goes to Mistral's transcription API (Voxtral, `src/lib/transcriber.ts`, no SDK) and is never stored nor logged.
+- At most 30 transcriptions per user and hour, counted in memory (`src/lib/rate-limit.ts`): each one is paid to Mistral.
+
 ### Errors
 
 Every error has the same shape:
@@ -165,9 +173,13 @@ Every error has the same shape:
 | 409 | `owner_role_locked`, `owner_cannot_leave` | Changing or removing the owner's membership, or the owner leaving |
 | 410 | `invitation_expired`, `share_link_revoked` | The invitation expired or was already used; the share link was revoked |
 | 413 | `payload_too_large` | Body over 1 MB |
+| 422 | `audio_required` | A transcription without an audio `Content-Type`, or with an empty recording |
 | 422 | `validation_error` | Invalid input; `details` lists each field with an error code from `@repo/schemas` |
 | 429 | `too_many_invitations` | The list already has 50 pending invitations |
+| 429 | `too_many_transcriptions` | The user already had 30 transcriptions in the last hour |
 | 500 | `internal_error` | Unexpected error, logged on the server, never detailed in the response |
+| 502 | `transcription_failed` | Mistral refused the recording or didn't answer in 30 seconds (its status is logged on the server) |
+| 503 | `transcription_unavailable` | No transcription service is configured (`MISTRAL_API_KEY`) |
 | 503 | `email_unavailable` | Resend refused the email or didn't answer in 10 seconds (the reason is logged on the server) |
 
 ## Email sending
@@ -179,6 +191,13 @@ Sign-in links and codes and invitations are sent with Resend's REST API (`src/li
 3. Set `RESEND_API_KEY` and `EMAIL_FROM` in `.env` (or the host's secrets in production).
 
 Before the domain is verified, `EMAIL_FROM=onboarding@resend.dev` works for trying it out, but only towards the email address of the Resend account. To print the emails again in development, remove both variables.
+
+## Voice transcription
+
+1. In [Mistral's console](https://console.mistral.ai), create an API key (a workspace with a payment method or credits).
+2. Set `MISTRAL_API_KEY` in `.env` (or the host's secrets in production).
+
+Without it, everything else works: voice input stays available in the browsers that recognize speech themselves (Chrome, Edge, Safari), and the others show that it isn't available.
 
 ## Tests
 

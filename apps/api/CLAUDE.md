@@ -4,7 +4,7 @@
 
 ## Role
 
-The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@repo/resources`. Manages accounts and sign-in, to-do lists, their items and members, sharing (email invitations and share links), and pushes list changes to members in real time. Calls an email provider (sign-in links and codes, invitations) and, later, a speech-to-text service.
+The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@repo/resources`. Manages accounts and sign-in, to-do lists, their items and members, sharing (email invitations and share links), and pushes list changes to members in real time. Calls an email provider (sign-in links and codes, invitations) and a speech-to-text service (Mistral, for voice input in browsers without speech recognition).
 
 ## App-specific stack
 
@@ -37,7 +37,7 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 - `src/index.ts`: entry point; starts the Node server with the app built in `app.ts`
 - `src/app.ts`: builds the Hono app (global middlewares, mounting of route modules, error handler), with no side effect, so tests can import it
 - `src/env.ts`: environment variables validated with Zod at startup; the only place that reads `process.env`
-- `src/routes/<domain>/`: one folder per domain (`health`, `me`, `lists`, `items`, `members`, `invitations`, `share-links`, `events`)
+- `src/routes/<domain>/`: one folder per domain (`health`, `me`, `lists`, `items`, `members`, `invitations`, `share-links`, `events`, `transcriptions`)
   - `<domain>.routes.ts`: the domain's Hono sub-app (routes, validators, call to the service)
   - `<domain>.service.ts`: business logic, independent of Hono
   - `<domain>.schemas.ts`: Zod schemas used only by this API (shared ones are in `@repo/schemas`)
@@ -45,7 +45,7 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 - `src/middlewares/`: cross-cutting middlewares (`require-auth.ts`, `require-list-role.ts`)
 - `src/realtime/`: the list event bus (`list-events.ts`)
 - `src/db/`: Drizzle client (`client.ts`), schema (`schema/<table>.ts`, re-exported by `schema/index.ts`) and migration script (`migrate.ts`)
-- `src/lib/`: utilities specific to the app (`auth.ts`: Better Auth instance; `errors.ts`: `AppError` and the error body; `error-handler.ts`: global error and not-found handlers; `mailer.ts`: email sending; `locale.ts`: locale resolution from `Accept-Language`; `validator.ts`: `validate()`, the `zValidator` answering 422 in the API's error format; `pagination.ts`: pagination query schema; `tokens.ts`: random tokens and their hash)
+- `src/lib/`: utilities specific to the app (`auth.ts`: Better Auth instance; `errors.ts`: `AppError` and the error body; `error-handler.ts`: global error and not-found handlers; `mailer.ts`: email sending; `transcriber.ts`: speech to text; `rate-limit.ts`: in-memory rate limiter per key; `locale.ts`: locale resolution from `Accept-Language`; `validator.ts`: `validate()`, the `zValidator` answering 422 in the API's error format; `pagination.ts`: pagination query schema; `tokens.ts`: random tokens and their hash)
 - `src/emails/`: email contents, in every supported locale
 - `test/`: Vitest global setup (checks the test database and applies the migrations), database reset before each test, and helpers (`helpers/auth.ts`: `signIn()`, `captureEmails()`; `helpers/api.ts`: `api()`, `json()`, `createList()`, `joinList()`, `setName()`; `helpers/events.ts`: `openEventStream()`), imported through the `@test/` alias
 - `drizzle/`: generated SQL migrations, committed, never edited after they have been applied
@@ -60,6 +60,13 @@ The product's backend. Exposes a JSON REST API consumed by `apps/www` through `@
 - Keep `advanced.disableOriginCheck: false`: Better Auth otherwise skips its callback URL and origin checks when `NODE_ENV` is `test`.
 - Emails go through `mailer`: sent with Resend when `RESEND_API_KEY` and `EMAIL_FROM` are set (always in production, the environment requires them), printed to the console otherwise. Their locale comes from the request's `Accept-Language` header.
 - A failed sending is logged without the email's content (it holds sign-in links and codes) and answered with a 503 `email_unavailable`. Tests never call Resend: `captureEmails()` replaces `mailer.send`.
+
+## Voice transcription
+
+- `POST /v1/transcriptions` takes the recording as its raw body (audio `Content-Type`, bounded by the global 1 MB body limit) and the language in the query. It goes through `transcriber` (`Transcriber` interface): Mistral's API when `MISTRAL_API_KEY` is set, otherwise a 503 `transcription_unavailable`.
+- The recording is only passed on: never stored, never logged, nor its text. A provider failure is logged with its status only and answered with a 502 `transcription_failed`.
+- 30 transcriptions per user and hour (`createRateLimiter()`, in memory like the event bus: move it to PostgreSQL to run several instances).
+- Tests never call Mistral: replace `transcriber.transcribe` with `vi.spyOn`; `createMistralTranscriber()` is tested with a fake `fetch`.
 
 ## Lists and access
 

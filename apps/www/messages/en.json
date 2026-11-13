@@ -204,7 +204,7 @@
 	"voice_dialog_title": "Add by voice",
 	"voice_dialog_text": "Say several items in a row, then check them before they're added.",
 	"voice_listening": "Listening…",
-	"voice_listening_hint": "For example: “milk, eggs and bread”.",
+	"voice_listening_hint": "For example: “milk, eggs and bread”. Then press Done.",
 	"voice_stop": "Done",
 	"voice_retry": "Speak again",
 	"voice_heard": "Heard: “{text}”",
@@ -220,5 +220,8 @@
 	"voice_error_not_allowed": "The microphone is blocked. Allow it in your browser's settings, then try again.",
 	"voice_error_no_speech": "Nothing was heard. Try again, closer to the microphone.",
 	"voice_error_network": "Voice recognition needs an internet connection.",
-	"voice_error_failed": "Voice recognition stopped unexpectedly. Try again."
+	"voice_error_failed": "Voice recognition stopped unexpectedly. Try again.",
+	"voice_transcribing": "Transcribing…",
+	"voice_error_unavailable": "Voice input isn't available in this browser. Type the items instead.",
+	"voice_error_too_many": "Voice input was used a lot in the last hour. Try again later, or type the items."
 }

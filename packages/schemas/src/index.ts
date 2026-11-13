@@ -7,3 +7,4 @@ export * from "./lists.schema";
 export * from "./members.schema";
 export * from "./profile.schema";
 export * from "./share-links.schema";
+export * from "./transcriptions.schema";

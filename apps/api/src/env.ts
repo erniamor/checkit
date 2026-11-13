@@ -38,6 +38,9 @@ const envSchema = z
 				"COOKIE_DOMAIN must be a domain name, e.g. example.com",
 			)
 			.optional(),
+		// Mistral: transcribes voice input for browsers without speech recognition;
+		// optional (without it, the transcription route answers 503)
+		MISTRAL_API_KEY: z.string().min(1).optional(),
 		GOOGLE_CLIENT_ID: z.string().min(1).optional(),
 		GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
 		// Comma-separated list in the environment, turned into an array of origins

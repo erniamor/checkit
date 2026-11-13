@@ -3,7 +3,7 @@ import { MicIcon } from "lucide-react";
 import { m } from "@/paraglide/messages";
 
 interface ListeningPanelProps {
-	/** What was heard so far. */
+	/** What was heard so far; nothing while a recording waits for transcription. */
 	text: string;
 	onStop: () => void;
 }
@@ -19,7 +19,7 @@ export function ListeningPanel({ text, onStop }: ListeningPanelProps) {
 			<p className="text-muted-foreground text-sm">
 				{m.voice_listening_hint()}
 			</p>
-			<p className="min-h-12 rounded-md border border-border p-3">{text}</p>
+			{text && <p className="rounded-md border border-border p-3">{text}</p>}
 			<Button type="button" onClick={onStop} className="justify-self-end">
 				{m.voice_stop()}
 			</Button>

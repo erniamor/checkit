@@ -5,16 +5,31 @@ import { describe, expect, it, vi } from "vitest";
 import { ListPage } from "@/features/lists/ListPage";
 import { fakeListServer, listId } from "@/test/fake-list-server";
 import {
+	FakeMediaRecorder,
+	installMediaRecorder,
+} from "@/test/fake-media-recorder";
+import {
 	FakeSpeechRecognition,
 	installSpeechRecognition,
 } from "@/test/fake-speech-recognition";
-import { mockApi } from "@/test/mock-api";
+import { type ApiResponse, mockApi } from "@/test/mock-api";
 import { renderWithRouter } from "@/test/render-with-router";
 
 vi.mock("@/lib/api", () => ({ getApi: vi.fn() }));
 
-function renderList(server: ReturnType<typeof fakeListServer>) {
-	const requests = mockApi(server.respond);
+function renderList(
+	server: ReturnType<typeof fakeListServer>,
+	/** The API's answer to a transcription. */
+	transcription: ApiResponse = {
+		status: 503,
+		body: { error: { code: "transcription_unavailable", message: "" } },
+	},
+) {
+	const requests = mockApi((request) =>
+		request.path === "/transcriptions"
+			? transcription
+			: server.respond(request),
+	);
 	renderWithRouter(
 		<>
 			<ListPage listId={listId} />
@@ -146,5 +161,51 @@ describe("ListPage: voice input", () => {
 
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 		expect(recognition.listening).toBe(false);
+	});
+
+	describe("without the browser's recognition (Firefox)", () => {
+		it("records, has the API transcribe, then reviews the items", async () => {
+			installMediaRecorder();
+			const { user, requests } = renderList(fakeListServer(), {
+				status: 200,
+				body: { text: "milk and eggs" },
+			});
+
+			await user.click(
+				await screen.findByRole("button", { name: "Add items by voice" }),
+			);
+			expect(screen.getByRole("status")).toHaveTextContent("Listening…");
+			await vi.waitFor(() =>
+				expect(FakeMediaRecorder.instances).toHaveLength(1),
+			);
+			FakeMediaRecorder.latest().say("sound");
+			await user.click(screen.getByRole("button", { name: "Done" }));
+
+			expect(await screen.findByLabelText("Item 1")).toHaveValue("Milk");
+			expect(screen.getByLabelText("Item 2")).toHaveValue("Eggs");
+			const transcription = requests.find(
+				(request) => request.path === "/transcriptions",
+			);
+			expect(transcription?.method).toBe("POST");
+			expect(transcription?.body).toBeInstanceOf(Blob);
+		});
+
+		it("says so when the API has no transcription service", async () => {
+			installMediaRecorder();
+			const { user } = renderList(fakeListServer());
+
+			await user.click(
+				await screen.findByRole("button", { name: "Add items by voice" }),
+			);
+			await vi.waitFor(() =>
+				expect(FakeMediaRecorder.instances).toHaveLength(1),
+			);
+			FakeMediaRecorder.latest().say("sound");
+			await user.click(screen.getByRole("button", { name: "Done" }));
+
+			expect(await screen.findByRole("alert")).toHaveTextContent(
+				"Voice input isn't available in this browser.",
+			);
+		});
 	});
 });

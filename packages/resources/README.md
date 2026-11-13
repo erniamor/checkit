@@ -34,6 +34,7 @@ During server rendering, pass the incoming request's cookie in `headers` instead
 | `members` | `list(listId)`, `updateRole(listId, userId, { role })`, `remove(listId, userId)`, `leave(listId)` |
 | `invitations` | `list(listId)`, `create(listId, { email, role })`, `revoke(listId, invitationId)`, `preview(token)`, `accept(token)`, and for the signed-in user's own invitations `received()`, `acceptReceived(invitationId)`, `decline(invitationId)` |
 | `shareLinks` | `list(listId)`, `create(listId, { role })`, `revoke(listId, linkId)`, `preview(token)`, `join(token)` |
+| `transcriptions` | `create(audio, { language })`: sends a recording (a `Blob`, as is, with its type) and returns its text |
 | `items` | `list(listId, { page?, pageSize? })`, `listAll({ status?, page?, pageSize? })` (the user's items across all their lists), `add(listId, { label })`, `addMany(listId, { labels })` (returns `{ created, restored, skipped }`), `update(listId, itemId, { label?, done?, position? })`, `updateAll(listId, { done })`, `remove(listId, itemId)` |
 
 Paginated operations return a `Page<T>`: `{ items, page, pageSize, total }`, without the API's `{ data, pagination }` envelope. Identifiers are encoded in the path, so they can't change the requested route.

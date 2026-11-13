@@ -11,7 +11,12 @@ import {
 function startListening() {
 	installSpeechRecognition();
 	const input = webSpeechInput(window);
-	const handlers = { onText: vi.fn(), onEnd: vi.fn(), onError: vi.fn() };
+	const handlers = {
+		onText: vi.fn(),
+		onTranscribing: vi.fn(),
+		onEnd: vi.fn(),
+		onError: vi.fn(),
+	};
 	const session = input?.start("fr-CA", handlers);
 	return { handlers, session, recognition: FakeSpeechRecognition.latest() };
 }

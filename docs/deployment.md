@@ -45,6 +45,7 @@ Variables:
 | `BETTER_AUTH_SECRET` | A new secret for production, never the development one: `openssl rand -base64 32` |
 | `RESEND_API_KEY` | A Resend key with "Sending access", restricted to the sending domain |
 | `EMAIL_FROM` | `Checkit <address on the domain verified in Resend>` |
+| `MISTRAL_API_KEY` | Optional: a Mistral API key, for voice input in browsers without speech recognition (Firefox). Without it, those browsers show that voice input isn't available |
 
 The pre-deploy command applies the pending migrations with the service's variables before the new version starts; if it fails, the deployment stops and the previous version keeps running.
 

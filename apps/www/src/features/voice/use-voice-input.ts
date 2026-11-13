@@ -10,6 +10,7 @@ import { getLocale } from "@/paraglide/runtime";
 export type VoiceInputState =
 	| { status: "idle" }
 	| { status: "listening"; text: string }
+	| { status: "transcribing" }
 	| { status: "heard"; text: string }
 	| { status: "error"; error: SpeechInputError };
 
@@ -43,6 +44,7 @@ export function useVoiceInput() {
 			recognitionLanguage(getLocale(), navigator.languages),
 			{
 				onText: (text) => setState({ status: "listening", text }),
+				onTranscribing: () => setState({ status: "transcribing" }),
 				onEnd: (text) => {
 					session.current = undefined;
 					setState(

@@ -5,6 +5,7 @@ export interface SentRequest {
 	url: string;
 	method: string;
 	headers: Record<string, string>;
+	/** Parsed JSON, or the Blob sent as is. */
 	body: unknown;
 	credentials: RequestCredentials | undefined;
 }
@@ -19,7 +20,11 @@ export function fakeFetch(status: number, body?: unknown) {
 				method: init?.method ?? "GET",
 				headers: Object.fromEntries(new Headers(init?.headers).entries()),
 				body:
-					typeof init?.body === "string" ? JSON.parse(init.body) : undefined,
+					typeof init?.body === "string"
+						? JSON.parse(init.body)
+						: init?.body instanceof Blob
+							? init.body
+							: undefined,
 				credentials: init?.credentials,
 			});
 			return new Response(

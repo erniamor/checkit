@@ -204,7 +204,7 @@
 	"voice_dialog_title": "Ajouter à la voix",
 	"voice_dialog_text": "Dites plusieurs éléments à la suite, puis vérifiez-les avant qu'ils soient ajoutés.",
 	"voice_listening": "J'écoute…",
-	"voice_listening_hint": "Par exemple : « du lait, des œufs et du pain ».",
+	"voice_listening_hint": "Par exemple : « du lait, des œufs et du pain ». Puis appuyez sur Terminé.",
 	"voice_stop": "Terminé",
 	"voice_retry": "Parler de nouveau",
 	"voice_heard": "Entendu : « {text} »",
@@ -220,5 +220,8 @@
 	"voice_error_not_allowed": "Le micro est bloqué. Autorisez-le dans les réglages du navigateur, puis réessayez.",
 	"voice_error_no_speech": "Rien n'a été entendu. Réessayez, plus près du micro.",
 	"voice_error_network": "La reconnaissance vocale a besoin d'une connexion internet.",
-	"voice_error_failed": "La reconnaissance vocale s'est interrompue. Réessayez."
+	"voice_error_failed": "La reconnaissance vocale s'est interrompue. Réessayez.",
+	"voice_transcribing": "Transcription…",
+	"voice_error_unavailable": "La saisie vocale n'est pas disponible dans ce navigateur. Saisissez les éléments au clavier.",
+	"voice_error_too_many": "La saisie vocale a beaucoup servi dans la dernière heure. Réessayez plus tard, ou saisissez les éléments au clavier."
 }

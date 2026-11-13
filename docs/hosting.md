@@ -11,7 +11,7 @@ Status: decided (November 2026): **Railway**, region US East, for `www`, `api` a
   - Oracle Cloud Always Free: free but self-managed, and idle instances may be reclaimed.
   - Vercel or Cloudflare Workers for the API: functions don't hold long-lived SSE connections, and the in-memory event bus doesn't reach other instances; both would be fine for `www` alone, but add a second provider for little gain at this scale (Cloudflare would also need the DNS moved from OVH).
   - AWS: free for 6 months only, then a managed PostgreSQL alone costs more than all of Railway, and the setup is heavy for this app.
-- **Voice input:** the server-side fallback will call an external transcription service, so it doesn't weigh on the hosting.
+- **Voice input:** the server-side fallback calls Mistral's transcription API (Voxtral), so it doesn't weigh on the hosting. Recordings are passed on, never stored.
 
 The analysis below is the one the decision was made from.
 

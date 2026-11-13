@@ -27,6 +27,7 @@ Add it to a project with `"@repo/schemas": "workspace:*"`. It is consumed as Typ
 | Members | `memberRoleSchema` / `MemberRole`, `memberRoles`, `shareableRoleSchema` / `ShareableRole`, `memberSchema` / `Member`, `updateMemberSchema` / `UpdateMember` | |
 | Invitations | `createInvitationSchema` / `CreateInvitation`, `invitationSchema` / `Invitation`, `invitationPreviewSchema` / `InvitationPreview` | |
 | Share links | `createShareLinkSchema` / `CreateShareLink`, `shareLinkSchema` / `ShareLink`, `shareLinkPreviewSchema` / `ShareLinkPreview` | |
+| Transcriptions | `transcriptionLanguageSchema` / `TranscriptionLanguage` (`en`, `fr`, `es`), `transcriptionQuerySchema` / `TranscriptionQuery`, `transcriptionSchema` / `Transcription` | `TRANSCRIPTION_UNAVAILABLE` (the API's error code without a transcription service) |
 | Real-time events | `listEventSchema` / `ListEvent` (union discriminated by `type`), `ListEventType` | `LIST_EVENTS_READY` (`"ready"`, the first SSE event of a stream) |
 
 In responses, dates are ISO 8601 strings.

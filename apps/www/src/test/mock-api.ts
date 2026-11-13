@@ -39,7 +39,11 @@ export function mockApi(respond: Respond): ApiRequest[] {
 				method: init?.method ?? "GET",
 				path: fullUrl.pathname.replace(/^\/v1/, ""),
 				body:
-					typeof init?.body === "string" ? JSON.parse(init.body) : undefined,
+					typeof init?.body === "string"
+						? JSON.parse(init.body)
+						: init?.body instanceof Blob
+							? init.body
+							: undefined,
 			};
 			requests.push(request);
 			const response = (await respond(request, fullUrl)) ?? {

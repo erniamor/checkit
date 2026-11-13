@@ -11,6 +11,8 @@ const messages: Record<SpeechInputError, () => string> = {
 	"not-allowed": m.voice_error_not_allowed,
 	"no-speech": m.voice_error_no_speech,
 	network: m.voice_error_network,
+	unavailable: m.voice_error_unavailable,
+	"too-many": m.voice_error_too_many,
 	failed: m.voice_error_failed,
 };
 

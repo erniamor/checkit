@@ -25,6 +25,7 @@ interface RequestOptions<Output> {
 	method?: "GET" | "POST" | "PATCH" | "DELETE";
 	/** Path under /v1, e.g. "/me". */
 	path: string;
+	/** Sent as JSON, or as is for a Blob (a recording), with the Blob's type. */
 	body?: unknown;
 	/** Schema of the response; omit for responses with no useful body. */
 	response?: z.ZodType<Output>;
@@ -70,7 +71,10 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
 					headers[name] = value;
 				}
 			}
-			if (body !== undefined) {
+			const raw = body instanceof Blob;
+			if (raw) {
+				headers["Content-Type"] = body.type || "application/octet-stream";
+			} else if (body !== undefined) {
 				headers["Content-Type"] = "application/json";
 			}
 
@@ -79,7 +83,11 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
 				response = await doFetch(`${config.baseUrl}/v1${path}`, {
 					method,
 					headers,
-					body: body === undefined ? undefined : JSON.stringify(body),
+					body: raw
+						? body
+						: body === undefined
+							? undefined
+							: JSON.stringify(body),
 					credentials: config.credentials,
 					signal,
 				});

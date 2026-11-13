@@ -16,7 +16,7 @@ A small web app to manage short to-do lists shared between several users: lists 
 | Front end: lists and items | Done |
 | Front end: real time | Done |
 | Front end: sharing | Done |
-| Voice input | Next (browser Web Speech API, server transcription as fallback) |
+| Voice input | Done: browser Web Speech API, Mistral transcription as fallback (`MISTRAL_API_KEY`) |
 | Email provider, hosting | Not chosen (see [docs/hosting.md](docs/hosting.md)) |
 
 ## Repository
