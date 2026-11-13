@@ -15,7 +15,7 @@ import {
 } from "@/features/lists/duplicate-label";
 import { ItemsSection } from "@/features/lists/ItemsSection";
 import { ListKindIcon } from "@/features/lists/ListKindIcon";
-import { ListKindSelect } from "@/features/lists/ListKindSelect";
+import { ListKindSwitch } from "@/features/lists/ListKindSwitch";
 import { ListTitle } from "@/features/lists/ListTitle";
 import { canEdit, isOwner } from "@/features/lists/permissions";
 import { itemsQueryOptions, listQueryOptions } from "@/features/lists/queries";
@@ -100,7 +100,7 @@ export function ListPage({ listId }: ListPageProps) {
 				/>
 				<div className="flex flex-wrap items-center gap-1">
 					{editable ? (
-						<ListKindSelect
+						<ListKindSwitch
 							kind={list.kind}
 							onChange={(kind) => {
 								setError(undefined);

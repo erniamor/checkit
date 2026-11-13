@@ -335,12 +335,16 @@ describe("ListPage", () => {
 		const { user, requests } = renderList(fakeListServer());
 
 		expect(await screen.findByLabelText("New item")).toBeVisible();
-		await user.selectOptions(
-			screen.getByRole("combobox", { name: "Kind of list" }),
-			"Tasks",
-		);
+		const kinds = screen.getByRole("group", { name: "Kind of list" });
+		expect(
+			within(kinds).getByRole("button", { name: "Purchases" }),
+		).toHaveAttribute("aria-pressed", "true");
+		await user.click(within(kinds).getByRole("button", { name: "Tasks" }));
 
 		expect(await screen.findByLabelText("New task")).toBeVisible();
+		expect(
+			within(kinds).getByRole("button", { name: "Tasks" }),
+		).toHaveAttribute("aria-pressed", "true");
 		await vi.waitFor(() =>
 			expect(requests).toContainEqual({
 				method: "PATCH",
@@ -378,7 +382,7 @@ describe("ListPage", () => {
 		expect(screen.getByRole("checkbox", { name: "Milk" })).toBeDisabled();
 		expect(screen.queryByLabelText("New item")).toBeNull();
 		expect(screen.getByText("Purchases")).toBeInTheDocument();
-		expect(screen.queryByRole("combobox", { name: "Kind of list" })).toBeNull();
+		expect(screen.queryByRole("group", { name: "Kind of list" })).toBeNull();
 		expect(screen.queryByRole("button", { name: /Rename|Delete/ })).toBeNull();
 		expect(screen.queryByRole("button", { name: /Check all/ })).toBeNull();
 		expect(screen.queryByRole("button", { name: /Move/ })).toBeNull();
